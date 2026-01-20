@@ -1,0 +1,16 @@
+package com.matheus.planningapp.data
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface CalendarDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(calendarEntity: CalendarEntity)
+
+    @Query("SELECT * FROM Calendar")
+    fun getCalendars(): Flow<List<CalendarEntity>>
+}
