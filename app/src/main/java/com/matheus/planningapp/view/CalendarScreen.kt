@@ -1,7 +1,8 @@
 package com.matheus.planningapp.view
 
+import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,23 +16,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,50 +49,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
+import com.matheus.planningapp.viewmodel.CalendarViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.YearMonth
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PlanningTopAppBar (
-    modifier: Modifier
-) {
-
-
-    TopAppBar(
-        title = {},
-        modifier = modifier,
-        navigationIcon = {
-            Row {
-                Icon(
-                    painter = painterResource(id = R.drawable.columns_view),
-                    contentDescription = "Column view",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .height(32.dp)
-                        .width(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.onBackground)
-                        .clickable { /* TODO */ }
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.grid_view),
-                    contentDescription = "Grid view",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .height(32.dp)
-                        .width(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.background)
-                        .clickable { /* TODO */ }
-                )
-            }
-        }
-    )
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,14 +78,27 @@ fun CalendarScreen (
         24 to "Task 24",
     )
 
+    val selectedCalendar = "Default" /* TODO: Get selected Calendar */
+
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(
+                start = 16.dp,
+                bottom = 16.dp,
+                end = 16.dp
+            )
     ) {
         item {
 
             Column {
+
+                PlanningTopAppBar(
+                    modifier = Modifier
+                        .padding(
+                            bottom = 16.dp
+                        )
+                )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -243,6 +221,101 @@ fun CalendarScreen (
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlanningTopAppBar(
+    modifier: Modifier
+) {
+    var columnViewSelected by remember { mutableStateOf(true) }
+
+    val calendarViewModel: CalendarViewModel = koinViewModel()
+    val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
+
+    val calendarNames: List<String> = calendarsEntities.map { it.name }
+    var expanded by remember { mutableStateOf(false) }
+    var selectedCalendar by remember { mutableStateOf(value = if (calendarNames.count() > 0) calendarNames.first() else "Default") }
+
+    TopAppBar(
+        modifier = modifier,
+        title = {},
+        navigationIcon = {
+            Row {
+                Icon(
+                    painter = painterResource(id = R.drawable.columns_view),
+                    contentDescription = "Column view",
+                    tint = if (columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .height(32.dp)
+                        .width(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
+                        .clickable { columnViewSelected = true }
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.grid_view),
+                    contentDescription = "Grid view",
+                    tint = if (!columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .height(32.dp)
+                        .width(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
+                        .clickable { columnViewSelected = false }
+                )
+            }
+        },
+        actions = {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                TextField(
+                    value = selectedCalendar,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .width(140.dp),
+                    colors = ExposedDropdownMenuDefaults.textFieldColors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        focusedTextColor = MaterialTheme.colorScheme.secondary,
+                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary
+
+                    )
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    containerColor = MaterialTheme.colorScheme.background,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                ) {
+                    calendarNames.forEach { calendar ->
+                        DropdownMenuItem(
+                            text = { Text(
+                                text = calendar,
+                                color = MaterialTheme.colorScheme.secondary
+                            ) },
+                            onClick = {
+                                selectedCalendar = calendar
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
 @Composable
 fun MonthGrid(
     months: List<String>,
@@ -281,7 +354,6 @@ fun MonthGrid(
             }
     }
 }
-
 
 @Composable
 fun DaysOnlyCalendar(

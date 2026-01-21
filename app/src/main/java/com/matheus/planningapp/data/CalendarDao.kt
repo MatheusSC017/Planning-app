@@ -13,4 +13,7 @@ interface CalendarDao {
 
     @Query("SELECT * FROM Calendar")
     fun getCalendars(): Flow<List<CalendarEntity>>
+
+    @Query("SELECT COUNT(*) FROM Calendar")
+    suspend fun countCalendars(): Int
 }

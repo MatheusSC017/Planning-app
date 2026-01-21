@@ -1,16 +1,28 @@
 package com.matheus.planningapp.data
 
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
 
 class CalendarRepositoryImpl(
-    private val dispatcher: CoroutineDispatcher,
     private val calendarDao: CalendarDao
 ): CalendarRepository {
-    override suspend fun getCalendars(): Flow<List<CalendarEntity>> {
-        return withContext(dispatcher) {
-            calendarDao.getCalendars()
+
+    override fun getCalendars(): Flow<List<CalendarEntity>> {
+        return calendarDao.getCalendars()
+    }
+
+    override suspend fun ensureDefaultCalendarExists() {
+        if (calendarDao.countCalendars() == 0) {
+            calendarDao.insert(
+                CalendarEntity(
+                    id = 0,
+                    name = "Default",
+                    isDefault = true,
+                    createdAt = LocalDateTime.now().toString(),
+                    updatedAt = LocalDateTime.now().toString()
+                )
+            )
         }
     }
+
 }
