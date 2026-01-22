@@ -3,6 +3,7 @@ package com.matheus.planningapp.data
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.time.Instant
 
 @Entity(
     tableName = "Calendar",
@@ -13,6 +14,6 @@ data class CalendarEntity (
     val id: Int,
     val name: String,
     val isDefault: Boolean,
-    val createdAt: String,
-    val updatedAt: String
+    val createdAt: Instant,
+    val updatedAt: Instant
 )

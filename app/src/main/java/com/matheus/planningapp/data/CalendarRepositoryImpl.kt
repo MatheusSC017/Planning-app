@@ -1,7 +1,7 @@
 package com.matheus.planningapp.data
 
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDateTime
+import java.time.Instant
 
 class CalendarRepositoryImpl(
     private val calendarDao: CalendarDao
@@ -18,8 +18,8 @@ class CalendarRepositoryImpl(
                     id = 0,
                     name = "Default",
                     isDefault = true,
-                    createdAt = LocalDateTime.now().toString(),
-                    updatedAt = LocalDateTime.now().toString()
+                    createdAt = Instant.now(),
+                    updatedAt = Instant.now()
                 )
             )
         }
