@@ -3,7 +3,7 @@ package com.matheus.planningapp.data
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Entity(
     tableName = "Calendar",

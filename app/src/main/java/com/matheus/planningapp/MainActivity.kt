@@ -4,11 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
+import com.matheus.planningapp.navigation.AppNavigation
 import com.matheus.planningapp.ui.theme.PlanningAppTheme
-import com.matheus.planningapp.view.CalendarScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,14 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PlanningAppTheme {
-                Scaffold(
-                    content = { paddingValues ->
-                        CalendarScreen(
-                            modifier = Modifier
-                                .padding(paddingValues)
-                        )
-                    }
-                )
+                AppNavigation()
             }
         }
     }

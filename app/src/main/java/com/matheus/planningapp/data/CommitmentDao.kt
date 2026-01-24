@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Dao
 interface CommitmentDao {

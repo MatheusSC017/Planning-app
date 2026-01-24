@@ -1,6 +1,5 @@
 package com.matheus.planningapp.view
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DropdownMenuItem
@@ -26,8 +26,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -52,6 +54,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.viewmodel.CalendarViewModel
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.YearMonth
@@ -59,166 +63,22 @@ import java.time.YearMonth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen (
-    modifier: Modifier
+    onNavigateToCommitment: (date: Instant) -> Unit
 ) {
-    val months = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    )
-    var selectedDay by remember { mutableIntStateOf(LocalDate.now().dayOfMonth) }
-    var selectedMonth by remember { mutableIntStateOf(LocalDate.now().monthValue) }
-    var selectedYear by remember { mutableIntStateOf(LocalDate.now().year) }
-    val tasks = mapOf(
-        1 to "Task 1",
-        7 to "Task 7",
-        8 to "Task 8",
-        13 to "Task 13",
-        15 to "Task 15",
-        18 to "Task 18",
-        24 to "Task 24",
-    )
-
-    val selectedCalendar = "Default" /* TODO: Get selected Calendar */
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                start = 16.dp,
-                bottom = 16.dp,
-                end = 16.dp
-            )
-    ) {
-        item {
-
-            Column {
-
-                PlanningTopAppBar(
-                    modifier = Modifier
-                        .padding(
-                            bottom = 16.dp
-                        )
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Text(
-                        text = selectedYear.toString(),
-                        style = TextStyle(
-                            fontSize = 48.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "Up",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .size(24.dp)
-                                .clickable { selectedYear += 1 }
-                        )
-
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Down",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .size(24.dp)
-                                .clickable { selectedYear -= 1 }
-                        )
-                    }
-
-                }
-
-                MonthGrid(
-                    months = months,
-                    selectedMonth = selectedMonth,
-                    onMonthSelected = { selectedMonth = it }
-                )
-
-                Text(
-                    text = months[selectedMonth - 1],
-                    style = TextStyle(
-                        fontSize = 48.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier
-                        .padding(
-                            top = 16.dp,
-                            bottom = 16.dp
-                        )
-                )
-
-                DaysOnlyCalendar(
-                    yearMonth = YearMonth.of(selectedYear, selectedMonth),
-                    selectedDay = selectedDay,
-                    onDateSelected = { selectedDay = it }
-                )
-
-                Text(
-                    text = "Timeline",
-                    style = TextStyle(
-                        fontSize = 48.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier
-                        .padding(
-                            top = 16.dp,
-                            bottom = 16.dp
-                        )
-                )
-
-            }
-
-        }
-
-        items(24) { index ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+    Scaffold (
+        topBar = {
+            PlanningTopAppBar(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(96.dp)
-                    .padding(bottom = 8.dp)
-                    .drawBehind {
-                        drawLine(
-                            color = Color.White,
-                            start = Offset(0f, size.height),
-                            end = Offset(size.width, size.height),
-                            strokeWidth = 1.dp.toPx()
-                        )
-                    }
-                    .background(if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onBackground else Color.Transparent)
-            ) {
-                val time = String.format("%2d:00", index + 1)
-                Text(
-                    text = time,
-                    style = TextStyle(
-                      fontSize = 24.sp,
-                      color = if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                    ),
-                    modifier = Modifier
-                        .width(96.dp)
-                )
-                if (tasks.containsKey(index + 1)) {
-                    Text(
-                        text =  tasks[index + 1] ?: "",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            color = if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                        ),
-                    )
-                }
-            }
+            )
+        },
+        content = { paddingValues ->
+            CalendarContent(
+                modifier = Modifier
+                    .padding(paddingValues),
+                onNavigateToCommitment = onNavigateToCommitment
+            )
         }
-
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -314,6 +174,181 @@ fun PlanningTopAppBar(
             }
         }
     )
+}
+
+@Composable
+fun CalendarContent(
+    modifier: Modifier,
+    onNavigateToCommitment: (date: Instant) -> Unit
+) {
+    val months = listOf(
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    )
+    var selectedDay by remember { mutableIntStateOf(LocalDate.now().dayOfMonth) }
+    var selectedMonth by remember { mutableIntStateOf(LocalDate.now().monthValue) }
+    var selectedYear by remember { mutableIntStateOf(LocalDate.now().year) }
+    val tasks = mapOf(
+        1 to "Task 1",
+        7 to "Task 7",
+        8 to "Task 8",
+        13 to "Task 13",
+        15 to "Task 15",
+        18 to "Task 18",
+        24 to "Task 24",
+    )
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(
+                start = 16.dp,
+                bottom = 16.dp,
+                end = 16.dp
+            )
+    ) {
+        item {
+
+            Column {
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Text(
+                        text = selectedYear.toString(),
+                        style = TextStyle(
+                            fontSize = 48.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    Column(
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Up",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .size(24.dp)
+                                .clickable { selectedYear += 1 }
+                        )
+
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Down",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .size(24.dp)
+                                .clickable { selectedYear -= 1 }
+                        )
+                    }
+
+                }
+
+                MonthGrid(
+                    months = months,
+                    selectedMonth = selectedMonth,
+                    onMonthSelected = { selectedMonth = it }
+                )
+
+                Text(
+                    text = months[selectedMonth - 1],
+                    style = TextStyle(
+                        fontSize = 48.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .padding(
+                            top = 16.dp,
+                            bottom = 16.dp
+                        )
+                )
+
+                DaysOnlyCalendar(
+                    yearMonth = YearMonth.of(selectedYear, selectedMonth),
+                    selectedDay = selectedDay,
+                    onDateSelected = { selectedDay = it }
+                )
+
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Timeline",
+                        style = TextStyle(
+                            fontSize = 48.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier
+                            .padding(
+                                top = 16.dp,
+                                bottom = 16.dp
+                            )
+                    )
+
+                    IconButton(
+                        onClick = { onNavigateToCommitment(Clock.System.now()) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add new Commitment",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            modifier = Modifier
+                                .size(64.dp)
+                        )
+                    }
+                }
+
+            }
+
+        }
+
+        items(24) { index ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp)
+                    .padding(bottom = 8.dp)
+                    .drawBehind {
+                        drawLine(
+                            color = Color.White,
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, size.height),
+                            strokeWidth = 1.dp.toPx()
+                        )
+                    }
+                    .background(if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onBackground else Color.Transparent)
+            ) {
+                val time = String.format("%2d:00", index + 1)
+                Text(
+                    text = time,
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        color = if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier
+                        .width(96.dp)
+                )
+                if (tasks.containsKey(index + 1)) {
+                    Text(
+                        text =  tasks[index + 1] ?: "",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            color = if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
+                        ),
+                    )
+                }
+            }
+        }
+
+    }
 }
 
 @Composable

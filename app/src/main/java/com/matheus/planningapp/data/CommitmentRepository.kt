@@ -1,7 +1,8 @@
 package com.matheus.planningapp.data
 
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
+import kotlinx.datetime.Instant
+
 
 interface CommitmentRepository {
     fun getCommitment(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>>

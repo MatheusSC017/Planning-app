@@ -6,7 +6,8 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [CalendarEntity::class, CommitmentEntity::class],
-    version = 3
+    version = 3,
+    exportSchema = false
 )
 @TypeConverters(DateTimeConverters::class, PriorityConverters::class)
 abstract class CalendarDatabase: RoomDatabase() {
