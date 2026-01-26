@@ -16,7 +16,6 @@ class CalendarRepositoryImpl(
         if (calendarDao.countCalendars() == 0) {
             calendarDao.insert(
                 CalendarEntity(
-                    id = 0,
                     name = "Default",
                     isDefault = true,
                     createdAt = Clock.System.now(),

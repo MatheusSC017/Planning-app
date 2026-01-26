@@ -10,4 +10,8 @@ class CommitmentRepositoryImpl(
     override fun getCommitment(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>> {
         return commitmentDao.getCommitmentsForDay(dayStart, dayEnd)
     }
+
+    override suspend fun insertCommitment(commitmentEntity: CommitmentEntity) {
+        commitmentDao.insert(commitmentEntity)
+    }
 }

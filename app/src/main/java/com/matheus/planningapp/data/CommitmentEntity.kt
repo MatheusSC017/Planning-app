@@ -25,7 +25,7 @@ import kotlinx.datetime.Instant
 )
 data class CommitmentEntity (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     val calendar: Int,
     val title: String,
     val description: String?,

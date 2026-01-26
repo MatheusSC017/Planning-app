@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CalendarRepository
+import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.CommitmentRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,8 +30,8 @@ class CalendarViewModel(
                 initialValue = emptyList()
             )
 
-    fun getCommitments() {
-        /* TODO */
+    fun insertCommitment(commitmentEntity: CommitmentEntity) {
+        viewModelScope.launch { commitmentRepository.insertCommitment(commitmentEntity) }
     }
 
 }

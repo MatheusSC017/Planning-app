@@ -11,7 +11,7 @@ import kotlinx.datetime.Instant
 )
 data class CalendarEntity (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     val name: String,
     val isDefault: Boolean,
     val createdAt: Instant,

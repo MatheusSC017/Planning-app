@@ -6,4 +6,5 @@ import kotlinx.datetime.Instant
 
 interface CommitmentRepository {
     fun getCommitment(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>>
+    suspend fun insertCommitment(commitmentEntity: CommitmentEntity)
 }

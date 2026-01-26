@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -34,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,28 +55,45 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
+import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.viewmodel.CalendarViewModel
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.toKotlinInstant
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen (
-    onNavigateToCommitment: (date: Instant) -> Unit
+    onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
+    val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
+    var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
+
+    LaunchedEffect(calendarsEntities) {
+        if (selectedCalendar == null && calendarsEntities.isNotEmpty()) {
+            selectedCalendar = calendarsEntities.first()
+        }
+    }
+
+
     Scaffold (
         topBar = {
             PlanningTopAppBar(
-                modifier = Modifier
+                modifier = Modifier,
+                calendarsEntities = calendarsEntities,
+                selectedCalendar = selectedCalendar,
+                onCalendarSelected = { selectedCalendar = it}
             )
         },
         content = { paddingValues ->
             CalendarContent(
                 modifier = Modifier
                     .padding(paddingValues),
+                selectedCalendar = selectedCalendar,
                 onNavigateToCommitment = onNavigateToCommitment
             )
         }
@@ -84,16 +103,13 @@ fun CalendarScreen (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanningTopAppBar(
-    modifier: Modifier
+    modifier: Modifier,
+    calendarsEntities: List<CalendarEntity>,
+    selectedCalendar: CalendarEntity?,
+    onCalendarSelected: (CalendarEntity) -> Unit
 ) {
     var columnViewSelected by remember { mutableStateOf(true) }
-
-    val calendarViewModel: CalendarViewModel = koinViewModel()
-    val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
-
-    val calendarNames: List<String> = calendarsEntities.map { it.name }
-    var expanded by remember { mutableStateOf(false) }
-    var selectedCalendar by remember { mutableStateOf(value = if (calendarNames.count() > 0) calendarNames.first() else "Default") }
+    var expandedCalendarDropDown by remember { mutableStateOf(false) }
 
     TopAppBar(
         modifier = modifier,
@@ -126,19 +142,22 @@ fun PlanningTopAppBar(
         },
         actions = {
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+                expanded = expandedCalendarDropDown,
+                onExpandedChange = { expandedCalendarDropDown = !expandedCalendarDropDown }
             ) {
                 TextField(
-                    value = selectedCalendar,
+                    value = selectedCalendar?.name ?: "",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                        ExposedDropdownMenuDefaults.TrailingIcon(expandedCalendarDropDown)
                     },
                     modifier = Modifier
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .width(140.dp),
+                        .width(200.dp),
+                    textStyle = TextStyle(
+                        fontSize = 24.sp
+                    ),
                     colors = ExposedDropdownMenuDefaults.textFieldColors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -148,25 +167,26 @@ fun PlanningTopAppBar(
                         focusedTextColor = MaterialTheme.colorScheme.secondary,
                         unfocusedTextColor = MaterialTheme.colorScheme.secondary,
                         disabledTextColor = MaterialTheme.colorScheme.secondary
-
                     )
                 )
 
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
+                    expanded = expandedCalendarDropDown,
+                    onDismissRequest = { expandedCalendarDropDown = false },
                     containerColor = MaterialTheme.colorScheme.background,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 ) {
-                    calendarNames.forEach { calendar ->
+                    calendarsEntities.forEach { calendarEntity ->
                         DropdownMenuItem(
-                            text = { Text(
-                                text = calendar,
-                                color = MaterialTheme.colorScheme.secondary
-                            ) },
+                            text = {
+                                Text(
+                                    text = calendarEntity.name,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                            },
                             onClick = {
-                                selectedCalendar = calendar
-                                expanded = false
+                                onCalendarSelected(calendarEntity)
+                                expandedCalendarDropDown = false
                             }
                         )
                     }
@@ -179,7 +199,8 @@ fun PlanningTopAppBar(
 @Composable
 fun CalendarContent(
     modifier: Modifier,
-    onNavigateToCommitment: (date: Instant) -> Unit
+    selectedCalendar: CalendarEntity?,
+    onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit
 ) {
     val months = listOf(
         "January", "February", "March", "April", "May", "June",
@@ -292,16 +313,37 @@ fun CalendarContent(
                             )
                     )
 
-                    IconButton(
-                        onClick = { onNavigateToCommitment(Clock.System.now()) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add new Commitment",
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            modifier = Modifier
-                                .size(64.dp)
-                        )
+                    Row {
+                        IconButton(
+                            onClick = {
+                                val date = LocalDate.of(selectedYear, selectedMonth, selectedDay)
+                                val instant = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toKotlinInstant()
+
+                                if (selectedCalendar != null) {
+                                    onNavigateToCommitment(instant, selectedCalendar.id)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add new Commitment",
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                modifier = Modifier
+                                    .size(64.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { /* Todo: Update calendar commitments */ }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh Commitments",
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                modifier = Modifier
+                                    .size(64.dp)
+                            )
+                        }
                     }
                 }
 
