@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 
 class CalendarViewModel(
     private val calendarRepository: CalendarRepository,
@@ -31,7 +32,18 @@ class CalendarViewModel(
             )
 
     fun insertCommitment(commitmentEntity: CommitmentEntity) {
+        if (!verifyStartAndEndTime(commitmentEntity.startDateTime, commitmentEntity.endDateTime)) {
+            throw IllegalArgumentException("Start time must be lesser than End time")
+        }
+
+        /* TODO: Validate if Title is not Null */
+        /* TODO: Validate multiple tasks in the same time slot */
+
         viewModelScope.launch { commitmentRepository.insertCommitment(commitmentEntity) }
+    }
+
+    private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {
+        return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
     }
 
 }

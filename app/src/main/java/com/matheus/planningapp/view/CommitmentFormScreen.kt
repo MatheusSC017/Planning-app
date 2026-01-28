@@ -27,6 +27,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -34,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +52,8 @@ import com.matheus.planningapp.helper.snapToHalfHour
 import com.matheus.planningapp.helper.step30
 import com.matheus.planningapp.helper.sumInstantWithLocalTime
 import com.matheus.planningapp.viewmodel.CalendarViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -64,9 +69,13 @@ fun CommitmentScreen(
     selectedCalendar: Int,
     instant: Instant
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val localDate: LocalDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     Scaffold (
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -98,7 +107,9 @@ fun CommitmentScreen(
                     .padding(paddingValues),
                 onBackPressed = onBackPressed,
                 selectedCalendar = selectedCalendar,
-                instant = instant
+                instant = instant,
+                snackBarHostState = snackBarHostState,
+                scope = scope
             )
         }
     )
@@ -111,9 +122,10 @@ fun CommitmentForm(
     onBackPressed: () -> Unit,
     selectedCalendar: Int,
     instant: Instant,
+    snackBarHostState: SnackbarHostState,
+    scope: CoroutineScope,
     calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
-
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedStartTime by remember { mutableStateOf(LocalTime(hour = 0, minute = 0)) }
@@ -276,8 +288,6 @@ fun CommitmentForm(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     onClick = {
-                        /* Validate start time must be lesser than end time*/
-
                         val commitmentEntity = CommitmentEntity(
                             calendar = selectedCalendar,
                             title = title,
@@ -290,8 +300,14 @@ fun CommitmentForm(
                             updatedAt = Clock.System.now()
                         )
 
-                        calendarViewModel.insertCommitment(commitmentEntity)
-                        onBackPressed()
+                        try {
+                            calendarViewModel.insertCommitment(commitmentEntity)
+                            onBackPressed()
+                        } catch (e: IllegalArgumentException) {
+                            scope.launch {
+                                snackBarHostState.showSnackbar(e.message ?: "Error")
+                            }
+                        }
                     }
                 ) {
                     Text(

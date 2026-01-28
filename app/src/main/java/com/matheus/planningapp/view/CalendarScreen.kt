@@ -21,7 +21,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -30,16 +32,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +63,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.viewmodel.CalendarViewModel
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import org.koin.compose.viewmodel.koinViewModel
@@ -70,6 +77,9 @@ fun CalendarScreen (
     onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
 
@@ -79,25 +89,38 @@ fun CalendarScreen (
         }
     }
 
-
-    Scaffold (
-        topBar = {
-            PlanningTopAppBar(
-                modifier = Modifier,
-                calendarsEntities = calendarsEntities,
-                selectedCalendar = selectedCalendar,
-                onCalendarSelected = { selectedCalendar = it}
-            )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "My Calendars",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         },
-        content = { paddingValues ->
-            CalendarContent(
-                modifier = Modifier
-                    .padding(paddingValues),
-                selectedCalendar = selectedCalendar,
-                onNavigateToCommitment = onNavigateToCommitment
-            )
-        }
-    )
+    ) {
+        Scaffold (
+            topBar = {
+                PlanningTopAppBar(
+                    modifier = Modifier,
+                    calendarsEntities = calendarsEntities,
+                    selectedCalendar = selectedCalendar,
+                    onCalendarSelected = { selectedCalendar = it},
+                    onMenuClick = { scope.launch { drawerState.open() }}
+                )
+            },
+            content = { paddingValues ->
+                CalendarContent(
+                    modifier = Modifier
+                        .padding(paddingValues),
+                    selectedCalendar = selectedCalendar,
+                    onNavigateToCommitment = onNavigateToCommitment
+                )
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +129,8 @@ fun PlanningTopAppBar(
     modifier: Modifier,
     calendarsEntities: List<CalendarEntity>,
     selectedCalendar: CalendarEntity?,
-    onCalendarSelected: (CalendarEntity) -> Unit
+    onCalendarSelected: (CalendarEntity) -> Unit,
+    onMenuClick: () -> Unit
 ) {
     var columnViewSelected by remember { mutableStateOf(true) }
     var expandedCalendarDropDown by remember { mutableStateOf(false) }
@@ -191,6 +215,18 @@ fun PlanningTopAppBar(
                         )
                     }
                 }
+            }
+
+            IconButton(
+                onClick = { onMenuClick() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(64.dp)
+                )
             }
         }
     )
