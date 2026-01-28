@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,12 +46,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.Priority
 import com.matheus.planningapp.helper.parseTime
 import com.matheus.planningapp.helper.snapToHalfHour
 import com.matheus.planningapp.helper.step30
 import com.matheus.planningapp.helper.sumInstantWithLocalTime
+import com.matheus.planningapp.ui.theme.CommitmentUiEvent
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -67,12 +72,36 @@ import org.koin.androidx.compose.koinViewModel
 fun CommitmentScreen(
     onBackPressed: () -> Unit,
     selectedCalendar: Int,
-    instant: Instant
+    instant: Instant,
+    calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     val localDate: LocalDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+    LaunchedEffect(Unit) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            calendarViewModel.events.collect { event ->
+                when (event) {
+                    is CommitmentUiEvent.ShowError -> {
+                        scope.launch {
+                            snackBarHostState.showSnackbar(event.message)
+                        }
+                    }
+
+                    CommitmentUiEvent.Saved -> {
+                        onBackPressed()
+                        scope.launch {
+                            snackBarHostState.showSnackbar("Saved")
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold (
         snackbarHost = { SnackbarHost(snackBarHostState) },
@@ -105,11 +134,9 @@ fun CommitmentScreen(
             CommitmentForm(
                 modifier = Modifier
                     .padding(paddingValues),
-                onBackPressed = onBackPressed,
                 selectedCalendar = selectedCalendar,
                 instant = instant,
-                snackBarHostState = snackBarHostState,
-                scope = scope
+                calendarViewModel = calendarViewModel
             )
         }
     )
@@ -119,12 +146,9 @@ fun CommitmentScreen(
 @Composable
 fun CommitmentForm(
     modifier: Modifier,
-    onBackPressed: () -> Unit,
     selectedCalendar: Int,
     instant: Instant,
-    snackBarHostState: SnackbarHostState,
-    scope: CoroutineScope,
-    calendarViewModel: CalendarViewModel = koinViewModel()
+    calendarViewModel: CalendarViewModel
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -299,15 +323,7 @@ fun CommitmentForm(
                             createdAt = Clock.System.now(),
                             updatedAt = Clock.System.now()
                         )
-
-                        try {
-                            calendarViewModel.insertCommitment(commitmentEntity)
-                            onBackPressed()
-                        } catch (e: IllegalArgumentException) {
-                            scope.launch {
-                                snackBarHostState.showSnackbar(e.message ?: "Error")
-                            }
-                        }
+                        calendarViewModel.insertCommitment(commitmentEntity)
                     }
                 ) {
                     Text(

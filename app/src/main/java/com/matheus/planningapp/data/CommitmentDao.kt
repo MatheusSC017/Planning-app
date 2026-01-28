@@ -21,4 +21,15 @@ interface CommitmentDao {
         dayStart: Instant,
         dayEnd: Instant
     ): Flow<List<CommitmentEntity>>
+
+    @Query("""
+        SELECT COUNT(*) FROM commitment 
+        WHERE calendar = :calendarId AND
+        startDateTime < :endDateTime AND
+        endDateTime > :startDateTime
+    """)
+    suspend fun checkSchedulingConflictsBetweenCommitments(
+        startDateTime: Instant,
+        endDateTime: Instant,
+        calendarId: Int): Int
 }

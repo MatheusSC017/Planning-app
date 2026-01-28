@@ -14,4 +14,12 @@ class CommitmentRepositoryImpl(
     override suspend fun insertCommitment(commitmentEntity: CommitmentEntity) {
         commitmentDao.insert(commitmentEntity)
     }
+
+    override suspend fun checkSchedulingConflictsBetweenCommitments(
+        startDateTime: Instant,
+        endDateTime: Instant,
+        calendarId: Int
+    ): Int {
+        return commitmentDao.checkSchedulingConflictsBetweenCommitments(startDateTime, endDateTime, calendarId)
+    }
 }
