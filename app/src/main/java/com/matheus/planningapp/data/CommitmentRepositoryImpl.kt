@@ -7,7 +7,7 @@ import kotlinx.datetime.Instant
 class CommitmentRepositoryImpl(
     private val commitmentDao: CommitmentDao
 ): CommitmentRepository {
-    override fun getCommitment(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>> {
+    override fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>> {
         return commitmentDao.getCommitmentsForDay(dayStart, dayEnd)
     }
 

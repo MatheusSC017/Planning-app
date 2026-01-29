@@ -7,6 +7,7 @@ import com.matheus.planningapp.data.CalendarRepository
 import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.CommitmentRepository
 import com.matheus.planningapp.ui.theme.CommitmentUiEvent
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +39,7 @@ class CalendarViewModel(
 
     fun insertCommitment(commitmentEntity: CommitmentEntity) {
         viewModelScope.launch {
+            // Check if start time is lesser than end time
             if (!verifyStartAndEndTime(commitmentEntity.startDateTime, commitmentEntity.endDateTime)) {
                 _events.emit(
                     CommitmentUiEvent.ShowError("Start time must be lesser than End time")
@@ -45,6 +47,7 @@ class CalendarViewModel(
                 return@launch
             }
 
+            // Check if title is not empty
             if (commitmentEntity.title.isEmpty()) {
                 _events.emit(
                     CommitmentUiEvent.ShowError("Title cannot be empty")
@@ -52,7 +55,7 @@ class CalendarViewModel(
                 return@launch
             }
 
-            /* TODO: Validate multiple tasks in the same time slot */
+            // Check if there is a conflict with other commitments
             val conflictsNumbers: Int = commitmentRepository.checkSchedulingConflictsBetweenCommitments(
                 commitmentEntity.startDateTime,
                 commitmentEntity.endDateTime,
@@ -73,6 +76,10 @@ class CalendarViewModel(
 
     private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {
         return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
+    }
+
+    fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>> {
+        return commitmentRepository.getCommitmentsForDay(dayStart, dayEnd)
     }
 
 }

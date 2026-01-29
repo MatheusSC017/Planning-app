@@ -31,5 +31,6 @@ interface CommitmentDao {
     suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,
-        calendarId: Int): Int
+        calendarId: Int
+    ): Int
 }

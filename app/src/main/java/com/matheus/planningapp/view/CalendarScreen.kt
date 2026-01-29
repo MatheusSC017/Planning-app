@@ -1,5 +1,6 @@
 package com.matheus.planningapp.view
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +70,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 
@@ -116,7 +119,8 @@ fun CalendarScreen (
                     modifier = Modifier
                         .padding(paddingValues),
                     selectedCalendar = selectedCalendar,
-                    onNavigateToCommitment = onNavigateToCommitment
+                    onNavigateToCommitment = onNavigateToCommitment,
+                    calendarViewModel = calendarViewModel
                 )
             }
         )
@@ -236,7 +240,8 @@ fun PlanningTopAppBar(
 fun CalendarContent(
     modifier: Modifier,
     selectedCalendar: CalendarEntity?,
-    onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit
+    onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    calendarViewModel: CalendarViewModel
 ) {
     val months = listOf(
         "January", "February", "March", "April", "May", "June",
@@ -254,6 +259,19 @@ fun CalendarContent(
         18 to "Task 18",
         24 to "Task 24",
     )
+
+    val zone = remember { ZoneId.systemDefault() }
+    val date = remember(selectedYear, selectedMonth, selectedDay) {
+        LocalDate.of(selectedYear, selectedMonth, selectedDay)
+    }
+    val startOfDay = remember(date) {
+        date.atStartOfDay(zone).toInstant().toKotlinInstant()
+    }
+    val endOfDay = remember(date) {
+        date.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
+    }
+    val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay).collectAsState(initial = emptyList())
+    Log.d("Commitments", "CalendarContent: $commitments")
 
     LazyColumn(
         modifier = modifier
@@ -352,11 +370,8 @@ fun CalendarContent(
                     Row {
                         IconButton(
                             onClick = {
-                                val date = LocalDate.of(selectedYear, selectedMonth, selectedDay)
-                                val instant = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toKotlinInstant()
-
                                 if (selectedCalendar != null) {
-                                    onNavigateToCommitment(instant, selectedCalendar.id)
+                                    onNavigateToCommitment(startOfDay, selectedCalendar.id)
                                 }
                             }
                         ) {
