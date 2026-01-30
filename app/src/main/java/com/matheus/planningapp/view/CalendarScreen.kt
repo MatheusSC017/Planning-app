@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,11 +25,13 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,15 +67,20 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
+import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinInstant
+import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,10 +105,21 @@ fun CalendarScreen (
         drawerContent = {
             ModalDrawerSheet {
                 Text(
-                    text = "My Calendars",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
+                    text = "Planning your life",
+                    style = TextStyle(
+                        fontSize = 36.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(
+                        top = 16.dp,
+                        end = 16.dp,
+                        bottom = 32.dp,
+                        start = 16.dp
+                    )
                 )
+
+                HorizontalDivider()
             }
         },
     ) {
@@ -271,7 +290,7 @@ fun CalendarContent(
         date.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
     }
     val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay).collectAsState(initial = emptyList())
-    Log.d("Commitments", "CalendarContent: $commitments")
+    var commitmentsLastIndex = remember(commitments) { 0 }
 
     LazyColumn(
         modifier = modifier
@@ -402,43 +421,38 @@ fun CalendarContent(
 
         }
 
-        items(24) { index ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(96.dp)
-                    .padding(bottom = 8.dp)
-                    .drawBehind {
-                        drawLine(
-                            color = Color.White,
-                            start = Offset(0f, size.height),
-                            end = Offset(size.width, size.height),
-                            strokeWidth = 1.dp.toPx()
-                        )
+
+        if (commitments.isEmpty()) {
+            items(48) { index ->
+                TimeCommitment(String.format(Locale.US, "%02d:%02d", index / 2, if(index % 2 == 0) 0 else 30), null)
+            }
+        } else {
+            val timesList = List(48) { it }
+            commitments.forEach { commitment ->
+                val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+                val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
+
+                if (commitmentsLastIndex < commitmentStartIndex) {
+                    items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
+                        TimeCommitment(String.format(Locale.US, "%02d:%02d", index / 2, if(index % 2 == 0) 0 else 30), null)
                     }
-                    .background(if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onBackground else Color.Transparent)
-            ) {
-                val time = String.format("%2d:00", index + 1)
-                Text(
-                    text = time,
-                    style = TextStyle(
-                        fontSize = 24.sp,
-                        color = if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                    ),
-                    modifier = Modifier
-                        .width(96.dp)
-                )
-                if (tasks.containsKey(index + 1)) {
-                    Text(
-                        text =  tasks[index + 1] ?: "",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            color = if (tasks.containsKey(index + 1)) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                        ),
-                    )
+                }
+
+                commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0) + 1
+
+                item {
+                    TimeCommitment(commitmentStartTime, commitment)
                 }
             }
+
+            if (commitmentsLastIndex < 48) {
+                items(timesList.subList(commitmentsLastIndex, 48)) { index ->
+                    TimeCommitment(String.format(Locale.US, "%02d:%02d", index / 2, if(index % 2 == 0) 0 else 30), null)
+                }
+            }
+
         }
 
     }
@@ -558,5 +572,64 @@ fun DaysOnlyCalendar(
             }
         }
 
+    }
+}
+
+@Composable
+fun TimeCommitment(
+    startTime: String,
+    commitment: CommitmentEntity?
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(96.dp)
+            .padding(bottom = 8.dp)
+            .drawBehind {
+                drawLine(
+                    color = Color.White,
+                    start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+            .background(if (commitment != null) MaterialTheme.colorScheme.onBackground else Color.Transparent)
+    ) {
+        Column(
+            modifier = Modifier
+                .width(96.dp)
+        ) {
+            Text(
+                text = startTime,
+                style = TextStyle(
+                    fontSize = 24.sp,
+                    color = if (commitment != null) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            if (commitment != null) {
+                val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                Text(
+                    text =  String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute),
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+        }
+        if (commitment != null) {
+            Text(
+                text =  commitment.title,
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSecondary
+                ),
+            )
+        }
     }
 }
