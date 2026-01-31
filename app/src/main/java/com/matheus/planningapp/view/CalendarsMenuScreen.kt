@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -39,16 +41,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.viewmodel.CalendarViewModel
+import kotlinx.datetime.Clock
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarsMenuScreen(
     onBackPressed: () -> Unit,
-    calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
-    val calendarEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -76,8 +76,7 @@ fun CalendarsMenuScreen(
         },
         content = { paddingValues ->
             CalendarsMenuContent(
-                modifier = Modifier.padding(paddingValues),
-                calendars = calendarEntities
+                modifier = Modifier.padding(paddingValues)
             )
         }
     )
@@ -87,8 +86,11 @@ fun CalendarsMenuScreen(
 @Composable
 fun CalendarsMenuContent(
     modifier: Modifier,
-    calendars: List<CalendarEntity>
+    calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
+    val calendarEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
+
+    var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var calendarName by remember { mutableStateOf("") }
     var calendarIsDefault by remember { mutableStateOf(false) }
 
@@ -144,11 +146,41 @@ fun CalendarsMenuContent(
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(
-                    onClick = { /* TODO: Create save/update calendar event */ }
+                    onClick = {
+                        if (selectedCalendar == null) {
+                            calendarViewModel.insertCalendar(
+                                CalendarEntity(
+                                    name = calendarName,
+                                    isDefault = calendarIsDefault,
+                                    createdAt = Clock.System.now(),
+                                    updatedAt = Clock.System.now()
+                                )
+                            )
+                            selectedCalendar = null
+                            calendarName = ""
+                            calendarIsDefault = false
+                        } else {
+                            /* TODO: Event to update calendar */
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Save",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        selectedCalendar = null
+                        calendarName = ""
+                        calendarIsDefault = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Cancel",
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -164,13 +196,14 @@ fun CalendarsMenuContent(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            calendars.forEach { calendar ->
+            calendarEntities.forEach { calendar ->
                 item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.onPrimary),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = calendar.name,
@@ -189,6 +222,7 @@ fun CalendarsMenuContent(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = "Default",
                                     tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(12.dp)
                                 )
                             } else {
                                 IconButton(
@@ -201,12 +235,26 @@ fun CalendarsMenuContent(
                                     )
                                 }
                             }
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(start = 16.dp)
-                            )
+                            IconButton(
+                                onClick = { /* TODO: Event to edit this calendar */ }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 16.dp)
+                                )
+                            }
+                            IconButton(
+                                onClick = { /* TODO: Event to delete this calendar  */ }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Delete",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 16.dp)
+                                )
+                            }
                         }
                     }
                 }

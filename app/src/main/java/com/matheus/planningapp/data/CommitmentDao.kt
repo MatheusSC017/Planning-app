@@ -14,12 +14,13 @@ interface CommitmentDao {
 
     @Query("""
         SELECT * FROM commitment
-        WHERE startDateTime >= :dayStart AND startDateTime < :dayEnd
+        WHERE startDateTime >= :dayStart AND startDateTime < :dayEnd AND calendar = :calendar
         ORDER BY startDateTime
     """)
     fun getCommitmentsForDay(
         dayStart: Instant,
-        dayEnd: Instant
+        dayEnd: Instant,
+        calendar: Int
     ): Flow<List<CommitmentEntity>>
 
     @Query("""

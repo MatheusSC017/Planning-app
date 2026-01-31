@@ -16,4 +16,5 @@ data class CalendarEntity (
     val isDefault: Boolean,
     val createdAt: Instant,
     val updatedAt: Instant
+    /* TODO: Automate create and update dates*/
 )

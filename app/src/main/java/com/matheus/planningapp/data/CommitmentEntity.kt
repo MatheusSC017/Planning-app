@@ -35,4 +35,5 @@ data class CommitmentEntity (
     val priority: Priority,
     val createdAt: Instant,
     val updatedAt: Instant
+    /* TODO: Automate create and update dates*/
 )

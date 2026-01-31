@@ -6,4 +6,5 @@ interface CalendarRepository {
     suspend fun insertCalendar(calendarEntity: CalendarEntity)
     fun getCalendars(): Flow<List<CalendarEntity>>
     suspend fun ensureDefaultCalendarExists()
+    suspend fun setAllDefaultAsFalse()
 }

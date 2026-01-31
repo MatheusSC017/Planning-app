@@ -31,6 +31,10 @@ class CalendarViewModel(
 
     fun insertCalendar(calendarEntity: CalendarEntity) {
         viewModelScope.launch {
+            if (calendarEntity.isDefault) {
+                calendarRepository.setAllDefaultAsFalse()
+            }
+
             calendarRepository.insertCalendar(calendarEntity)
         }
     }
@@ -84,8 +88,8 @@ class CalendarViewModel(
         return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
     }
 
-    fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant): Flow<List<CommitmentEntity>> {
-        return commitmentRepository.getCommitmentsForDay(dayStart, dayEnd)
+    fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Int): Flow<List<CommitmentEntity>> {
+        return commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar)
     }
 
 }

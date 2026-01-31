@@ -28,4 +28,8 @@ class CalendarRepositoryImpl(
         }
     }
 
+    override suspend fun setAllDefaultAsFalse() {
+        calendarDao.setAllDefaultAsFalse()
+    }
+
 }

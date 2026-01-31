@@ -300,13 +300,14 @@ fun CalendarContent(
     val endOfDay = remember(date) {
         date.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
     }
-    val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay).collectAsState(initial = emptyList())
+    val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
     var commitmentsLastIndex = remember(commitments) { 0 }
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(
+                top = 16.dp,
                 start = 16.dp,
                 bottom = 16.dp,
                 end = 16.dp
