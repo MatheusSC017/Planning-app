@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.matheus.planningapp.view.CalendarScreen
+import com.matheus.planningapp.view.CalendarsMenuScreen
 import com.matheus.planningapp.view.CommitmentScreen
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -26,6 +27,11 @@ fun AppNavigation () {
                 onNavigateToCommitment = { date, selectedCalendar ->
                     navHostController.navigate(
                         "${Screens.CommitmentFormScreen.route}/$selectedCalendar/${Json.encodeToString(date)}"
+                    )
+                },
+                onNavigateToCalendarsMenu = {
+                    navHostController.navigate(
+                        Screens.CalendarsMenuScreen.route
                     )
                 }
             )
@@ -50,6 +56,13 @@ fun AppNavigation () {
                 },
                 selectedCalendar = selectedCalendar,
                 instant = instant
+            )
+        }
+        composable(Screens.CalendarsMenuScreen.route) {
+            CalendarsMenuScreen(
+                onBackPressed = {
+                    navHostController.popBackStack()
+                }
             )
         }
     }

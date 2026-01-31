@@ -29,6 +29,12 @@ class CalendarViewModel(
         }
     }
 
+    fun insertCalendar(calendarEntity: CalendarEntity) {
+        viewModelScope.launch {
+            calendarRepository.insertCalendar(calendarEntity)
+        }
+    }
+
     val calendars: StateFlow<List<CalendarEntity>> =
         calendarRepository.getCalendars()
             .stateIn(

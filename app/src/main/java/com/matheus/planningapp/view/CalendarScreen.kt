@@ -86,6 +86,7 @@ import java.util.Locale
 @Composable
 fun CalendarScreen (
     onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    onNavigateToCalendarsMenu: () -> Unit,
     calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -120,6 +121,19 @@ fun CalendarScreen (
                 )
 
                 HorizontalDivider()
+
+                Text(
+                    text = "Calendars",
+                    style = TextStyle(
+                        fontSize = 36.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .clickable {
+                            onNavigateToCalendarsMenu()
+                        }
+                )
             }
         },
     ) {
@@ -172,7 +186,10 @@ fun PlanningTopAppBar(
                         .width(48.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
-                        .clickable { columnViewSelected = true }
+                        .clickable {
+                            /* TODO: Update commitments view to Column view */
+                            columnViewSelected = true
+                        }
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.grid_view),
@@ -183,7 +200,10 @@ fun PlanningTopAppBar(
                         .width(48.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
-                        .clickable { columnViewSelected = false }
+                        .clickable {
+                            /* TODO: Update commitments view to Grid view  */
+                            columnViewSelected = false
+                        }
                 )
             }
         },
@@ -269,15 +289,6 @@ fun CalendarContent(
     var selectedDay by remember { mutableIntStateOf(LocalDate.now().dayOfMonth) }
     var selectedMonth by remember { mutableIntStateOf(LocalDate.now().monthValue) }
     var selectedYear by remember { mutableIntStateOf(LocalDate.now().year) }
-    val tasks = mapOf(
-        1 to "Task 1",
-        7 to "Task 7",
-        8 to "Task 8",
-        13 to "Task 13",
-        15 to "Task 15",
-        18 to "Task 18",
-        24 to "Task 24",
-    )
 
     val zone = remember { ZoneId.systemDefault() }
     val date = remember(selectedYear, selectedMonth, selectedDay) {
@@ -580,6 +591,7 @@ fun TimeCommitment(
     startTime: String,
     commitment: CommitmentEntity?
 ) {
+    /* TODO: Add option to Add/Update commitment */
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
