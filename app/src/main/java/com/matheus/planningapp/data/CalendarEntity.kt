@@ -12,9 +12,9 @@ import kotlinx.datetime.Instant
 data class CalendarEntity (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val name: String,
-    val isDefault: Boolean,
+    var name: String,
+    var isDefault: Boolean,
     val createdAt: Instant,
-    val updatedAt: Instant
+    var updatedAt: Instant
     /* TODO: Automate create and update dates*/
 )

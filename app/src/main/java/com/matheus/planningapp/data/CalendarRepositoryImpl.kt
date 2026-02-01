@@ -11,6 +11,14 @@ class CalendarRepositoryImpl(
         calendarDao.insert(calendarEntity)
     }
 
+    override suspend fun updateCalendar(calendarEntity: CalendarEntity) {
+        calendarDao.update(calendarEntity)
+    }
+
+    override suspend fun deleteCalendar(calendarEntity: CalendarEntity) {
+        calendarDao.delete(calendarEntity)
+    }
+
     override fun getCalendars(): Flow<List<CalendarEntity>> {
         return calendarDao.getCalendars()
     }

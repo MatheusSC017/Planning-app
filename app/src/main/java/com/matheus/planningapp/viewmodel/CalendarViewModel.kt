@@ -39,6 +39,24 @@ class CalendarViewModel(
         }
     }
 
+    fun updateCalendar(calendarEntity: CalendarEntity) {
+        viewModelScope.launch {
+            if (calendarEntity.isDefault) {
+                calendarRepository.setAllDefaultAsFalse()
+            }
+
+            calendarRepository.updateCalendar(calendarEntity)
+        }
+    }
+
+    fun deleteCalendar(calendarEntity: CalendarEntity) {
+        viewModelScope.launch {
+            /* TODO: Check if this calendar is Default */
+
+            calendarRepository.deleteCalendar(calendarEntity)
+        }
+    }
+
     val calendars: StateFlow<List<CalendarEntity>> =
         calendarRepository.getCalendars()
             .stateIn(

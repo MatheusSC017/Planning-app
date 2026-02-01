@@ -147,7 +147,14 @@ fun CalendarsMenuContent(
             ) {
                 IconButton(
                     onClick = {
-                        if (selectedCalendar == null) {
+                        val calendar = selectedCalendar
+                        
+                        if (calendar != null) {
+                            calendar.name = calendarName
+                            calendar.isDefault = calendarIsDefault
+                            calendar.updatedAt = Clock.System.now()
+                            calendarViewModel.updateCalendar(calendar)
+                        } else {
                             calendarViewModel.insertCalendar(
                                 CalendarEntity(
                                     name = calendarName,
@@ -156,12 +163,10 @@ fun CalendarsMenuContent(
                                     updatedAt = Clock.System.now()
                                 )
                             )
-                            selectedCalendar = null
-                            calendarName = ""
-                            calendarIsDefault = false
-                        } else {
-                            /* TODO: Event to update calendar */
                         }
+                        selectedCalendar = null
+                        calendarName = ""
+                        calendarIsDefault = false
                     }
                 ) {
                     Icon(
@@ -226,7 +231,11 @@ fun CalendarsMenuContent(
                                 )
                             } else {
                                 IconButton(
-                                    onClick = { /* TODO: Event to turn this calendar as default */ }
+                                    onClick = {
+                                        calendar.isDefault = true
+                                        calendar.updatedAt = Clock.System.now()
+                                        calendarViewModel.updateCalendar(calendar)
+                                    }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.FavoriteBorder,
@@ -236,7 +245,11 @@ fun CalendarsMenuContent(
                                 }
                             }
                             IconButton(
-                                onClick = { /* TODO: Event to edit this calendar */ }
+                                onClick = {
+                                    selectedCalendar = calendar
+                                    calendarName = calendar.name
+                                    calendarIsDefault = calendar.isDefault
+                                }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
@@ -246,7 +259,10 @@ fun CalendarsMenuContent(
                                 )
                             }
                             IconButton(
-                                onClick = { /* TODO: Event to delete this calendar  */ }
+                                onClick = {
+                                    /* TODO: Create a message to confirm this action */
+                                    calendarViewModel.deleteCalendar(calendar)
+                                }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
