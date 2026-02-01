@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 
@@ -33,7 +34,6 @@ data class CommitmentEntity (
     val endDateTime: Instant,
     val allDay: Boolean,
     val priority: Priority,
-    val createdAt: Instant,
-    val updatedAt: Instant
-    /* TODO: Automate create and update dates*/
+    val createdAt: Instant = Clock.System.now(),
+    val updatedAt: Instant = Clock.System.now()
 )

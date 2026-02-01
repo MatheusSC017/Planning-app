@@ -158,9 +158,7 @@ fun CalendarsMenuContent(
                             calendarViewModel.insertCalendar(
                                 CalendarEntity(
                                     name = calendarName,
-                                    isDefault = calendarIsDefault,
-                                    createdAt = Clock.System.now(),
-                                    updatedAt = Clock.System.now()
+                                    isDefault = calendarIsDefault
                                 )
                             )
                         }

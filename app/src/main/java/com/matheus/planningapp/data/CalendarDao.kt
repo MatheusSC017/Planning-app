@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Clock
 
 @Dao
 interface CalendarDao {
@@ -15,6 +16,11 @@ interface CalendarDao {
 
     @Update
     suspend fun update(calendarEntity: CalendarEntity)
+
+    suspend fun updateWithDateTime(calendarEntity: CalendarEntity) {
+        calendarEntity.updatedAt = Clock.System.now()
+        update(calendarEntity)
+    }
 
     @Delete
     suspend fun delete(calendarEntity: CalendarEntity)

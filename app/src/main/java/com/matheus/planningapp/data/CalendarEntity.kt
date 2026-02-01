@@ -3,7 +3,9 @@ package com.matheus.planningapp.data
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+
 
 @Entity(
     tableName = "Calendar",
@@ -14,7 +16,6 @@ data class CalendarEntity (
     val id: Int = 0,
     var name: String,
     var isDefault: Boolean,
-    val createdAt: Instant,
-    var updatedAt: Instant
-    /* TODO: Automate create and update dates*/
+    val createdAt: Instant = Clock.System.now(),
+    var updatedAt: Instant = Clock.System.now()
 )

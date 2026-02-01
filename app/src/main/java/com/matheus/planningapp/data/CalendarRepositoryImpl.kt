@@ -12,7 +12,7 @@ class CalendarRepositoryImpl(
     }
 
     override suspend fun updateCalendar(calendarEntity: CalendarEntity) {
-        calendarDao.update(calendarEntity)
+        calendarDao.updateWithDateTime(calendarEntity)
     }
 
     override suspend fun deleteCalendar(calendarEntity: CalendarEntity) {
@@ -28,9 +28,7 @@ class CalendarRepositoryImpl(
             calendarDao.insert(
                 CalendarEntity(
                     name = "Default",
-                    isDefault = true,
-                    createdAt = Clock.System.now(),
-                    updatedAt = Clock.System.now()
+                    isDefault = true
                 )
             )
         }
