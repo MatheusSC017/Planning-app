@@ -11,8 +11,8 @@ import kotlinx.datetime.Clock
 
 @Dao
 interface CalendarDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(calendarEntity: CalendarEntity)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(calendarEntity: CalendarEntity): Long
 
     @Update
     suspend fun update(calendarEntity: CalendarEntity)

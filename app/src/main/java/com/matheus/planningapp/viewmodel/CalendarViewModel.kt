@@ -1,12 +1,13 @@
 package com.matheus.planningapp.viewmodel
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CalendarRepository
 import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.CommitmentRepository
-import com.matheus.planningapp.ui.theme.CommitmentUiEvent
+import com.matheus.planningapp.ui.theme.DatabaseUiEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +21,7 @@ class CalendarViewModel(
     private val calendarRepository: CalendarRepository,
     private val commitmentRepository: CommitmentRepository
 ): ViewModel() {
-    private val _events = MutableSharedFlow<CommitmentUiEvent>()
+    private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
 
     init {
@@ -31,11 +32,20 @@ class CalendarViewModel(
 
     fun insertCalendar(calendarEntity: CalendarEntity) {
         viewModelScope.launch {
-            if (calendarEntity.isDefault) {
-                calendarRepository.setAllDefaultAsFalse()
-            }
+            try {
+                if (calendarEntity.isDefault) {
+                    calendarRepository.setAllDefaultAsFalse()
+                }
 
-            calendarRepository.insertCalendar(calendarEntity)
+                calendarRepository.insertCalendar(calendarEntity)
+
+                _events.emit(DatabaseUiEvent.Saved)
+            } catch (e: SQLiteConstraintException) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("Calendar name must be unique")
+                )
+                return@launch
+            }
         }
     }
 
@@ -51,9 +61,16 @@ class CalendarViewModel(
 
     fun deleteCalendar(calendarEntity: CalendarEntity) {
         viewModelScope.launch {
-            /* TODO: Check if this calendar is Default */
+            if (calendarEntity.isDefault) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("The default calendar cannot be deleted.")
+                )
+                return@launch
+            }
 
             calendarRepository.deleteCalendar(calendarEntity)
+
+            _events.emit(DatabaseUiEvent.Saved)
         }
     }
 
@@ -70,7 +87,7 @@ class CalendarViewModel(
             // Check if start time is lesser than end time
             if (!verifyStartAndEndTime(commitmentEntity.startDateTime, commitmentEntity.endDateTime)) {
                 _events.emit(
-                    CommitmentUiEvent.ShowError("Start time must be lesser than End time")
+                    DatabaseUiEvent.ShowError("Start time must be lesser than End time")
                 )
                 return@launch
             }
@@ -78,7 +95,7 @@ class CalendarViewModel(
             // Check if title is not empty
             if (commitmentEntity.title.isEmpty()) {
                 _events.emit(
-                    CommitmentUiEvent.ShowError("Title cannot be empty")
+                    DatabaseUiEvent.ShowError("Title cannot be empty")
                 )
                 return@launch
             }
@@ -91,14 +108,14 @@ class CalendarViewModel(
 
             if(conflictsNumbers > 0) {
                 _events.emit(
-                    CommitmentUiEvent.ShowError("There is a conflict with other commitments")
+                    DatabaseUiEvent.ShowError("There is a conflict with other commitments")
                 )
                 return@launch
             }
 
             commitmentRepository.insertCommitment(commitmentEntity)
 
-            _events.emit(CommitmentUiEvent.Saved)
+            _events.emit(DatabaseUiEvent.Saved)
         }
     }
 

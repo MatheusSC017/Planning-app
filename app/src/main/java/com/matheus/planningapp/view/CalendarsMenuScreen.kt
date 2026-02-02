@@ -25,22 +25,31 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.CalendarEntity
+import com.matheus.planningapp.ui.theme.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.CalendarViewModel
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.androidx.compose.koinViewModel
 
@@ -48,8 +57,32 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CalendarsMenuScreen(
     onBackPressed: () -> Unit,
+    calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            calendarViewModel.events.collect { event ->
+                when (event) {
+                    is DatabaseUiEvent.ShowError -> {
+                        scope.launch {
+                            snackBarHostState.showSnackbar(event.message)
+                        }
+                    }
+
+                    DatabaseUiEvent.Saved -> {
+                        snackBarHostState.showSnackbar("Saved")
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -76,7 +109,8 @@ fun CalendarsMenuScreen(
         },
         content = { paddingValues ->
             CalendarsMenuContent(
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.padding(paddingValues),
+                calendarViewModel = calendarViewModel
             )
         }
     )
@@ -86,7 +120,7 @@ fun CalendarsMenuScreen(
 @Composable
 fun CalendarsMenuContent(
     modifier: Modifier,
-    calendarViewModel: CalendarViewModel = koinViewModel()
+    calendarViewModel: CalendarViewModel
 ) {
     val calendarEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
 

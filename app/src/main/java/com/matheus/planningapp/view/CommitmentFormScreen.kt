@@ -21,7 +21,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,9 +55,8 @@ import com.matheus.planningapp.helper.parseTime
 import com.matheus.planningapp.helper.snapToHalfHour
 import com.matheus.planningapp.helper.step30
 import com.matheus.planningapp.helper.sumInstantWithLocalTime
-import com.matheus.planningapp.ui.theme.CommitmentUiEvent
+import com.matheus.planningapp.ui.theme.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.CalendarViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -87,13 +85,13 @@ fun CommitmentScreen(
         lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
             calendarViewModel.events.collect { event ->
                 when (event) {
-                    is CommitmentUiEvent.ShowError -> {
+                    is DatabaseUiEvent.ShowError -> {
                         scope.launch {
                             snackBarHostState.showSnackbar(event.message)
                         }
                     }
 
-                    CommitmentUiEvent.Saved -> {
+                    DatabaseUiEvent.Saved -> {
                         onBackPressed()
                         scope.launch {
                             snackBarHostState.showSnackbar("Saved")

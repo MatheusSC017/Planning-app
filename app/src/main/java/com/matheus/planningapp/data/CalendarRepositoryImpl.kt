@@ -7,8 +7,8 @@ import kotlinx.datetime.Instant
 class CalendarRepositoryImpl(
     private val calendarDao: CalendarDao
 ): CalendarRepository {
-    override suspend fun insertCalendar(calendarEntity: CalendarEntity) {
-        calendarDao.insert(calendarEntity)
+    override suspend fun insertCalendar(calendarEntity: CalendarEntity): Long {
+        return calendarDao.insert(calendarEntity)
     }
 
     override suspend fun updateCalendar(calendarEntity: CalendarEntity) {
