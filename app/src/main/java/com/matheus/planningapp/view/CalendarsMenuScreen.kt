@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.ui.theme.DatabaseUiEvent
+import com.matheus.planningapp.view.components.ConfirmationDialog
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -122,11 +123,27 @@ fun CalendarsMenuContent(
     modifier: Modifier,
     calendarViewModel: CalendarViewModel
 ) {
+    var selectedCalendarToDelete by remember { mutableStateOf<CalendarEntity?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
+
     val calendarEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var calendarName by remember { mutableStateOf("") }
     var calendarIsDefault by remember { mutableStateOf(false) }
+
+    ConfirmationDialog(
+        item = selectedCalendarToDelete,
+        showDialog = showDialog,
+        title = "Delete calendar",
+        message = "Are you sure you want to delete this calendar?",
+        onConfirm = { calendar: CalendarEntity ->
+            calendarViewModel.deleteCalendar(calendar)
+        },
+        onDismiss = {
+            showDialog = false
+        }
+    )
 
     Column(
         modifier = modifier
@@ -292,8 +309,8 @@ fun CalendarsMenuContent(
                             }
                             IconButton(
                                 onClick = {
-                                    /* TODO: Create a message to confirm this action */
-                                    calendarViewModel.deleteCalendar(calendar)
+                                    selectedCalendarToDelete = calendar
+                                    showDialog = true
                                 }
                             ) {
                                 Icon(
