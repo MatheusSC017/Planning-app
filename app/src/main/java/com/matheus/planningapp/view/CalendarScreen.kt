@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -108,7 +109,7 @@ fun CalendarScreen (
                 Text(
                     text = "Planning your life",
                     style = TextStyle(
-                        fontSize = 36.sp,
+                        fontSize = 40.sp,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     ),
@@ -122,18 +123,25 @@ fun CalendarScreen (
 
                 HorizontalDivider()
 
-                Text(
-                    text = "Calendars",
-                    style = TextStyle(
-                        fontSize = 36.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    ),
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(16.dp)
-                        .clickable {
-                            onNavigateToCalendarsMenu()
-                        }
-                )
+                ) {
+                    Text(
+                        text = "Calendars",
+                        style = TextStyle(
+                            fontSize = 32.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                onNavigateToCalendarsMenu()
+                            }
+                    )
+                }
+
             }
         },
     ) {
@@ -182,8 +190,8 @@ fun PlanningTopAppBar(
                     contentDescription = "Column view",
                     tint = if (columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .height(32.dp)
-                        .width(48.dp)
+                        .height(40.dp)
+                        .width(40.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
@@ -191,13 +199,16 @@ fun PlanningTopAppBar(
                             columnViewSelected = true
                         }
                 )
+                Spacer(
+                    modifier = Modifier.width(16.dp)
+                )
                 Icon(
                     painter = painterResource(id = R.drawable.grid_view),
                     contentDescription = "Grid view",
                     tint = if (!columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .height(32.dp)
-                        .width(48.dp)
+                        .height(40.dp)
+                        .width(40.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
@@ -223,7 +234,7 @@ fun PlanningTopAppBar(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         .width(200.dp),
                     textStyle = TextStyle(
-                        fontSize = 24.sp
+                        fontSize = 16.sp
                     ),
                     colors = ExposedDropdownMenuDefaults.textFieldColors(
                         focusedContainerColor = Color.Transparent,
@@ -414,25 +425,10 @@ fun CalendarContent(
                                     .size(64.dp)
                             )
                         }
-
-                        IconButton(
-                            onClick = { /* Todo: Update calendar commitments */ }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Refresh Commitments",
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                modifier = Modifier
-                                    .size(64.dp)
-                            )
-                        }
                     }
                 }
-
             }
-
         }
-
 
         if (commitments.isEmpty()) {
             items(48) { index ->
