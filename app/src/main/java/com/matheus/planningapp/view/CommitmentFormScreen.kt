@@ -65,6 +65,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,10 +149,12 @@ fun CommitmentForm(
     instant: Instant,
     calendarViewModel: CalendarViewModel
 ) {
+    val localTime: LocalTime = instant.toLocalDateTime(TimeZone.currentSystemDefault()).time
+
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var selectedStartTime by remember { mutableStateOf(LocalTime(hour = 0, minute = 0)) }
-    var selectedEndTime by remember { mutableStateOf(LocalTime(hour = 0, minute = 30)) }
+    var selectedStartTime by remember { mutableStateOf(localTime) }
+    var selectedEndTime by remember { mutableStateOf(localTime.step30(1)) }
     var selectedPriority by remember { mutableStateOf(Priority.LOW) }
 
     var expandedPriorityDropDown by remember { mutableStateOf(false) }

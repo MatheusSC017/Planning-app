@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
@@ -69,6 +70,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CommitmentEntity
+import com.matheus.planningapp.helper.snapToHalfHour
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -82,6 +84,8 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -409,30 +413,41 @@ fun CalendarContent(
                             )
                     )
 
-                    Row {
-                        IconButton(
-                            onClick = {
-                                if (selectedCalendar != null) {
-                                    onNavigateToCommitment(startOfDay, selectedCalendar.id)
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add new Commitment",
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                modifier = Modifier
-                                    .size(64.dp)
-                            )
-                        }
-                    }
+//                    Row {
+//                        IconButton(
+//                            onClick = {
+//                                if (selectedCalendar != null) {
+//                                    onNavigateToCommitment(startOfDay, selectedCalendar.id)
+//                                }
+//                            }
+//                        ) {
+//                            Icon(
+//                                imageVector = Icons.Default.Add,
+//                                contentDescription = "Add new Commitment",
+//                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+//                                modifier = Modifier
+//                                    .size(64.dp)
+//                            )
+//                        }
+//                    }
                 }
             }
         }
 
         if (commitments.isEmpty()) {
             items(48) { index ->
-                TimeCommitment(String.format(Locale.US, "%02d:%02d", index / 2, if(index % 2 == 0) 0 else 30), null)
+                val hours = index / 2
+                val minutes = (index % 2) * 30
+                TimeCommitment(
+                    startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                    commitment = null,
+                    onAddOrUpdateCommitment = {
+                        if (selectedCalendar != null) {
+                            val datetime = startOfDay + hours.hours + minutes.minutes
+                            onNavigateToCommitment(datetime, selectedCalendar.id)
+                        }
+                    }
+                )
             }
         } else {
             val timesList = List(48) { it }
@@ -444,20 +459,46 @@ fun CalendarContent(
 
                 if (commitmentsLastIndex < commitmentStartIndex) {
                     items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
-                        TimeCommitment(String.format(Locale.US, "%02d:%02d", index / 2, if(index % 2 == 0) 0 else 30), null)
+                        val hours = index / 2
+                        val minutes = (index % 2) * 30
+                        TimeCommitment(
+                            startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                            commitment = null,
+                            onAddOrUpdateCommitment = {
+                                if (selectedCalendar != null) {
+                                    val datetime = startOfDay + hours.hours + minutes.minutes
+                                    onNavigateToCommitment(datetime, selectedCalendar.id)
+                                }
+                            }
+                        )
                     }
                 }
 
                 commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0) + 1
 
                 item {
-                    TimeCommitment(commitmentStartTime, commitment)
+                    TimeCommitment(
+                        startTime = commitmentStartTime,
+                        commitment = commitment,
+                        onAddOrUpdateCommitment = { /* TODO: Update commitment*/ }
+                    )
                 }
             }
 
             if (commitmentsLastIndex < 48) {
                 items(timesList.subList(commitmentsLastIndex, 48)) { index ->
-                    TimeCommitment(String.format(Locale.US, "%02d:%02d", index / 2, if(index % 2 == 0) 0 else 30), null)
+                    val hours = index / 2
+                    val minutes = (index % 2) * 30
+                    TimeCommitment(
+                        startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                        commitment = null,
+                        onAddOrUpdateCommitment = {
+                            if (selectedCalendar != null) {
+                                val datetime = startOfDay + hours.hours + minutes.minutes
+                                onNavigateToCommitment(datetime, selectedCalendar.id)
+                            }
+                        }
+                    )
                 }
             }
 
@@ -586,7 +627,8 @@ fun DaysOnlyCalendar(
 @Composable
 fun TimeCommitment(
     startTime: String,
-    commitment: CommitmentEntity?
+    commitment: CommitmentEntity?,
+    onAddOrUpdateCommitment: () -> Unit
 ) {
     /* TODO: Add option to Add/Update commitment */
     Row(
@@ -603,42 +645,68 @@ fun TimeCommitment(
                     strokeWidth = 1.dp.toPx()
                 )
             }
-            .background(if (commitment != null) MaterialTheme.colorScheme.onBackground else Color.Transparent)
+            .background(if (commitment != null) MaterialTheme.colorScheme.onBackground else Color.Transparent),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            modifier = Modifier
-                .width(96.dp)
+        Row (
+            verticalAlignment =  Alignment.CenterVertically
         ) {
-            Text(
-                text = startTime,
-                style = TextStyle(
-                    fontSize = 24.sp,
-                    color = if (commitment != null) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                ),
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-            )
-            if (commitment != null) {
-                val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                    .width(96.dp)
+                    .padding(start = 8.dp),
+            ) {
                 Text(
-                    text =  String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute),
+                    text = startTime,
                     style = TextStyle(
                         fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = if (commitment != null) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
                 )
+                if (commitment != null) {
+                    val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                    Text(
+                        text =  String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute),
+                        style = TextStyle(
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.onSecondary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+            }
+
+
+
+            if (commitment != null) {
+                Text(
+                    text =  commitment.title,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    ),
+                )
             }
         }
-        if (commitment != null) {
-            Text(
-                text =  commitment.title,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSecondary
-                ),
+
+        IconButton(
+            onClick = {
+                /* TODO: Add new commitment */
+                onAddOrUpdateCommitment()
+            }
+        ) {
+            Icon(
+                imageVector = if (commitment == null) Icons.Default.Add else Icons.Default.Edit,
+                contentDescription = "Add new Commitment",
+                tint = if (commitment == null) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                modifier = Modifier
+                    .size(64.dp)
             )
         }
+
     }
 }
