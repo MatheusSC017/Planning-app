@@ -52,17 +52,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.Priority
-import com.matheus.planningapp.helper.parseTime
-import com.matheus.planningapp.helper.snapToHalfHour
-import com.matheus.planningapp.helper.step30
-import com.matheus.planningapp.helper.sumInstantWithLocalTime
 import com.matheus.planningapp.ui.theme.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.CommitmentFormMode
+import com.matheus.planningapp.viewmodel.CommitmentFormState
 import com.matheus.planningapp.viewmodel.CommitmentFormViewModel
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -70,6 +65,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,8 +156,7 @@ fun CommitmentScreen(
                     CommitmentForm(
                         modifier = Modifier
                             .padding(paddingValues),
-                        selectedCalendar = uiState.calendarId,
-                        instant = uiState.startInstant,
+                        uiState = uiState,
                         commitmentFormViewModel = commitmentFormViewModel
                     )
                 }
@@ -175,17 +170,13 @@ fun CommitmentScreen(
 @Composable
 fun CommitmentForm(
     modifier: Modifier,
-    selectedCalendar: Int,
-    instant: Instant,
+    uiState: CommitmentFormState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
-    val localTime: LocalTime = instant.toLocalDateTime(TimeZone.currentSystemDefault()).time
+//    val localTime: LocalTime = uiState.startInstant.toLocalDateTime(TimeZone.currentSystemDefault()).time
 
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var selectedStartTime by remember { mutableStateOf(localTime) }
-    var selectedEndTime by remember { mutableStateOf(localTime.step30(1)) }
-    var selectedPriority by remember { mutableStateOf(Priority.LOW) }
+//    var selectedStartTime by remember { mutableStateOf(localTime) }
+//    var selectedEndTime by remember { mutableStateOf(localTime.step30(1)) }
 
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
 
@@ -198,8 +189,8 @@ fun CommitmentForm(
     ) {
         item {
             TextField(
-                value = title,
-                onValueChange = { title = it },
+                value = uiState.title,
+                onValueChange = { commitmentFormViewModel.onTitleChange(it) },
                 label = {
                     Text(
                         text = "Title",
@@ -221,8 +212,8 @@ fun CommitmentForm(
 
         item {
             TextField(
-                value = description,
-                onValueChange = { description = it},
+                value = uiState.description,
+                onValueChange = { commitmentFormViewModel.onDescriptionChange(it) },
                 label = {
                     Text(
                         text = "Description",
@@ -251,8 +242,8 @@ fun CommitmentForm(
             )
 
             TimeStepperField(
-                time = selectedStartTime,
-                onTimeChange = { selectedStartTime = it }
+                time = uiState.startInstant,
+                onTimeChange = { commitmentFormViewModel.onStartInstantChange(it) }
             )
         }
 
@@ -266,8 +257,8 @@ fun CommitmentForm(
             )
 
             TimeStepperField(
-                time = selectedEndTime,
-                onTimeChange = { selectedEndTime = it }
+                time = uiState.endInstant,
+                onTimeChange = { commitmentFormViewModel.onEndInstantChange(it) }
             )
         }
 
@@ -285,7 +276,7 @@ fun CommitmentForm(
                 onExpandedChange = { expandedPriorityDropDown = !expandedPriorityDropDown }
             ) {
                 TextField(
-                    value = selectedPriority.name,
+                    value = uiState.priority.name,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -324,7 +315,7 @@ fun CommitmentForm(
                                 )
                             },
                             onClick = {
-                                selectedPriority = priority
+                                commitmentFormViewModel.onPriorityChange(priority)
                                 expandedPriorityDropDown = false
                             }
                         )
@@ -344,18 +335,7 @@ fun CommitmentForm(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     onClick = {
-                        val commitmentEntity = CommitmentEntity(
-                            calendar = selectedCalendar,
-                            title = title,
-                            description = description,
-                            startDateTime = sumInstantWithLocalTime(instant, selectedStartTime),
-                            endDateTime =  sumInstantWithLocalTime(instant, selectedEndTime),
-                            allDay = false,
-                            priority = selectedPriority,
-                            createdAt = Clock.System.now(),
-                            updatedAt = Clock.System.now()
-                        )
-                        commitmentFormViewModel.insertCommitment(commitmentEntity)
+                        commitmentFormViewModel.insertCommitment()
                     }
                 ) {
                     Text(
@@ -372,20 +352,18 @@ fun CommitmentForm(
 
 @Composable
 fun TimeStepperField(
-    time: LocalTime,
-    onTimeChange: (LocalTime) -> Unit
+    time: Instant,
+    onTimeChange: (Instant) -> Unit
 ) {
+    val localTime: LocalTime = time.toLocalDateTime(TimeZone.currentSystemDefault()).time
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = "%02d:%02d".format(time.hour, time.minute),
-            onValueChange = { input ->
-                parseTime(input)?.let {
-                    onTimeChange(snapToHalfHour(it))
-                }
-            },
+            value = "%02d:%02d".format(localTime.hour, localTime.minute),
+            onValueChange = {},
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
             ),
@@ -400,7 +378,7 @@ fun TimeStepperField(
         Column {
             IconButton(
                 onClick = {
-                    onTimeChange(time.step30(+1))
+                    onTimeChange(time + 30.minutes)
                 }
             ) {
                 Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Increase")
@@ -408,7 +386,7 @@ fun TimeStepperField(
 
             IconButton(
                 onClick = {
-                    onTimeChange(time.step30(-1))
+                    onTimeChange(time - 30.minutes)
                 }
             ) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Decrease")
