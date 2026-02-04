@@ -1,6 +1,5 @@
 package com.matheus.planningapp.view
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,8 +25,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,7 +67,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CommitmentEntity
-import com.matheus.planningapp.helper.snapToHalfHour
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -90,7 +86,8 @@ import kotlin.time.Duration.Companion.minutes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen (
-    onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     onNavigateToCalendarsMenu: () -> Unit,
     calendarViewModel: CalendarViewModel = koinViewModel()
 ) {
@@ -164,7 +161,7 @@ fun CalendarScreen (
                     modifier = Modifier
                         .padding(paddingValues),
                     selectedCalendar = selectedCalendar,
-                    onNavigateToCommitment = onNavigateToCommitment,
+                    onNavigateToAddCommitment = onNavigateToAddCommitment,
                     calendarViewModel = calendarViewModel
                 )
             }
@@ -294,7 +291,7 @@ fun PlanningTopAppBar(
 fun CalendarContent(
     modifier: Modifier,
     selectedCalendar: CalendarEntity?,
-    onNavigateToCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     calendarViewModel: CalendarViewModel
 ) {
     val months = listOf(
@@ -412,24 +409,6 @@ fun CalendarContent(
                                 bottom = 16.dp
                             )
                     )
-
-//                    Row {
-//                        IconButton(
-//                            onClick = {
-//                                if (selectedCalendar != null) {
-//                                    onNavigateToCommitment(startOfDay, selectedCalendar.id)
-//                                }
-//                            }
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.Add,
-//                                contentDescription = "Add new Commitment",
-//                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-//                                modifier = Modifier
-//                                    .size(64.dp)
-//                            )
-//                        }
-//                    }
                 }
             }
         }
@@ -444,7 +423,7 @@ fun CalendarContent(
                     onAddOrUpdateCommitment = {
                         if (selectedCalendar != null) {
                             val datetime = startOfDay + hours.hours + minutes.minutes
-                            onNavigateToCommitment(datetime, selectedCalendar.id)
+                            onNavigateToAddCommitment(datetime, selectedCalendar.id)
                         }
                     }
                 )
@@ -467,7 +446,7 @@ fun CalendarContent(
                             onAddOrUpdateCommitment = {
                                 if (selectedCalendar != null) {
                                     val datetime = startOfDay + hours.hours + minutes.minutes
-                                    onNavigateToCommitment(datetime, selectedCalendar.id)
+                                    onNavigateToAddCommitment(datetime, selectedCalendar.id)
                                 }
                             }
                         )
@@ -480,7 +459,9 @@ fun CalendarContent(
                     TimeCommitment(
                         startTime = commitmentStartTime,
                         commitment = commitment,
-                        onAddOrUpdateCommitment = { /* TODO: Update commitment*/ }
+                        onAddOrUpdateCommitment = {
+                            /* TODO: Update commitment*/
+                        }
                     )
                 }
             }
@@ -495,15 +476,13 @@ fun CalendarContent(
                         onAddOrUpdateCommitment = {
                             if (selectedCalendar != null) {
                                 val datetime = startOfDay + hours.hours + minutes.minutes
-                                onNavigateToCommitment(datetime, selectedCalendar.id)
+                                onNavigateToAddCommitment(datetime, selectedCalendar.id)
                             }
                         }
                     )
                 }
             }
-
         }
-
     }
 }
 
@@ -630,7 +609,6 @@ fun TimeCommitment(
     commitment: CommitmentEntity?,
     onAddOrUpdateCommitment: () -> Unit
 ) {
-    /* TODO: Add option to Add/Update commitment */
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -694,7 +672,6 @@ fun TimeCommitment(
 
         IconButton(
             onClick = {
-                /* TODO: Add new commitment */
                 onAddOrUpdateCommitment()
             }
         ) {

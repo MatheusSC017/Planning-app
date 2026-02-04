@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.matheus.planningapp.view.CalendarScreen
 import com.matheus.planningapp.view.CalendarsMenuScreen
+import com.matheus.planningapp.viewmodel.CommitmentFormMode
 import com.matheus.planningapp.view.CommitmentScreen
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -24,9 +25,19 @@ fun AppNavigation () {
     ) {
         composable(Screens.CalendarScreen.route) {
             CalendarScreen(
-                onNavigateToCommitment = { date, selectedCalendar ->
+                onNavigateToAddCommitment = { datetimeInstant, selectedCalendar ->
+                    val payload = Json.encodeToString(CreateCommitmentPayload(
+                        calendarId = selectedCalendar,
+                        datetimeInstant = datetimeInstant
+                    ))
+
                     navHostController.navigate(
-                        "${Screens.CommitmentFormScreen.route}/$selectedCalendar/${Json.encodeToString(date)}"
+                        "${Screens.CommitmentFormScreen.route}/create/$payload"
+                    )
+                },
+                onNavigateToUpdateCommitment = { commitmentId ->
+                    navHostController.navigate(
+                        "${Screens.CommitmentFormScreen.route}/edit/$commitmentId"
                     )
                 },
                 onNavigateToCalendarsMenu = {
@@ -37,26 +48,40 @@ fun AppNavigation () {
             )
         }
         composable(
-            route = "${Screens.CommitmentFormScreen.route}/{selectedCalendar}/{date}",
+            route = "${Screens.CommitmentFormScreen.route}/{mode}/{payload}",
             arguments = listOf(
-                navArgument("date") {
-                    type = NavType.StringType
-                }
+                navArgument("mode") { type = NavType.StringType },
+                navArgument("payload") { type = NavType.StringType }
             )
-        ) {
-            val selectedCalendar = it.arguments?.getString("selectedCalendar")?.toInt()
-            val date = it.arguments?.getString("date")
-            requireNotNull(selectedCalendar)
-            requireNotNull(date)
+        ) { backStackEntry ->
 
-            val instant = Json.decodeFromString<Instant>(date)
+            val modeArg = backStackEntry.arguments?.getString("mode")!!
+            val payloadArg = backStackEntry.arguments?.getString("payload")!!
+
+            val mode = when (modeArg) {
+                "create" -> {
+                    val payloadData = Json.decodeFromString<CreateCommitmentPayload>(payloadArg)
+
+                    CommitmentFormMode.Create(
+                        calendarId = payloadData.calendarId,
+                        initialInstant = payloadData.datetimeInstant
+                    )
+                }
+                "edit" -> {
+                    CommitmentFormMode.Edit(
+                        commitmentId = payloadArg.toInt()
+                    )
+                }
+                else -> error("Invalid mode")
+            }
+
             CommitmentScreen(
                 onBackPressed = {
                     navHostController.popBackStack()
                 },
-                selectedCalendar = selectedCalendar,
-                instant = instant
+                commitmentFormMode = mode
             )
+
         }
         composable(Screens.CalendarsMenuScreen.route) {
             CalendarsMenuScreen(

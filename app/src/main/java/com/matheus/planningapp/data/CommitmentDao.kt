@@ -12,6 +12,9 @@ interface CommitmentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(commitmentEntity: CommitmentEntity)
 
+    @Query("SELECT * FROM commitment WHERE id = :commitmentId")
+    fun getCommitment(commitmentId: Int): CommitmentEntity
+
     @Query("""
         SELECT * FROM commitment
         WHERE startDateTime >= :dayStart AND startDateTime < :dayEnd AND calendar = :calendar

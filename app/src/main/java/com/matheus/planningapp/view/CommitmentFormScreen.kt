@@ -2,6 +2,7 @@ package com.matheus.planningapp.view
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -34,6 +36,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +59,8 @@ import com.matheus.planningapp.helper.snapToHalfHour
 import com.matheus.planningapp.helper.step30
 import com.matheus.planningapp.helper.sumInstantWithLocalTime
 import com.matheus.planningapp.ui.theme.DatabaseUiEvent
-import com.matheus.planningapp.viewmodel.CalendarViewModel
+import com.matheus.planningapp.viewmodel.CommitmentFormMode
+import com.matheus.planningapp.viewmodel.CommitmentFormViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -65,26 +69,28 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
-import kotlin.time.Duration.Companion.minutes
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommitmentScreen(
     onBackPressed: () -> Unit,
-    selectedCalendar: Int,
-    instant: Instant,
-    calendarViewModel: CalendarViewModel = koinViewModel()
+    commitmentFormMode: CommitmentFormMode
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val commitmentFormViewModel: CommitmentFormViewModel = koinViewModel(
+        parameters = { parametersOf(commitmentFormMode) }
+    )
+    val uiState by commitmentFormViewModel.uiState.collectAsState()
 
+    val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    val localDate: LocalDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val localDate: LocalDate = uiState.startInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     LaunchedEffect(Unit) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            calendarViewModel.events.collect { event ->
+            commitmentFormViewModel.events.collect { event ->
                 when (event) {
                     is DatabaseUiEvent.ShowError -> {
                         scope.launch {
@@ -108,13 +114,19 @@ fun CommitmentScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "%02d/%02d/%04d".format(localDate.dayOfMonth, localDate.monthNumber, localDate.year),
-                        style = TextStyle(
-                            fontSize = 36.sp,
-                            color = MaterialTheme.colorScheme.primary
+                    if (!uiState.isLoading) {
+                        Text(
+                            text = "%02d/%02d/%04d".format(
+                                localDate.dayOfMonth,
+                                localDate.monthNumber,
+                                localDate.year
+                            ),
+                            style = TextStyle(
+                                fontSize = 36.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         )
-                    )
+                    }
                 },
                 actions = {
                     IconButton (
@@ -130,13 +142,31 @@ fun CommitmentScreen(
             )
         },
         content = { paddingValues ->
-            CommitmentForm(
-                modifier = Modifier
-                    .padding(paddingValues),
-                selectedCalendar = selectedCalendar,
-                instant = instant,
-                calendarViewModel = calendarViewModel
-            )
+
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+
+                else -> {
+                    CommitmentForm(
+                        modifier = Modifier
+                            .padding(paddingValues),
+                        selectedCalendar = uiState.calendarId,
+                        instant = uiState.startInstant,
+                        commitmentFormViewModel = commitmentFormViewModel
+                    )
+                }
+            }
+
         }
     )
 }
@@ -147,7 +177,7 @@ fun CommitmentForm(
     modifier: Modifier,
     selectedCalendar: Int,
     instant: Instant,
-    calendarViewModel: CalendarViewModel
+    commitmentFormViewModel: CommitmentFormViewModel
 ) {
     val localTime: LocalTime = instant.toLocalDateTime(TimeZone.currentSystemDefault()).time
 
@@ -325,7 +355,7 @@ fun CommitmentForm(
                             createdAt = Clock.System.now(),
                             updatedAt = Clock.System.now()
                         )
-                        calendarViewModel.insertCommitment(commitmentEntity)
+                        commitmentFormViewModel.insertCommitment(commitmentEntity)
                     }
                 ) {
                     Text(
