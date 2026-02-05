@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
@@ -12,8 +13,11 @@ interface CommitmentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(commitmentEntity: CommitmentEntity)
 
+    @Update
+    suspend fun update(commitmentEntity: CommitmentEntity)
+
     @Query("SELECT * FROM commitment WHERE id = :commitmentId")
-    fun getCommitment(commitmentId: Int): CommitmentEntity
+    suspend fun getCommitment(commitmentId: Int): CommitmentEntity?
 
     @Query("""
         SELECT * FROM commitment
@@ -30,11 +34,13 @@ interface CommitmentDao {
         SELECT COUNT(*) FROM commitment 
         WHERE calendar = :calendarId AND
         startDateTime < :endDateTime AND
-        endDateTime > :startDateTime
+        endDateTime > :startDateTime AND
+        (:commitmentId IS NULL OR id != :commitmentId)
     """)
     suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,
-        calendarId: Int
+        calendarId: Int,
+        commitmentId: Int? = null
     ): Int
 }

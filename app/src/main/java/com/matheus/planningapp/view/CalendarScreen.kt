@@ -162,6 +162,7 @@ fun CalendarScreen (
                         .padding(paddingValues),
                     selectedCalendar = selectedCalendar,
                     onNavigateToAddCommitment = onNavigateToAddCommitment,
+                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                     calendarViewModel = calendarViewModel
                 )
             }
@@ -292,6 +293,7 @@ fun CalendarContent(
     modifier: Modifier,
     selectedCalendar: CalendarEntity?,
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     calendarViewModel: CalendarViewModel
 ) {
     val months = listOf(
@@ -460,7 +462,7 @@ fun CalendarContent(
                         startTime = commitmentStartTime,
                         commitment = commitment,
                         onAddOrUpdateCommitment = {
-                            /* TODO: Update commitment*/
+                            onNavigateToUpdateCommitment(commitment.id)
                         }
                     )
                 }

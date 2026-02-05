@@ -11,6 +11,7 @@ import com.matheus.planningapp.viewmodel.CalendarMenuViewModel
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import com.matheus.planningapp.viewmodel.CommitmentFormViewModel
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModules = module {
@@ -29,7 +30,7 @@ val appModules = module {
     single<CommitmentRepository> { CommitmentRepositoryImpl(get())}
     single { CalendarViewModel(get(), get()) }
     single { CalendarMenuViewModel(get()) }
-    single { (commitmentFormMode: CommitmentFormMode) ->
+    viewModel { (commitmentFormMode: CommitmentFormMode) ->
         CommitmentFormViewModel(
             commitmentFormMode = commitmentFormMode,
             commitmentRepository =get()

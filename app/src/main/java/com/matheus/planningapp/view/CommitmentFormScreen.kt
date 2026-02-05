@@ -1,5 +1,6 @@
 package com.matheus.planningapp.view
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -204,7 +205,9 @@ fun CommitmentForm(
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.secondary
                 ),
-                modifier = Modifier.fillMaxWidth().height(64.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp),
                 singleLine = true
             )
 
@@ -227,7 +230,9 @@ fun CommitmentForm(
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.secondary
                 ),
-                modifier = Modifier.fillMaxWidth().height(128.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(128.dp),
                 singleLine = false
             )
         }
@@ -335,7 +340,12 @@ fun CommitmentForm(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     onClick = {
-                        commitmentFormViewModel.insertCommitment()
+                        if (uiState.id == null) {
+                            commitmentFormViewModel.insertCommitment()
+                        } else {
+                            commitmentFormViewModel.updateCommitment()
+                        }
+
                     }
                 ) {
                     Text(

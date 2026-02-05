@@ -68,7 +68,27 @@ class CommitmentFormViewModel(
                 }
             }
             is CommitmentFormMode.Edit -> {
-                getCommitment(commitmentFormMode.commitmentId)
+                viewModelScope.launch {
+                    val commitmentEntity = commitmentRepository.getCommitment(commitmentFormMode.commitmentId)
+
+                    if (commitmentEntity == null) {
+                        _events.emit(DatabaseUiEvent.ShowError("Commitment not found"))
+                        return@launch
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            id = commitmentEntity.id,
+                            calendarId = commitmentEntity.calendar,
+                            title = commitmentEntity.title,
+                            description = commitmentEntity.description ?: "",
+                            startInstant = commitmentEntity.startDateTime,
+                            endInstant = commitmentEntity.endDateTime,
+                            priority = commitmentEntity.priority,
+                        )
+                    }
+                }
             }
         }
     }
@@ -120,12 +140,62 @@ class CommitmentFormViewModel(
         }
     }
 
-    private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {
-        return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
+    fun updateCommitment() {
+        viewModelScope.launch {
+            val oldCommitmentEntity = commitmentRepository.getCommitment(uiState.value.id!!)
+
+            if (oldCommitmentEntity == null) {
+                _events.emit(DatabaseUiEvent.ShowError("Commitment not found"))
+                return@launch
+            }
+
+            val newCommitmentEntity = oldCommitmentEntity.copy(
+                title = uiState.value.title,
+                description = uiState.value.description,
+                startDateTime = uiState.value.startInstant,
+                endDateTime =  uiState.value.endInstant,
+                priority = uiState.value.priority
+            )
+
+            // Check if start time is lesser than end time
+            if (!verifyStartAndEndTime(newCommitmentEntity.startDateTime, newCommitmentEntity.endDateTime)) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("Start time must be lesser than End time")
+                )
+                return@launch
+            }
+
+            // Check if title is not empty
+            if (newCommitmentEntity.title.isEmpty()) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("Title cannot be empty")
+                )
+                return@launch
+            }
+
+            // Check if there is a conflict with other commitments
+            val conflictsNumbers: Int = commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                newCommitmentEntity.startDateTime,
+                newCommitmentEntity.endDateTime,
+                newCommitmentEntity.calendar,
+                newCommitmentEntity.id)
+
+            if(conflictsNumbers > 0) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("There is a conflict with other commitments")
+                )
+                return@launch
+            }
+
+            commitmentRepository.updateCommitment(newCommitmentEntity)
+
+            _events.emit(DatabaseUiEvent.Saved)
+        }
+
     }
 
-    fun getCommitment(commitmentId: Int): CommitmentEntity {
-        return commitmentRepository.getCommitment(commitmentId)
+    private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {
+        return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
     }
 
 }
