@@ -20,8 +20,15 @@ class CalendarMenuViewModel(
     val events = _events.asSharedFlow()
 
     fun insertCalendar(calendarEntity: CalendarEntity) {
-        /* TODO: Include verfication if calendar name is empty */
         viewModelScope.launch {
+            // Check if calendar name is empty
+            if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("Calendar name cannot be empty")
+                )
+                return@launch
+            }
+
             try {
                 if (calendarEntity.isDefault) {
                     calendarRepository.setAllDefaultAsFalse()
@@ -42,6 +49,14 @@ class CalendarMenuViewModel(
     fun updateCalendar(calendarEntity: CalendarEntity) {
         /* TODO: Block remove is Default if calendar is the only Default, or change for other */
         viewModelScope.launch {
+            // Check if calendar name is empty
+            if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("Calendar name cannot be empty")
+                )
+                return@launch
+            }
+
             if (calendarEntity.isDefault) {
                 calendarRepository.setAllDefaultAsFalse()
             }
