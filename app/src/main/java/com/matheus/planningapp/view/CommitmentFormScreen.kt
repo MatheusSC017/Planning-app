@@ -343,6 +343,7 @@ fun CommitmentForm(
                         if (uiState.id == null) {
                             commitmentFormViewModel.insertCommitment()
                         } else {
+                            /* TODO: Verify that the time conflict was checked correctly, ignoring identical IDs. */
                             commitmentFormViewModel.updateCommitment()
                         }
 

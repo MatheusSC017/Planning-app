@@ -1,5 +1,6 @@
 package com.matheus.planningapp.view
 
+import android.widget.Space
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -67,6 +70,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CommitmentEntity
+import com.matheus.planningapp.data.Priority
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -192,8 +196,7 @@ fun PlanningTopAppBar(
                     contentDescription = "Column view",
                     tint = if (columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .height(40.dp)
-                        .width(40.dp)
+                        .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
@@ -209,8 +212,7 @@ fun PlanningTopAppBar(
                     contentDescription = "Grid view",
                     tint = if (!columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .height(40.dp)
-                        .width(40.dp)
+                        .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
@@ -415,6 +417,7 @@ fun CalendarContent(
             }
         }
 
+        /* TODO: Adjusts the time display; when an appointment is displayed, 30 available minutes are removed. */
         if (commitments.isEmpty()) {
             items(48) { index ->
                 val hours = index / 2
@@ -611,11 +614,17 @@ fun TimeCommitment(
     commitment: CommitmentEntity?,
     onAddOrUpdateCommitment: () -> Unit
 ) {
+    val iconsModifier = Modifier
+        .size(40.dp)
+        .clip(RoundedCornerShape(12.dp))
+        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+        .padding(4.dp)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .height(96.dp)
+            .height(if (commitment == null) 96.dp else 152.dp)
             .padding(bottom = 8.dp)
             .drawBehind {
                 drawLine(
@@ -635,56 +644,120 @@ fun TimeCommitment(
                 modifier = Modifier
                     .width(96.dp)
                     .padding(start = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = startTime,
                     style = TextStyle(
                         fontSize = 24.sp,
                         color = if (commitment != null) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    )
                 )
                 if (commitment != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_more_vert_24),
+                        contentDescription = "More",
+                        tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                     Text(
                         text =  String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute),
                         style = TextStyle(
                             fontSize = 24.sp,
                             color = MaterialTheme.colorScheme.onSecondary
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        )
                     )
                 }
             }
-
-
 
             if (commitment != null) {
                 Text(
                     text =  commitment.title,
                     style = TextStyle(
-                        fontSize = 16.sp,
+                        fontSize = 24.sp,
                         color = MaterialTheme.colorScheme.onSecondary
                     ),
                 )
             }
+
         }
 
-        IconButton(
-            onClick = {
-                onAddOrUpdateCommitment()
+        Row {
+            Column {
+                if (commitment != null) {
+                    IconButton(
+                        onClick = {
+                            /* TODO: Create view method to commitment */
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.view),
+                            contentDescription = "Delete Commitment",
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                            modifier = iconsModifier
+                        )
+                    }
+                }
+
+                IconButton(
+                    onClick = {
+                        onAddOrUpdateCommitment()
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (commitment == null) Icons.Default.Add else Icons.Default.Edit,
+                        contentDescription = "Add new Commitment",
+                        tint = if (commitment == null) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                        modifier = iconsModifier
+                    )
+                }
+
+                if (commitment != null) {
+                    IconButton(
+                        onClick = {
+                            /* TODO: Create delete method to commitment */
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Delete Commitment",
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                            modifier = iconsModifier
+                        )
+                    }
+                }
             }
-        ) {
-            Icon(
-                imageVector = if (commitment == null) Icons.Default.Add else Icons.Default.Edit,
-                contentDescription = "Add new Commitment",
-                tint = if (commitment == null) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                modifier = Modifier
-                    .size(64.dp)
-            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            if (commitment != null) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(40.dp)
+                        .background(
+                            when (commitment.priority) {
+                                Priority.LOW -> Color.Green.copy(alpha = 0.5f)
+                                Priority.MEDIUM -> Color.Yellow.copy(alpha = 0.5f)
+                                Priority.HIGH -> Color.Red.copy(alpha = 0.5f)
+                            }
+                        )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_priority_high_24),
+                        contentDescription = "Delete Commitment",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
         }
 
     }
