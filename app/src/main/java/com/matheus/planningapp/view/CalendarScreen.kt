@@ -1,6 +1,5 @@
 package com.matheus.planningapp.view
 
-import android.widget.Space
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -417,7 +416,6 @@ fun CalendarContent(
             }
         }
 
-        /* TODO: Adjusts the time display; when an appointment is displayed, 30 available minutes are removed. */
         if (commitments.isEmpty()) {
             items(48) { index ->
                 val hours = index / 2
@@ -458,7 +456,7 @@ fun CalendarContent(
                     }
                 }
 
-                commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0) + 1
+                commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
 
                 item {
                     TimeCommitment(
