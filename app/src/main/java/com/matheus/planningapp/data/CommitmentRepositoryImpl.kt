@@ -29,6 +29,6 @@ class CommitmentRepositoryImpl(
         calendarId: Int,
         commitmentId: Int?
     ): Int {
-        return commitmentDao.checkSchedulingConflictsBetweenCommitments(startDateTime, endDateTime, calendarId)
+        return commitmentDao.checkSchedulingConflictsBetweenCommitments(startDateTime, endDateTime, calendarId, commitmentId)
     }
 }

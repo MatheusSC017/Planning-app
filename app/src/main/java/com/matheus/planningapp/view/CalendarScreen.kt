@@ -27,7 +27,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -412,6 +415,20 @@ fun CalendarContent(
                                 bottom = 16.dp
                             )
                     )
+
+                    IconButton(
+                        onClick = {
+                            onNavigateToAddCommitment(startOfDay, selectedCalendar!!.id)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add new Commitment",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+
                 }
             }
         }
@@ -420,15 +437,10 @@ fun CalendarContent(
             items(48) { index ->
                 val hours = index / 2
                 val minutes = (index % 2) * 30
-                TimeCommitment(
+                TimelineRow(
                     startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                     commitment = null,
-                    onAddOrUpdateCommitment = {
-                        if (selectedCalendar != null) {
-                            val datetime = startOfDay + hours.hours + minutes.minutes
-                            onNavigateToAddCommitment(datetime, selectedCalendar.id)
-                        }
-                    }
+                    onNavigateToUpdateCommitment = {}
                 )
             }
         } else {
@@ -443,15 +455,10 @@ fun CalendarContent(
                     items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
                         val hours = index / 2
                         val minutes = (index % 2) * 30
-                        TimeCommitment(
+                        TimelineRow(
                             startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                             commitment = null,
-                            onAddOrUpdateCommitment = {
-                                if (selectedCalendar != null) {
-                                    val datetime = startOfDay + hours.hours + minutes.minutes
-                                    onNavigateToAddCommitment(datetime, selectedCalendar.id)
-                                }
-                            }
+                            onNavigateToUpdateCommitment = {}
                         )
                     }
                 }
@@ -459,12 +466,10 @@ fun CalendarContent(
                 commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
 
                 item {
-                    TimeCommitment(
+                    TimelineRow(
                         startTime = commitmentStartTime,
                         commitment = commitment,
-                        onAddOrUpdateCommitment = {
-                            onNavigateToUpdateCommitment(commitment.id)
-                        }
+                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment
                     )
                 }
             }
@@ -473,16 +478,12 @@ fun CalendarContent(
                 items(timesList.subList(commitmentsLastIndex, 48)) { index ->
                     val hours = index / 2
                     val minutes = (index % 2) * 30
-                    TimeCommitment(
+                    TimelineRow(
                         startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                         commitment = null,
-                        onAddOrUpdateCommitment = {
-                            if (selectedCalendar != null) {
-                                val datetime = startOfDay + hours.hours + minutes.minutes
-                                onNavigateToAddCommitment(datetime, selectedCalendar.id)
-                            }
-                        }
+                        onNavigateToUpdateCommitment = {}
                     )
+
                 }
             }
         }
@@ -607,156 +608,154 @@ fun DaysOnlyCalendar(
 }
 
 @Composable
-fun TimeCommitment(
+fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
-    onAddOrUpdateCommitment: () -> Unit
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit
 ) {
-    val iconsModifier = Modifier
-        .size(40.dp)
-        .clip(RoundedCornerShape(12.dp))
-        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
-        .padding(4.dp)
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(if (commitment == null) 96.dp else 152.dp)
-            .padding(bottom = 8.dp)
-            .drawBehind {
-                drawLine(
-                    color = Color.White,
-                    start = Offset(0f, size.height),
-                    end = Offset(size.width, size.height),
-                    strokeWidth = 1.dp.toPx()
-                )
-            }
-            .background(if (commitment != null) MaterialTheme.colorScheme.onBackground else Color.Transparent),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row (
-            verticalAlignment =  Alignment.CenterVertically
+    Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(60.dp)
         ) {
-            Column(
+            Text(
+                text = startTime,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
+            )
+
+            Box(
                 modifier = Modifier
-                    .width(96.dp)
-                    .padding(start = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = startTime,
-                    style = TextStyle(
-                        fontSize = 24.sp,
-                        color = if (commitment != null) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.secondary
-                    )
-                )
-                if (commitment != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_more_vert_24),
-                        contentDescription = "More",
-                        tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                    Text(
-                        text =  String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute),
-                        style = TextStyle(
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colorScheme.onSecondary
-                        )
-                    )
-                }
-            }
-
-            if (commitment != null) {
-                Text(
-                    text =  commitment.title,
-                    style = TextStyle(
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.onSecondary
-                    ),
-                )
-            }
-
+                    .width(2.dp)
+                    .height(100.dp)
+                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = .6f))
+            )
         }
 
-        Row {
-            Column {
-                if (commitment != null) {
-                    IconButton(
-                        onClick = {
-                            /* TODO: Create view method to commitment */
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.view),
-                            contentDescription = "Delete Commitment",
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                            modifier = iconsModifier
-                        )
-                    }
-                }
+        Spacer(modifier = Modifier.width(12.dp))
 
-                IconButton(
-                    onClick = {
-                        onAddOrUpdateCommitment()
-                    }
-                ) {
+        if (commitment != null) {
+            CommitmentCard(commitment = commitment, onNavigateToUpdateCommitment = onNavigateToUpdateCommitment)
+        }
+    }
+}
+
+@Composable
+fun CommitmentCard(
+    commitment: CommitmentEntity,
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    val commitmentStartDateTime: LocalDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+
+    val statusColor = when(commitment.priority) {
+        Priority.LOW -> Color.Green.copy(alpha = .6f)
+        Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+        Priority.HIGH -> Color.Red.copy(alpha = .6f)
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(statusColor)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+
+                Text(
+                    text = commitment.title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "$startTimeString — $endTimeString",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                )
+            }
+
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
                     Icon(
-                        imageVector = if (commitment == null) Icons.Default.Add else Icons.Default.Edit,
-                        contentDescription = "Add new Commitment",
-                        tint = if (commitment == null) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                        modifier = iconsModifier
+                        painterResource(R.drawable.outline_more_horiz_24),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary.copy(.6f)
                     )
                 }
 
-                if (commitment != null) {
-                    IconButton(
-                        onClick = {
-                            /* TODO: Create delete method to commitment */
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Delete Commitment",
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                            modifier = iconsModifier
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            if (commitment != null) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(40.dp)
-                        .background(
-                            when (commitment.priority) {
-                                Priority.LOW -> Color.Green.copy(alpha = 0.5f)
-                                Priority.MEDIUM -> Color.Yellow.copy(alpha = 0.5f)
-                                Priority.HIGH -> Color.Red.copy(alpha = 0.5f)
-                            }
-                        )
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_priority_high_24),
-                        contentDescription = "Delete Commitment",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(40.dp)
+                    DropdownMenuItem(
+                        text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
+                        onClick = {
+                            menuExpanded = false
+                            /* TODO: Include view event to commitment */
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.view),
+                                contentDescription = "View commitment",
+                                tint = MaterialTheme.colorScheme.onSecondary
+                            )
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Edit", color = MaterialTheme.colorScheme.onSecondary) },
+                        onClick = {
+                            menuExpanded = false
+                            onNavigateToUpdateCommitment(commitment.id)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit commitment",
+                                tint = MaterialTheme.colorScheme.onSecondary
+                            )
+                        }
+                    )
+
+                    HorizontalDivider()
+
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            menuExpanded = false
+                            /* TODO: Include delete commitment option */
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Edit commitment",
+                                tint = MaterialTheme.colorScheme.error)
+                        }
                     )
                 }
             }
         }
-
     }
 }
