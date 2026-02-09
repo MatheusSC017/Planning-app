@@ -1,6 +1,7 @@
 package com.matheus.planningapp.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,6 +16,9 @@ interface CommitmentDao {
 
     @Update
     suspend fun update(commitmentEntity: CommitmentEntity)
+
+    @Delete
+    suspend fun delete(commitmentEntity: CommitmentEntity)
 
     @Query("SELECT * FROM commitment WHERE id = :commitmentId")
     suspend fun getCommitment(commitmentId: Int): CommitmentEntity?

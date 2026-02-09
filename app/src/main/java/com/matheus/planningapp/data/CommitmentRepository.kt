@@ -9,6 +9,7 @@ interface CommitmentRepository {
     fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Int): Flow<List<CommitmentEntity>>
     suspend fun insertCommitment(commitmentEntity: CommitmentEntity)
     suspend fun updateCommitment(commitmentEntity: CommitmentEntity)
+    suspend fun deleteCommitment(commitmentEntity: CommitmentEntity)
     suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,

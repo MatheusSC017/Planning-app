@@ -73,6 +73,7 @@ import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.Priority
+import com.matheus.planningapp.view.components.ConfirmationDialog
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -321,6 +322,22 @@ fun CalendarContent(
     val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
     var commitmentsLastIndex = remember(commitments) { 0 }
 
+    var selectedCommitmentToDelete by remember { mutableStateOf<CommitmentEntity?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
+
+    ConfirmationDialog(
+        item = selectedCommitmentToDelete,
+        showDialog = showDialog,
+        title = "Delete commitment",
+        message = "Are you sure you want to delete this commitment?",
+        onConfirm = { commitmentEntity: CommitmentEntity ->
+            calendarViewModel.deleteCommitment(commitmentEntity)
+        },
+        onDismiss = {
+            showDialog = false
+        }
+    )
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -440,7 +457,8 @@ fun CalendarContent(
                 TimelineRow(
                     startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                     commitment = null,
-                    onNavigateToUpdateCommitment = {}
+                    onNavigateToUpdateCommitment = {},
+                    onDeleteCommitment = {}
                 )
             }
         } else {
@@ -458,7 +476,8 @@ fun CalendarContent(
                         TimelineRow(
                             startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                             commitment = null,
-                            onNavigateToUpdateCommitment = {}
+                            onNavigateToUpdateCommitment = {},
+                            onDeleteCommitment = {}
                         )
                     }
                 }
@@ -469,7 +488,11 @@ fun CalendarContent(
                     TimelineRow(
                         startTime = commitmentStartTime,
                         commitment = commitment,
-                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment
+                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                        onDeleteCommitment = {
+                            selectedCommitmentToDelete = commitment
+                            showDialog = true
+                        }
                     )
                 }
             }
@@ -481,7 +504,8 @@ fun CalendarContent(
                     TimelineRow(
                         startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                         commitment = null,
-                        onNavigateToUpdateCommitment = {}
+                        onNavigateToUpdateCommitment = {},
+                        onDeleteCommitment = {}
                     )
 
                 }
@@ -611,7 +635,8 @@ fun DaysOnlyCalendar(
 fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onDeleteCommitment: () -> Unit
 ) {
     Row(modifier = Modifier.padding(horizontal = 16.dp)) {
         Column(
@@ -635,7 +660,11 @@ fun TimelineRow(
         Spacer(modifier = Modifier.width(12.dp))
 
         if (commitment != null) {
-            CommitmentCard(commitment = commitment, onNavigateToUpdateCommitment = onNavigateToUpdateCommitment)
+            CommitmentCard(
+                commitment = commitment,
+                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                onDeleteCommitment = onDeleteCommitment
+            )
         }
     }
 }
@@ -643,7 +672,8 @@ fun TimelineRow(
 @Composable
 fun CommitmentCard(
     commitment: CommitmentEntity,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onDeleteCommitment: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -745,7 +775,7 @@ fun CommitmentCard(
                         text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             menuExpanded = false
-                            /* TODO: Include delete commitment option */
+                            onDeleteCommitment()
                         },
                         leadingIcon = {
                             Icon(

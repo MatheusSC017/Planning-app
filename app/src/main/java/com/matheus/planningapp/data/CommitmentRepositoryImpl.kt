@@ -23,6 +23,10 @@ class CommitmentRepositoryImpl(
         commitmentDao.update(commitmentEntity)
     }
 
+    override suspend fun deleteCommitment(commitmentEntity: CommitmentEntity) {
+        commitmentDao.delete(commitmentEntity)
+    }
+
     override suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,

@@ -35,4 +35,10 @@ class CalendarViewModel(
         return commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar)
     }
 
+    fun deleteCommitment(commitmentEntity: CommitmentEntity) {
+        viewModelScope.launch {
+            commitmentRepository.deleteCommitment(commitmentEntity)
+        }
+    }
+
 }
