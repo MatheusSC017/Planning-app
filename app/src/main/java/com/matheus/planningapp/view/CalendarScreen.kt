@@ -27,6 +27,9 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -43,7 +46,9 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
@@ -68,6 +73,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
@@ -322,19 +328,26 @@ fun CalendarContent(
     val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
     var commitmentsLastIndex = remember(commitments) { 0 }
 
-    var selectedCommitmentToDelete by remember { mutableStateOf<CommitmentEntity?>(null) }
-    var showDialog by remember { mutableStateOf(false) }
+    var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCommitmentViewDialog by remember { mutableStateOf(false) }
+
+    CommitmentViewDialog(
+        commitmentEntity = selectedCommitment,
+        showDialog = showCommitmentViewDialog,
+        onDismissRequest = { showCommitmentViewDialog = false }
+    )
 
     ConfirmationDialog(
-        item = selectedCommitmentToDelete,
-        showDialog = showDialog,
+        item = selectedCommitment,
+        showDialog = showDeleteDialog,
         title = "Delete commitment",
         message = "Are you sure you want to delete this commitment?",
         onConfirm = { commitmentEntity: CommitmentEntity ->
             calendarViewModel.deleteCommitment(commitmentEntity)
         },
-        onDismiss = {
-            showDialog = false
+        onDismissRequest = {
+            showDeleteDialog = false
         }
     )
 
@@ -457,6 +470,7 @@ fun CalendarContent(
                 TimelineRow(
                     startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                     commitment = null,
+                    onViewCommitment = {},
                     onNavigateToUpdateCommitment = {},
                     onDeleteCommitment = {}
                 )
@@ -476,6 +490,7 @@ fun CalendarContent(
                         TimelineRow(
                             startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                             commitment = null,
+                            onViewCommitment = {},
                             onNavigateToUpdateCommitment = {},
                             onDeleteCommitment = {}
                         )
@@ -488,10 +503,14 @@ fun CalendarContent(
                     TimelineRow(
                         startTime = commitmentStartTime,
                         commitment = commitment,
+                        onViewCommitment = {
+                            selectedCommitment = commitment
+                            showCommitmentViewDialog = true
+                        },
                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                         onDeleteCommitment = {
-                            selectedCommitmentToDelete = commitment
-                            showDialog = true
+                            selectedCommitment = commitment
+                            showDeleteDialog = true
                         }
                     )
                 }
@@ -504,6 +523,7 @@ fun CalendarContent(
                     TimelineRow(
                         startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
                         commitment = null,
+                        onViewCommitment = {},
                         onNavigateToUpdateCommitment = {},
                         onDeleteCommitment = {}
                     )
@@ -635,6 +655,7 @@ fun DaysOnlyCalendar(
 fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
+    onViewCommitment: () -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     onDeleteCommitment: () -> Unit
 ) {
@@ -661,7 +682,8 @@ fun TimelineRow(
 
         if (commitment != null) {
             CommitmentCard(
-                commitment = commitment,
+                commitmentEntity = commitment,
+                onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 onDeleteCommitment = onDeleteCommitment
             )
@@ -671,18 +693,19 @@ fun TimelineRow(
 
 @Composable
 fun CommitmentCard(
-    commitment: CommitmentEntity,
+    commitmentEntity: CommitmentEntity,
+    onViewCommitment: () -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     onDeleteCommitment: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    val commitmentStartDateTime: LocalDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
-    val commitmentEndDateTime: LocalDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
-    val statusColor = when(commitment.priority) {
+    val statusColor = when(commitmentEntity.priority) {
         Priority.LOW -> Color.Green.copy(alpha = .6f)
         Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
         Priority.HIGH -> Color.Red.copy(alpha = .6f)
@@ -710,7 +733,7 @@ fun CommitmentCard(
             Column(modifier = Modifier.weight(1f)) {
 
                 Text(
-                    text = commitment.title,
+                    text = commitmentEntity.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSecondary
@@ -743,7 +766,7 @@ fun CommitmentCard(
                         text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
-                            /* TODO: Include view event to commitment */
+                            onViewCommitment()
                         },
                         leadingIcon = {
                             Icon(
@@ -758,7 +781,7 @@ fun CommitmentCard(
                         text = { Text("Edit", color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
-                            onNavigateToUpdateCommitment(commitment.id)
+                            onNavigateToUpdateCommitment(commitmentEntity.id)
                         },
                         leadingIcon = {
                             Icon(
@@ -787,5 +810,86 @@ fun CommitmentCard(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommitmentViewDialog(
+    commitmentEntity: CommitmentEntity?,
+    showDialog: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    if (commitmentEntity == null) return
+
+    val statusColor = when(commitmentEntity.priority) {
+        Priority.LOW -> Color.Green.copy(alpha = .6f)
+        Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+        Priority.HIGH -> Color.Red.copy(alpha = .6f)
+    }
+
+    val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = {
+                Column {
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(CircleShape)
+                                .background(statusColor)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = commitmentEntity.title,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
+
+                    Text(
+                        text = String.format("%04d-%02d-%02d", commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                    )
+
+                    Text(
+                        text = "$startTimeString — $endTimeString",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = commitmentEntity.description ?: "",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = onDismissRequest) {
+                    Text(
+                        text = "Dismiss",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     }
 }

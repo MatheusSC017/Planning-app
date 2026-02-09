@@ -113,10 +113,10 @@ fun CommitmentScreen(
                 title = {
                     if (!uiState.isLoading) {
                         Text(
-                            text = "%02d/%02d/%04d".format(
-                                localDate.dayOfMonth,
+                            text = "%04d-%02d-%02d".format(
+                                localDate.year,
                                 localDate.monthNumber,
-                                localDate.year
+                                localDate.dayOfMonth
                             ),
                             style = TextStyle(
                                 fontSize = 36.sp,
@@ -174,11 +174,6 @@ fun CommitmentForm(
     uiState: CommitmentFormState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
-//    val localTime: LocalTime = uiState.startInstant.toLocalDateTime(TimeZone.currentSystemDefault()).time
-
-//    var selectedStartTime by remember { mutableStateOf(localTime) }
-//    var selectedEndTime by remember { mutableStateOf(localTime.step30(1)) }
-
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
 
     LazyColumn(
@@ -343,7 +338,6 @@ fun CommitmentForm(
                         if (uiState.id == null) {
                             commitmentFormViewModel.insertCommitment()
                         } else {
-                            /* TODO: Verify that the time conflict was checked correctly, ignoring identical IDs. */
                             commitmentFormViewModel.updateCommitment()
                         }
 

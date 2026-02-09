@@ -12,23 +12,23 @@ fun <T> ConfirmationDialog(
     title: String,
     message: String,
     onConfirm: (T) -> Unit,
-    onDismiss: () -> Unit
+    onDismissRequest: () -> Unit
 ) {
     if (item == null) return
 
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = onDismiss,
+            onDismissRequest = onDismissRequest,
             title = { Text(title) },
             text = { Text(message) },
             confirmButton = {
                 TextButton(onClick = {
                     onConfirm(item)
-                    onDismiss()
+                    onDismissRequest()
                 }) { Text("Confirm") }
             },
             dismissButton = {
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(onClick = onDismissRequest) { Text("Cancel") }
             }
         )
     }

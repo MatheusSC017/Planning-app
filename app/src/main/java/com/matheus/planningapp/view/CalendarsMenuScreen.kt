@@ -141,7 +141,7 @@ fun CalendarsMenuContent(
         onConfirm = { calendar: CalendarEntity ->
             calendarMenuViewModel.deleteCalendar(calendar)
         },
-        onDismiss = {
+        onDismissRequest = {
             showDialog = false
         }
     )
