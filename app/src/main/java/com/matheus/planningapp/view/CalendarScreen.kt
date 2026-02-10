@@ -2,16 +2,19 @@ package com.matheus.planningapp.view
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -30,6 +34,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -659,7 +664,12 @@ fun TimelineRow(
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     onDeleteCommitment: () -> Unit
 ) {
-    Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+    Row(
+        modifier = Modifier
+            .padding(end = 16.dp, start = 16.dp, bottom = 16.dp)
+            .height(IntrinsicSize.Min)
+            .heightIn(min = 100.dp)
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(60.dp)
@@ -673,7 +683,7 @@ fun TimelineRow(
             Box(
                 modifier = Modifier
                     .width(2.dp)
-                    .height(100.dp)
+                    .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.secondary.copy(alpha = .6f))
             )
         }
@@ -718,19 +728,25 @@ fun CommitmentCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(end = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(10.dp)
+                    .fillMaxHeight()
+                    .width(12.dp)
                     .clip(CircleShape)
                     .background(statusColor)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 16.dp)
+            ) {
 
                 Text(
                     text = commitmentEntity.title,
@@ -839,7 +855,8 @@ fun CommitmentViewDialog(
             title = {
                 Column {
                     Row (
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(16.dp)
                     ) {
                         Box(
                             modifier = Modifier
@@ -852,44 +869,92 @@ fun CommitmentViewDialog(
 
                         Text(
                             text = commitmentEntity.title,
-                            fontSize = 18.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondary
                         )
                     }
 
-                    Text(
-                        text = String.format("%04d-%02d-%02d", commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
-                    )
+                    HorizontalDivider()
 
-                    Text(
-                        text = "$startTimeString — $endTimeString",
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 8.dp)
+                        )
+
+                        Text(
+                            text = String.format(Locale.US, "%04d-%02d-%02d", commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 8.dp)
+                        )
+
+                        Text(
+                            text = "$startTimeString — $endTimeString",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                        )
+                    }
                 }
             },
             text = {
-                Text(
-                    text = commitmentEntity.description ?: "",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSecondary
-                )
+                Column {
+                    Box(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(12.dp))
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = commitmentEntity.description ?: "",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    }
+
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    HorizontalDivider()
+                }
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = onDismissRequest) {
+                Button(
+                    onClick = onDismissRequest,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
                         text = "Dismiss",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             },
-            containerColor = MaterialTheme.colorScheme.onSecondaryContainer
+            containerColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 }
