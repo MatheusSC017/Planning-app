@@ -28,6 +28,9 @@ interface CalendarDao {
     @Query("SELECT * FROM Calendar ORDER BY isDefault DESC")
     fun getCalendars(): Flow<List<CalendarEntity>>
 
+    @Query("SELECT * FROM Calendar WHERE id = :calendarId")
+    suspend fun getCalendarById(calendarId: Int): CalendarEntity?
+
     @Query("SELECT COUNT(*) FROM Calendar")
     suspend fun countCalendars(): Int
 

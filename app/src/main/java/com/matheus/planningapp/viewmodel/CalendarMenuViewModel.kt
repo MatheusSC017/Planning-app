@@ -47,7 +47,6 @@ class CalendarMenuViewModel(
     }
 
     fun updateCalendar(calendarEntity: CalendarEntity) {
-        /* TODO: Block remove is Default if calendar is the only Default, or change for other */
         viewModelScope.launch {
             // Check if calendar name is empty
             if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
@@ -57,8 +56,18 @@ class CalendarMenuViewModel(
                 return@launch
             }
 
+            // If the calendar is the default, set all others to false.
             if (calendarEntity.isDefault) {
                 calendarRepository.setAllDefaultAsFalse()
+            }
+
+            val currentCalendarEntity = calendarRepository.getCalendarById(calendarEntity.id)
+            // Check if the current calendar is the default; if it is, a different calendar must be set first.
+            if (currentCalendarEntity?.isDefault == true && !calendarEntity.isDefault) {
+                _events.emit(
+                    DatabaseUiEvent.ShowError("The default calendar cannot be changed.")
+                )
+                return@launch
             }
 
             calendarRepository.updateCalendar(calendarEntity)

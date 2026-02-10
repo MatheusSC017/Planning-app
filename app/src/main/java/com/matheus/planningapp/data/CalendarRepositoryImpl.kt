@@ -23,6 +23,10 @@ class CalendarRepositoryImpl(
         return calendarDao.getCalendars()
     }
 
+    override suspend fun getCalendarById(calendarId: Int): CalendarEntity? {
+        return calendarDao.getCalendarById(calendarId)
+    }
+
     override suspend fun ensureDefaultCalendarExists() {
         if (calendarDao.countCalendars() == 0) {
             calendarDao.insert(

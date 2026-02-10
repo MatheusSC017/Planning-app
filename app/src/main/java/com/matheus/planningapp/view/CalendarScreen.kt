@@ -930,7 +930,6 @@ fun CommitmentViewDialog(
                         )
                     }
 
-
                     Spacer(modifier = Modifier.height(16.dp))
 
                     HorizontalDivider()
