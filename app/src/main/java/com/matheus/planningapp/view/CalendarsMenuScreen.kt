@@ -60,7 +60,6 @@ fun CalendarsMenuScreen(
     onBackPressed: () -> Unit,
     calendarMenuViewModel: CalendarMenuViewModel = koinViewModel()
 ) {
-    /* TODO: Check problem with calendar list auto update */
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -200,12 +199,14 @@ fun CalendarsMenuContent(
                 IconButton(
                     onClick = {
                         val calendar = selectedCalendar
-                        
+
                         if (calendar != null) {
-                            calendar.name = calendarName
-                            calendar.isDefault = calendarIsDefault
-                            calendar.updatedAt = Clock.System.now()
-                            calendarMenuViewModel.updateCalendar(calendar)
+                            val updatedCalendar = calendar.copy(
+                                name = calendarName,
+                                isDefault = calendarIsDefault,
+                                updatedAt = Clock.System.now()
+                            )
+                            calendarMenuViewModel.updateCalendar(updatedCalendar)
                         } else {
                             calendarMenuViewModel.insertCalendar(
                                 CalendarEntity(
