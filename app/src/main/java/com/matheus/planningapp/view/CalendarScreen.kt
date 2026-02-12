@@ -2,13 +2,14 @@ package com.matheus.planningapp.view
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,7 +33,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,9 +51,7 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
@@ -69,16 +67,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
@@ -98,8 +96,6 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,6 +110,7 @@ fun CalendarScreen (
 
     val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
+    var columnViewSelected by remember { mutableStateOf(true) }
 
     LaunchedEffect(calendarsEntities) {
         if (selectedCalendar == null && calendarsEntities.isNotEmpty()) {
@@ -171,14 +168,26 @@ fun CalendarScreen (
                     calendarsEntities = calendarsEntities,
                     selectedCalendar = selectedCalendar,
                     onCalendarSelected = { selectedCalendar = it},
+                    columnViewSelected = columnViewSelected,
+                    onViewSelected = { columnViewSelected = it },
                     onMenuClick = { scope.launch { drawerState.open() }}
                 )
             },
             content = { paddingValues ->
                 CalendarContent(
                     modifier = Modifier
-                        .padding(paddingValues),
+                        .padding(paddingValues)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.background,
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                    MaterialTheme.colorScheme.background,
+                                )
+                            )
+                        ),
                     selectedCalendar = selectedCalendar,
+                    columnViewSelected = columnViewSelected,
                     onNavigateToAddCommitment = onNavigateToAddCommitment,
                     onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                     calendarViewModel = calendarViewModel
@@ -194,10 +203,12 @@ fun PlanningTopAppBar(
     modifier: Modifier,
     calendarsEntities: List<CalendarEntity>,
     selectedCalendar: CalendarEntity?,
+    columnViewSelected: Boolean,
+    onViewSelected: (Boolean) -> Unit,
     onCalendarSelected: (CalendarEntity) -> Unit,
     onMenuClick: () -> Unit
 ) {
-    var columnViewSelected by remember { mutableStateOf(true) }
+
     var expandedCalendarDropDown by remember { mutableStateOf(false) }
 
     TopAppBar(
@@ -215,7 +226,7 @@ fun PlanningTopAppBar(
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
                             /* TODO: Update commitments view to Column view */
-                            columnViewSelected = true
+                            onViewSelected(true)
                         }
                 )
                 Spacer(
@@ -231,7 +242,7 @@ fun PlanningTopAppBar(
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
                             /* TODO: Update commitments view to Grid view  */
-                            columnViewSelected = false
+                            onViewSelected(false)
                         }
                 )
             }
@@ -308,6 +319,7 @@ fun PlanningTopAppBar(
 fun CalendarContent(
     modifier: Modifier,
     selectedCalendar: CalendarEntity?,
+    columnViewSelected: Boolean,
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     calendarViewModel: CalendarViewModel
@@ -367,7 +379,6 @@ fun CalendarContent(
             )
     ) {
         item {
-
             Column {
 
                 Row(
@@ -468,61 +479,10 @@ fun CalendarContent(
             }
         }
 
-        if (commitments.isEmpty()) {
-            items(48) { index ->
-                val hours = index / 2
-                val minutes = (index % 2) * 30
-                TimelineRow(
-                    startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
-                    commitment = null,
-                    onViewCommitment = {},
-                    onNavigateToUpdateCommitment = {},
-                    onDeleteCommitment = {}
-                )
-            }
-        } else {
-            val timesList = List(48) { it }
-            commitments.forEach { commitment ->
-                val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
-                val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
-
-                if (commitmentsLastIndex < commitmentStartIndex) {
-                    items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
-                        val hours = index / 2
-                        val minutes = (index % 2) * 30
-                        TimelineRow(
-                            startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
-                            commitment = null,
-                            onViewCommitment = {},
-                            onNavigateToUpdateCommitment = {},
-                            onDeleteCommitment = {}
-                        )
-                    }
-                }
-
-                commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
-
-                item {
-                    TimelineRow(
-                        startTime = commitmentStartTime,
-                        commitment = commitment,
-                        onViewCommitment = {
-                            selectedCommitment = commitment
-                            showCommitmentViewDialog = true
-                        },
-                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                        onDeleteCommitment = {
-                            selectedCommitment = commitment
-                            showDeleteDialog = true
-                        }
-                    )
-                }
-            }
-
-            if (commitmentsLastIndex < 48) {
-                items(timesList.subList(commitmentsLastIndex, 48)) { index ->
+        if (columnViewSelected) {
+            /* TODO: Check for bug in the timeline when commitment from 23:30 to 00:00 */
+            if (commitments.isEmpty()) {
+                items(48) { index ->
                     val hours = index / 2
                     val minutes = (index % 2) * 30
                     TimelineRow(
@@ -532,8 +492,147 @@ fun CalendarContent(
                         onNavigateToUpdateCommitment = {},
                         onDeleteCommitment = {}
                     )
-
                 }
+            } else {
+                val timesList = List(48) { it }
+                commitments.forEach { commitment ->
+                    val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                    val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                    val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+                    val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
+
+                    if (commitmentsLastIndex < commitmentStartIndex) {
+                        items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
+                            val hours = index / 2
+                            val minutes = (index % 2) * 30
+                            TimelineRow(
+                                startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                                commitment = null,
+                                onViewCommitment = {},
+                                onNavigateToUpdateCommitment = {},
+                                onDeleteCommitment = {}
+                            )
+                        }
+                    }
+
+                    commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
+
+                    item {
+                        TimelineRow(
+                            startTime = commitmentStartTime,
+                            commitment = commitment,
+                            onViewCommitment = {
+                                selectedCommitment = commitment
+                                showCommitmentViewDialog = true
+                            },
+                            onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                            onDeleteCommitment = {
+                                selectedCommitment = commitment
+                                showDeleteDialog = true
+                            }
+                        )
+                    }
+                }
+
+                if (commitmentsLastIndex < 48) {
+                    items(timesList.subList(commitmentsLastIndex, 48)) { index ->
+                        val hours = index / 2
+                        val minutes = (index % 2) * 30
+                        TimelineRow(
+                            startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                            commitment = null,
+                            onViewCommitment = {},
+                            onNavigateToUpdateCommitment = {},
+                            onDeleteCommitment = {}
+                        )
+
+                    }
+                }
+            }
+        } else {
+            val timelineItems = List(48) { -1 }.toMutableList()
+            val finalIndexCommitments: MutableList<Int> = emptyList<Int>().toMutableList()
+            commitments.forEachIndexed { index, commitment ->
+                val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                /* TODO: Create a helper to convert time in index 0:00 = 0, 0:30 = 1, 1:00 = 2 ... */
+                val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
+                val commitmentEndIndex: Int = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
+                finalIndexCommitments.add(commitmentEndIndex)
+
+                for (i in commitmentStartIndex until commitmentEndIndex) {
+                    timelineItems[i] = index
+                }
+            }
+
+            item {
+                timelineItems
+                    .withIndex()
+                    .chunked(4)
+                    .forEach { indexsRow ->
+                        BoxWithConstraints(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            val cellWidth = maxWidth / 4
+
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                indexsRow.forEach { indexedHour ->
+                                    val index = indexedHour.index
+                                    val indexCommitment = indexedHour.value
+                                    val hours = index / 2
+                                    val minutes = (index % 2) * 30
+
+                                    if (indexCommitment == -1) {
+                                        TimelineGridItem(
+                                            startTime = String.format(
+                                                Locale.US,
+                                                "%02d:%02d",
+                                                hours,
+                                                minutes
+                                            ),
+                                            commitmentEntity = null,
+                                            cellWidth = cellWidth,
+                                            colspan = 1,
+                                            continuesInNextCell = false,
+                                            continuesFromPreviousCell = false,
+                                            onViewCommitment = {},
+                                            onNavigateToUpdateCommitment = {},
+                                            onDeleteCommitment = {}
+                                        )
+                                    } else {
+                                        // Start a new block if this is the first column in the row (index % 4 == 0)
+                                        // or if the current commitment is different from the previous one.
+                                        if ((index % 4 == 0) || timelineItems[index - 1] != indexCommitment) {
+                                            val commitmentEndIndex = finalIndexCommitments[indexCommitment]
+                                            val colspan = if (commitmentEndIndex - index + 1 > 4) 4 else commitmentEndIndex - index
+                                            TimelineGridItem(
+                                                startTime = String.format(
+                                                    Locale.US,
+                                                    "%02d:%02d",
+                                                    hours,
+                                                    minutes
+                                                ),
+                                                commitmentEntity = commitments[indexCommitment],
+                                                cellWidth = cellWidth,
+                                                colspan = colspan,
+                                                continuesInNextCell = if (index + colspan <= 47) timelineItems[index + colspan] == indexCommitment else false,
+                                                continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
+                                                onViewCommitment = {
+                                                    selectedCommitment = commitments[indexCommitment]
+                                                    showCommitmentViewDialog = true
+                                                },
+                                                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                                                onDeleteCommitment = {
+                                                    selectedCommitment = commitments[indexCommitment]
+                                                    showDeleteDialog = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
             }
         }
     }
@@ -657,6 +756,175 @@ fun DaysOnlyCalendar(
 }
 
 @Composable
+fun RowScope.TimelineGridItem(
+    startTime: String,
+    commitmentEntity: CommitmentEntity?,
+    cellWidth: Dp,
+    colspan: Int,
+    /* TODO: Check to improve variables names */
+    continuesInNextCell: Boolean,
+    continuesFromPreviousCell: Boolean,
+    onViewCommitment: () -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onDeleteCommitment: () -> Unit
+){
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(cellWidth * colspan)
+            .height(cellWidth)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = 8.dp,
+                    bottom = 8.dp,
+                    end = if (continuesInNextCell) 0.dp else 8.dp,
+                    start = if (continuesFromPreviousCell) 0.dp else 8.dp
+                )
+                .background(
+                    brush = Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                            MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                        start = Offset.Zero,
+                        end = Offset.Infinite
+                    ),
+                    shape = RoundedCornerShape(
+                        topEnd = if (continuesInNextCell) 0.dp else 12.dp,
+                        bottomEnd = if (continuesInNextCell) 0.dp else 12.dp,
+                        topStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
+                        bottomStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
+                    )
+                )
+        ) {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                var titleOfCell = startTime
+                if (commitmentEntity != null && colspan > 1) {
+                    val commitmentEndDateTime =
+                        commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                    titleOfCell += String.format(
+                        Locale.US,
+                        " ~ %02d:%02d",
+                        commitmentEndDateTime.hour,
+                        commitmentEndDateTime.minute
+                    )
+                }
+                Text(
+                    text = titleOfCell,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                if (commitmentEntity != null) {
+                    val statusColor = when(commitmentEntity.priority) {
+                        Priority.LOW -> Color.Green.copy(alpha = .6f)
+                        Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+                        Priority.HIGH -> Color.Red.copy(alpha = .6f)
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .height(24.dp)
+                            .width(24.dp)
+                            .clip(CircleShape)
+                            .background(statusColor)
+                    )
+                }
+            }
+
+            if (commitmentEntity != null) {
+                Box (
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        painterResource(R.drawable.outline_more_horiz_24),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .clickable { menuExpanded = true },
+                        tint = MaterialTheme.colorScheme.secondary.copy(.6f)
+                    )
+
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    "View",
+                                    color = MaterialTheme.colorScheme.onSecondary
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onViewCommitment()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.view),
+                                    contentDescription = "View commitment",
+                                    tint = MaterialTheme.colorScheme.onSecondary
+                                )
+                            }
+                        )
+
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    "Edit",
+                                    color = MaterialTheme.colorScheme.onSecondary
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onNavigateToUpdateCommitment(commitmentEntity.id)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit commitment",
+                                    tint = MaterialTheme.colorScheme.onSecondary
+                                )
+                            }
+                        )
+
+                        HorizontalDivider()
+
+                        DropdownMenuItem(
+                            text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                            onClick = {
+                                menuExpanded = false
+                                onDeleteCommitment()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Edit commitment",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
@@ -722,7 +990,7 @@ fun CommitmentCard(
     }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(6.dp),
         modifier = Modifier.fillMaxWidth()
@@ -776,7 +1044,7 @@ fun CommitmentCard(
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
                 ) {
                     DropdownMenuItem(
                         text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
@@ -920,7 +1188,11 @@ fun CommitmentViewDialog(
                 Column {
                     Box(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(12.dp))
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.secondary,
+                                shape = RoundedCornerShape(12.dp)
+                            )
                             .padding(8.dp)
                     ) {
                         Text(
@@ -953,7 +1225,7 @@ fun CommitmentViewDialog(
                     )
                 }
             },
-            containerColor = MaterialTheme.colorScheme.onPrimaryContainer
+            containerColor = MaterialTheme.colorScheme.onBackground
         )
     }
 }

@@ -359,6 +359,7 @@ fun TimeStepperField(
     time: Instant,
     onTimeChange: (Instant) -> Unit
 ) {
+    /* TODO: Adjust the end time interval to 24:00 instead of 23:00, adding 30 minutes to all values. */
     val localTime: LocalTime = time.toLocalDateTime(TimeZone.currentSystemDefault()).time
 
     Row(
@@ -379,6 +380,7 @@ fun TimeStepperField(
             modifier = Modifier.weight(1f)
         )
 
+        /* TODO: Check if there are any bugs that I sent to the form the previous day. */
         Column {
             IconButton(
                 onClick = {
