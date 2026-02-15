@@ -60,6 +60,7 @@ import com.matheus.planningapp.viewmodel.CommitmentFormViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -257,6 +258,7 @@ fun CommitmentForm(
 
             TimeStepperField(
                 time = uiState.endInstant,
+                isEndTime = true,
                 onTimeChange = { commitmentFormViewModel.onEndInstantChange(it) }
             )
         }
@@ -357,17 +359,22 @@ fun CommitmentForm(
 @Composable
 fun TimeStepperField(
     time: Instant,
+    isEndTime: Boolean = false,
     onTimeChange: (Instant) -> Unit
 ) {
-    /* TODO: Adjust the end time interval to 24:00 instead of 23:00, adding 30 minutes to all values. */
-    val localTime: LocalTime = time.toLocalDateTime(TimeZone.currentSystemDefault()).time
+    val localDateTime: LocalDateTime = time.toLocalDateTime(TimeZone.currentSystemDefault())
+    val currentDayOfMonth: Int = remember { localDateTime.dayOfMonth }
+    val hourLimit: Int = if (isEndTime) 24 else 23
+    val minuteLimit: Int = if (isEndTime) 30 else 0
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = "%02d:%02d".format(localTime.hour, localTime.minute),
+            value = "%02d:%02d".format(
+                if (localDateTime.dayOfMonth == currentDayOfMonth) localDateTime.hour else 24,
+                localDateTime.minute),
             onValueChange = {},
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
@@ -383,7 +390,10 @@ fun TimeStepperField(
         Column {
             IconButton(
                 onClick = {
-                    onTimeChange(time + 30.minutes)
+                    if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
+                        || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
+                        onTimeChange(time + 30.minutes)
+                    }
                 }
             ) {
                 Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Increase")
@@ -391,7 +401,9 @@ fun TimeStepperField(
 
             IconButton(
                 onClick = {
-                    onTimeChange(time - 30.minutes)
+                    if ((localDateTime.hour * 60)  + localDateTime.minute > minuteLimit) {
+                        onTimeChange(time - 30.minutes)
+                    }
                 }
             ) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Decrease")

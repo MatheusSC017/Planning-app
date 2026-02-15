@@ -510,7 +510,7 @@ fun CalendarContent(
                         }
                     }
 
-                    commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48
+                    commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
                         else timeToIndex(commitmentEndDateTime.time)
 
                     item {
@@ -550,7 +550,7 @@ fun CalendarContent(
                 val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                 val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                 val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
-                val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48
+                val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
                     else timeToIndex(commitmentEndDateTime.time)
                 finalIndexCommitments.add(commitmentEndIndex)
 
