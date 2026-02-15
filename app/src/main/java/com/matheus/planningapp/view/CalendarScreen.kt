@@ -225,7 +225,6 @@ fun PlanningTopAppBar(
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
-                            /* TODO: Update commitments view to Column view */
                             onViewSelected(true)
                         }
                 )
@@ -241,7 +240,6 @@ fun PlanningTopAppBar(
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
                         .clickable {
-                            /* TODO: Update commitments view to Grid view  */
                             onViewSelected(false)
                         }
                 )
@@ -480,7 +478,6 @@ fun CalendarContent(
         }
 
         if (columnViewSelected) {
-            /* TODO: Check for bug in the timeline when commitment from 23:30 to 00:00 */
             if (commitments.isEmpty()) {
                 items(48) { index ->
                     val hours = index / 2
@@ -515,7 +512,7 @@ fun CalendarContent(
                         }
                     }
 
-                    commitmentsLastIndex = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
+                    commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48 else commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
 
                     item {
                         TimelineRow(
@@ -557,7 +554,7 @@ fun CalendarContent(
                 val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                 /* TODO: Create a helper to convert time in index 0:00 = 0, 0:30 = 1, 1:00 = 2 ... */
                 val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
-                val commitmentEndIndex: Int = commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
+                val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48 else commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
                 finalIndexCommitments.add(commitmentEndIndex)
 
                 for (i in commitmentStartIndex until commitmentEndIndex) {
