@@ -380,7 +380,6 @@ fun TimeStepperField(
             modifier = Modifier.weight(1f)
         )
 
-        /* TODO: Check if there are any bugs that I sent to the form the previous day. */
         Column {
             IconButton(
                 onClick = {

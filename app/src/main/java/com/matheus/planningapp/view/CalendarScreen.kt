@@ -82,6 +82,8 @@ import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CommitmentEntity
 import com.matheus.planningapp.data.Priority
+import com.matheus.planningapp.helper.indexToTimeString
+import com.matheus.planningapp.helper.timeToIndex
 import com.matheus.planningapp.view.components.ConfirmationDialog
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
@@ -480,10 +482,8 @@ fun CalendarContent(
         if (columnViewSelected) {
             if (commitments.isEmpty()) {
                 items(48) { index ->
-                    val hours = index / 2
-                    val minutes = (index % 2) * 30
                     TimelineRow(
-                        startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                        startTime = indexToTimeString(index),
                         commitment = null,
                         onViewCommitment = {},
                         onNavigateToUpdateCommitment = {},
@@ -496,14 +496,12 @@ fun CalendarContent(
                     val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                     val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                     val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
-                    val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
+                    val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
 
                     if (commitmentsLastIndex < commitmentStartIndex) {
                         items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
-                            val hours = index / 2
-                            val minutes = (index % 2) * 30
                             TimelineRow(
-                                startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                                startTime = indexToTimeString(index),
                                 commitment = null,
                                 onViewCommitment = {},
                                 onNavigateToUpdateCommitment = {},
@@ -512,7 +510,8 @@ fun CalendarContent(
                         }
                     }
 
-                    commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48 else commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
+                    commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48
+                        else timeToIndex(commitmentEndDateTime.time)
 
                     item {
                         TimelineRow(
@@ -533,10 +532,8 @@ fun CalendarContent(
 
                 if (commitmentsLastIndex < 48) {
                     items(timesList.subList(commitmentsLastIndex, 48)) { index ->
-                        val hours = index / 2
-                        val minutes = (index % 2) * 30
                         TimelineRow(
-                            startTime = String.format(Locale.US, "%02d:%02d", hours, minutes),
+                            startTime = indexToTimeString(index),
                             commitment = null,
                             onViewCommitment = {},
                             onNavigateToUpdateCommitment = {},
@@ -552,9 +549,9 @@ fun CalendarContent(
             commitments.forEachIndexed { index, commitment ->
                 val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                 val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                /* TODO: Create a helper to convert time in index 0:00 = 0, 0:30 = 1, 1:00 = 2 ... */
-                val commitmentStartIndex: Int = commitmentStartDateTime.hour * 2 + (if (commitmentStartDateTime.minute >= 30) 1 else 0)
-                val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48 else commitmentEndDateTime.hour * 2 + (if (commitmentEndDateTime.minute >= 30) 1 else 0)
+                val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
+                val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth > commitmentStartDateTime.dayOfMonth) 48
+                    else timeToIndex(commitmentEndDateTime.time)
                 finalIndexCommitments.add(commitmentEndIndex)
 
                 for (i in commitmentStartIndex until commitmentEndIndex) {
@@ -576,17 +573,10 @@ fun CalendarContent(
                                 indexsRow.forEach { indexedHour ->
                                     val index = indexedHour.index
                                     val indexCommitment = indexedHour.value
-                                    val hours = index / 2
-                                    val minutes = (index % 2) * 30
 
                                     if (indexCommitment == -1) {
                                         TimelineGridItem(
-                                            startTime = String.format(
-                                                Locale.US,
-                                                "%02d:%02d",
-                                                hours,
-                                                minutes
-                                            ),
+                                            startTime = indexToTimeString(index),
                                             commitmentEntity = null,
                                             cellWidth = cellWidth,
                                             colspan = 1,
@@ -603,12 +593,7 @@ fun CalendarContent(
                                             val commitmentEndIndex = finalIndexCommitments[indexCommitment]
                                             val colspan = if (commitmentEndIndex - index + 1 > 4) 4 else commitmentEndIndex - index
                                             TimelineGridItem(
-                                                startTime = String.format(
-                                                    Locale.US,
-                                                    "%02d:%02d",
-                                                    hours,
-                                                    minutes
-                                                ),
+                                                startTime = indexToTimeString(index),
                                                 commitmentEntity = commitments[indexCommitment],
                                                 cellWidth = cellWidth,
                                                 colspan = colspan,
@@ -758,7 +743,6 @@ fun RowScope.TimelineGridItem(
     commitmentEntity: CommitmentEntity?,
     cellWidth: Dp,
     colspan: Int,
-    /* TODO: Check to improve variables names */
     continuesInNextCell: Boolean,
     continuesFromPreviousCell: Boolean,
     onViewCommitment: () -> Unit,
