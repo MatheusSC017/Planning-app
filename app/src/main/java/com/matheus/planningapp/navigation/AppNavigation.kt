@@ -85,8 +85,10 @@ fun AppNavigation () {
         }
         composable(Screens.CalendarsMenuScreen.route) {
             CalendarsMenuScreen(
-                onBackPressed = {
-                    navHostController.popBackStack()
+                onNavigateToCalendarScreen = {
+                    navHostController.navigate(
+                        Screens.CalendarScreen.route
+                    )
                 }
             )
         }

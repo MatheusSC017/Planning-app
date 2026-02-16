@@ -18,18 +18,22 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +53,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.ui.theme.DatabaseUiEvent
 import com.matheus.planningapp.view.components.ConfirmationDialog
+import com.matheus.planningapp.view.components.NavigationDrawerSheet
 import com.matheus.planningapp.viewmodel.CalendarMenuViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -57,9 +62,11 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarsMenuScreen(
-    onBackPressed: () -> Unit,
+    onNavigateToCalendarScreen: () -> Unit,
     calendarMenuViewModel: CalendarMenuViewModel = koinViewModel()
 ) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -82,40 +89,52 @@ fun CalendarsMenuScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Calendars",
-                        style = TextStyle(
-                            fontSize = 36.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                },
-                actions = {
-                    IconButton(
-                        onClick = onBackPressed
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-                }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            NavigationDrawerSheet(
+                selectedScreen = "Calendars",
+                onNavigateToCalendar = onNavigateToCalendarScreen,
+                onNavigateToCalendarsMenu = {},
+                onNavigateToSettings = {}
             )
         },
-        content = { paddingValues ->
-            CalendarsMenuContent(
-                modifier = Modifier.padding(paddingValues),
-                calendarMenuViewModel = calendarMenuViewModel
-            )
-        }
-    )
-
+    ) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackBarHostState) },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Calendars",
+                            style = TextStyle(
+                                fontSize = 36.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(64.dp)
+                            )
+                        }
+                    }
+                )
+            },
+            content = { paddingValues ->
+                CalendarsMenuContent(
+                    modifier = Modifier.padding(paddingValues),
+                    calendarMenuViewModel = calendarMenuViewModel
+                )
+            }
+        )
+    }
 }
 
 @Composable

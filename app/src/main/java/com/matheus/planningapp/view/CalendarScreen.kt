@@ -87,6 +87,7 @@ import com.matheus.planningapp.data.Priority
 import com.matheus.planningapp.helper.indexToTimeString
 import com.matheus.planningapp.helper.timeToIndex
 import com.matheus.planningapp.view.components.ConfirmationDialog
+import com.matheus.planningapp.view.components.NavigationDrawerSheet
 import com.matheus.planningapp.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -125,139 +126,12 @@ fun CalendarScreen (
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            /* TODO: Move DrawerSheet to a component file */
-            ModalDrawerSheet {
-                Column(
-                    modifier = Modifier.background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background,
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                MaterialTheme.colorScheme.background,
-                            ),
-                            start = Offset.Zero,
-                            end = Offset.Infinite
-                        )
-                    )
-                ) {
-                    Text(
-                        text = "Planning your life",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.padding(
-                            top = 16.dp,
-                            end = 16.dp,
-                            bottom = 32.dp,
-                            start = 16.dp
-                        )
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    NavigationDrawerItem(
-                        label = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.DateRange,
-                                    contentDescription = "Timeline",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.size(32.dp)
-                                )
-
-                                Text(
-                                    text = "Home",
-                                    style = MaterialTheme.typography.headlineMedium.copy(
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-                                )
-                            }
-                        },
-                        onClick = {},
-                        selected = true,
-                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
-                    )
-
-                    NavigationDrawerItem(
-                        label = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.DateRange,
-                                    contentDescription = "Calendars",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.size(32.dp)
-                                )
-
-                                Text(
-                                    text = "Calendars",
-                                    style = MaterialTheme.typography.headlineMedium.copy(
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-                                )
-                            }
-                        },
-                        onClick = {
-                            onNavigateToCalendarsMenu()
-                        },
-                        selected = false,
-                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
-                    )
-
-                    NavigationDrawerItem(
-                        label = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "Settings",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.size(32.dp)
-                                )
-
-                                Text(
-                                    text = "Settings",
-                                    style = MaterialTheme.typography.headlineMedium.copy(
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-                                )
-                            }
-                        },
-                        onClick = {
-                            /* TODO: Add Setting Screen */
-                        },
-                        selected = false,
-                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    HorizontalDivider()
-
-                    Text(
-                        text = "v 1.0.0",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.secondary
-                        ),
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
+            NavigationDrawerSheet(
+                selectedScreen = "Home",
+                onNavigateToCalendar = {},
+                onNavigateToCalendarsMenu = onNavigateToCalendarsMenu,
+                onNavigateToSettings = {}
+            )
         },
     ) {
         Scaffold (
@@ -269,7 +143,7 @@ fun CalendarScreen (
                     onCalendarSelected = { selectedCalendar = it},
                     columnViewSelected = columnViewSelected,
                     onViewSelected = { columnViewSelected = it },
-                    onMenuClick = { scope.launch { drawerState.open() }}
+                    onMenuClick = { scope.launch { drawerState.open() } }
                 )
             },
             content = { paddingValues ->
@@ -406,8 +280,7 @@ fun PlanningTopAppBar(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Menu",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(64.dp)
+                    modifier = Modifier.size(64.dp)
                 )
             }
         }
