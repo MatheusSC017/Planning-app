@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
@@ -50,6 +51,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -123,43 +125,138 @@ fun CalendarScreen (
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
+            /* TODO: Move DrawerSheet to a component file */
             ModalDrawerSheet {
-                Text(
-                    text = "Planning your life",
-                    style = TextStyle(
-                        fontSize = 40.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(
-                        top = 16.dp,
-                        end = 16.dp,
-                        bottom = 32.dp,
-                        start = 16.dp
+                Column(
+                    modifier = Modifier.background(
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.background,
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                MaterialTheme.colorScheme.background,
+                            ),
+                            start = Offset.Zero,
+                            end = Offset.Infinite
+                        )
                     )
-                )
-
-                HorizontalDivider()
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
                 ) {
                     Text(
-                        text = "Calendars",
-                        style = TextStyle(
-                            fontSize = 32.sp,
+                        text = "Planning your life",
+                        style = MaterialTheme.typography.headlineLarge.copy(
                             color = MaterialTheme.colorScheme.primary
                         ),
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .clickable {
-                                onNavigateToCalendarsMenu()
+                        modifier = Modifier.padding(
+                            top = 16.dp,
+                            end = 16.dp,
+                            bottom = 32.dp,
+                            start = 16.dp
+                        )
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    NavigationDrawerItem(
+                        label = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Timeline",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+
+                                Text(
+                                    text = "Home",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                )
                             }
+                        },
+                        onClick = {},
+                        selected = true,
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                    )
+
+                    NavigationDrawerItem(
+                        label = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Calendars",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+
+                                Text(
+                                    text = "Calendars",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                )
+                            }
+                        },
+                        onClick = {
+                            onNavigateToCalendarsMenu()
+                        },
+                        selected = false,
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                    )
+
+                    NavigationDrawerItem(
+                        label = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Settings",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+
+                                Text(
+                                    text = "Settings",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                )
+                            }
+                        },
+                        onClick = {
+                            /* TODO: Add Setting Screen */
+                        },
+                        selected = false,
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    HorizontalDivider()
+
+                    Text(
+                        text = "v 1.0.0",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.secondary
+                        ),
+                        modifier = Modifier.padding(16.dp)
                     )
                 }
-
             }
         },
     ) {
@@ -180,12 +277,14 @@ fun CalendarScreen (
                     modifier = Modifier
                         .padding(paddingValues)
                         .background(
-                            Brush.verticalGradient(
+                            Brush.linearGradient(
                                 listOf(
                                     MaterialTheme.colorScheme.background,
                                     MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
                                     MaterialTheme.colorScheme.background,
-                                )
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite
                             )
                         ),
                     selectedCalendar = selectedCalendar,
@@ -479,6 +578,7 @@ fun CalendarContent(
             }
         }
 
+        /* TODO: Clear CalendarContent, move the timeline and grid to separate functions. */
         if (columnViewSelected) {
             if (commitments.isEmpty()) {
                 items(48) { index ->
