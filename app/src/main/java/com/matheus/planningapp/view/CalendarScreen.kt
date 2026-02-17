@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -101,6 +103,7 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
+import kotlin.compareTo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -315,7 +318,6 @@ fun CalendarContent(
         date.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
     }
     val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
-    var commitmentsLastIndex = remember(commitments) { 0 }
 
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -451,144 +453,32 @@ fun CalendarContent(
             }
         }
 
-        /* TODO: Clear CalendarContent, move the timeline and grid to separate functions. */
         if (columnViewSelected) {
-            if (commitments.isEmpty()) {
-                items(48) { index ->
-                    TimelineRow(
-                        startTime = indexToTimeString(index),
-                        commitment = null,
-                        onViewCommitment = {},
-                        onNavigateToUpdateCommitment = {},
-                        onDeleteCommitment = {}
-                    )
+            timelineColumn(
+                commitments,
+                onViewCommitment = { commitment ->
+                    selectedCommitment = commitment
+                    showCommitmentViewDialog = true
+                },
+                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                onDeleteCommitment = { commitment ->
+                    selectedCommitment = commitment
+                    showDeleteDialog = true
                 }
-            } else {
-                val timesList = List(48) { it }
-                commitments.forEach { commitment ->
-                    val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                    val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                    val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
-                    val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
-
-                    if (commitmentsLastIndex < commitmentStartIndex) {
-                        items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
-                            TimelineRow(
-                                startTime = indexToTimeString(index),
-                                commitment = null,
-                                onViewCommitment = {},
-                                onNavigateToUpdateCommitment = {},
-                                onDeleteCommitment = {}
-                            )
-                        }
-                    }
-
-                    commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
-                        else timeToIndex(commitmentEndDateTime.time)
-
-                    item {
-                        TimelineRow(
-                            startTime = commitmentStartTime,
-                            commitment = commitment,
-                            onViewCommitment = {
-                                selectedCommitment = commitment
-                                showCommitmentViewDialog = true
-                            },
-                            onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                            onDeleteCommitment = {
-                                selectedCommitment = commitment
-                                showDeleteDialog = true
-                            }
-                        )
-                    }
-                }
-
-                if (commitmentsLastIndex < 48) {
-                    items(timesList.subList(commitmentsLastIndex, 48)) { index ->
-                        TimelineRow(
-                            startTime = indexToTimeString(index),
-                            commitment = null,
-                            onViewCommitment = {},
-                            onNavigateToUpdateCommitment = {},
-                            onDeleteCommitment = {}
-                        )
-
-                    }
-                }
-            }
+            )
         } else {
-            val timelineItems = List(48) { -1 }.toMutableList()
-            val finalIndexCommitments: MutableList<Int> = emptyList<Int>().toMutableList()
-            commitments.forEachIndexed { index, commitment ->
-                val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
-                val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
-                    else timeToIndex(commitmentEndDateTime.time)
-                finalIndexCommitments.add(commitmentEndIndex)
-
-                for (i in commitmentStartIndex until commitmentEndIndex) {
-                    timelineItems[i] = index
+            timelineGrid(
+                commitments,
+                onViewCommitment = { commitment ->
+                    selectedCommitment = commitment
+                    showCommitmentViewDialog = true
+                },
+                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                onDeleteCommitment = { commitment ->
+                    selectedCommitment = commitment
+                    showDeleteDialog = true
                 }
-            }
-
-            item {
-                timelineItems
-                    .withIndex()
-                    .chunked(4)
-                    .forEach { indexsRow ->
-                        BoxWithConstraints(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val cellWidth = maxWidth / 4
-
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                indexsRow.forEach { indexedHour ->
-                                    val index = indexedHour.index
-                                    val indexCommitment = indexedHour.value
-
-                                    if (indexCommitment == -1) {
-                                        TimelineGridItem(
-                                            startTime = indexToTimeString(index),
-                                            commitmentEntity = null,
-                                            cellWidth = cellWidth,
-                                            colspan = 1,
-                                            continuesInNextCell = false,
-                                            continuesFromPreviousCell = false,
-                                            onViewCommitment = {},
-                                            onNavigateToUpdateCommitment = {},
-                                            onDeleteCommitment = {}
-                                        )
-                                    } else {
-                                        // Start a new block if this is the first column in the row (index % 4 == 0)
-                                        // or if the current commitment is different from the previous one.
-                                        if ((index % 4 == 0) || timelineItems[index - 1] != indexCommitment) {
-                                            val commitmentEndIndex = finalIndexCommitments[indexCommitment]
-                                            val colspan = if (commitmentEndIndex - index + 1 > 4) 4 else commitmentEndIndex - index
-                                            TimelineGridItem(
-                                                startTime = indexToTimeString(index),
-                                                commitmentEntity = commitments[indexCommitment],
-                                                cellWidth = cellWidth,
-                                                colspan = colspan,
-                                                continuesInNextCell = if (index + colspan <= 47) timelineItems[index + colspan] == indexCommitment else false,
-                                                continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
-                                                onViewCommitment = {
-                                                    selectedCommitment = commitments[indexCommitment]
-                                                    showCommitmentViewDialog = true
-                                                },
-                                                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                                                onDeleteCommitment = {
-                                                    selectedCommitment = commitments[indexCommitment]
-                                                    showDeleteDialog = true
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-            }
+            )
         }
     }
 }
@@ -710,6 +600,80 @@ fun DaysOnlyCalendar(
     }
 }
 
+fun LazyListScope.timelineGrid(
+    commitments: List<CommitmentEntity>,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+) {
+    val timelineItems = List(48) { -1 }.toMutableList()
+    val finalIndexCommitments: MutableList<Int> = emptyList<Int>().toMutableList()
+    commitments.forEachIndexed { index, commitment ->
+        val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+        val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+        val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
+        val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
+        else timeToIndex(commitmentEndDateTime.time)
+        finalIndexCommitments.add(commitmentEndIndex)
+
+        for (i in commitmentStartIndex until commitmentEndIndex) {
+            timelineItems[i] = index
+        }
+    }
+
+    item {
+        timelineItems
+            .withIndex()
+            .chunked(4)
+            .forEach { indexsRow ->
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val cellWidth = maxWidth / 4
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        indexsRow.forEach { indexedHour ->
+                            val index = indexedHour.index
+                            val indexCommitment = indexedHour.value
+
+                            if (indexCommitment == -1) {
+                                TimelineGridItem(
+                                    startTime = indexToTimeString(index),
+                                    commitmentEntity = null,
+                                    cellWidth = cellWidth,
+                                    colspan = 1,
+                                    continuesInNextCell = false,
+                                    continuesFromPreviousCell = false,
+                                    onViewCommitment = {},
+                                    onNavigateToUpdateCommitment = {},
+                                    onDeleteCommitment = {}
+                                )
+                            } else {
+                                // Start a new block if this is the first column in the row (index % 4 == 0)
+                                // or if the current commitment is different from the previous one.
+                                if ((index % 4 == 0) || timelineItems[index - 1] != indexCommitment) {
+                                    val commitmentEndIndex = finalIndexCommitments[indexCommitment]
+                                    val colspan = if (commitmentEndIndex - index + 1 > 4) 4 else commitmentEndIndex - index
+                                    TimelineGridItem(
+                                        startTime = indexToTimeString(index),
+                                        commitmentEntity = commitments[indexCommitment],
+                                        cellWidth = cellWidth,
+                                        colspan = colspan,
+                                        continuesInNextCell = if (index + colspan <= 47) timelineItems[index + colspan] == indexCommitment else false,
+                                        continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
+                                        onViewCommitment = onViewCommitment,
+                                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                                        onDeleteCommitment = onDeleteCommitment
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    }
+}
+
 @Composable
 fun RowScope.TimelineGridItem(
     startTime: String,
@@ -718,9 +682,9 @@ fun RowScope.TimelineGridItem(
     colspan: Int,
     continuesInNextCell: Boolean,
     continuesFromPreviousCell: Boolean,
-    onViewCommitment: () -> Unit,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    onDeleteCommitment: () -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ){
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -824,7 +788,7 @@ fun RowScope.TimelineGridItem(
                             },
                             onClick = {
                                 menuExpanded = false
-                                onViewCommitment()
+                                onViewCommitment(commitmentEntity)
                             },
                             leadingIcon = {
                                 Icon(
@@ -861,7 +825,7 @@ fun RowScope.TimelineGridItem(
                             text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
                             onClick = {
                                 menuExpanded = false
-                                onDeleteCommitment()
+                                onDeleteCommitment(commitmentEntity)
                             },
                             leadingIcon = {
                                 Icon(
@@ -878,13 +842,81 @@ fun RowScope.TimelineGridItem(
     }
 }
 
+fun LazyListScope.timelineColumn(
+    commitments: List<CommitmentEntity>,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+) {
+    var commitmentsLastIndex = 0
+
+    if (commitments.isEmpty()) {
+        items(48) { index ->
+            TimelineRow(
+                startTime = indexToTimeString(index),
+                commitment = null,
+                onViewCommitment = {},
+                onNavigateToUpdateCommitment = {},
+                onDeleteCommitment = {}
+            )
+        }
+    } else {
+        val timesList = List(48) { it }
+        commitments.forEach { commitment ->
+            val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+            val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+            val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+            val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
+
+            if (commitmentsLastIndex < commitmentStartIndex) {
+                items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
+                    TimelineRow(
+                        startTime = indexToTimeString(index),
+                        commitment = null,
+                        onViewCommitment = {},
+                        onNavigateToUpdateCommitment = {},
+                        onDeleteCommitment = {}
+                    )
+                }
+            }
+
+            commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
+            else timeToIndex(commitmentEndDateTime.time)
+
+
+            item {
+                TimelineRow(
+                    startTime = commitmentStartTime,
+                    commitment = commitment,
+                    onViewCommitment = onViewCommitment,
+                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                    onDeleteCommitment = onDeleteCommitment
+                )
+            }
+        }
+
+        if (commitmentsLastIndex < 48) {
+            items(timesList.subList(commitmentsLastIndex, 48)) { index ->
+                TimelineRow(
+                    startTime = indexToTimeString(index),
+                    commitment = null,
+                    onViewCommitment = {},
+                    onNavigateToUpdateCommitment = {},
+                    onDeleteCommitment = {}
+                )
+
+            }
+        }
+    }
+}
+
 @Composable
 fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
-    onViewCommitment: () -> Unit,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    onDeleteCommitment: () -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -926,9 +958,9 @@ fun TimelineRow(
 @Composable
 fun CommitmentCard(
     commitmentEntity: CommitmentEntity,
-    onViewCommitment: () -> Unit,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    onDeleteCommitment: () -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -1004,7 +1036,7 @@ fun CommitmentCard(
                         text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
-                            onViewCommitment()
+                            onViewCommitment(commitmentEntity)
                         },
                         leadingIcon = {
                             Icon(
@@ -1036,7 +1068,7 @@ fun CommitmentCard(
                         text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             menuExpanded = false
-                            onDeleteCommitment()
+                            onDeleteCommitment(commitmentEntity)
                         },
                         leadingIcon = {
                             Icon(
