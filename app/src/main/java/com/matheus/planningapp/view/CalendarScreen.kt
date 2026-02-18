@@ -299,23 +299,19 @@ fun CalendarContent(
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     calendarViewModel: CalendarViewModel
 ) {
+    val uiState by calendarViewModel.uiState.collectAsStateWithLifecycle()
+    val selectedDate = uiState.selectedDate
     val months = listOf(
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     )
-    var selectedDay by remember { mutableIntStateOf(LocalDate.now().dayOfMonth) }
-    var selectedMonth by remember { mutableIntStateOf(LocalDate.now().monthValue) }
-    var selectedYear by remember { mutableIntStateOf(LocalDate.now().year) }
 
     val zone = remember { ZoneId.systemDefault() }
-    val date = remember(selectedYear, selectedMonth, selectedDay) {
-        LocalDate.of(selectedYear, selectedMonth, selectedDay)
+    val startOfDay = remember(selectedDate) {
+        selectedDate.atStartOfDay(zone).toInstant().toKotlinInstant()
     }
-    val startOfDay = remember(date) {
-        date.atStartOfDay(zone).toInstant().toKotlinInstant()
-    }
-    val endOfDay = remember(date) {
-        date.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
+    val endOfDay = remember(selectedDate) {
+        selectedDate.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
     }
     val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
 
@@ -360,7 +356,7 @@ fun CalendarContent(
                     modifier = Modifier.padding(bottom = 16.dp)
                 ) {
                     Text(
-                        text = selectedYear.toString(),
+                        text = selectedDate.year.toString(),
                         style = TextStyle(
                             fontSize = 48.sp,
                             color = MaterialTheme.colorScheme.primary
@@ -376,7 +372,7 @@ fun CalendarContent(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .size(24.dp)
-                                .clickable { selectedYear += 1 }
+                                .clickable { calendarViewModel.incrementYear() }
                         )
 
                         Icon(
@@ -386,7 +382,7 @@ fun CalendarContent(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .size(24.dp)
-                                .clickable { selectedYear -= 1 }
+                                .clickable { calendarViewModel.decrementYear() }
                         )
                     }
 
@@ -394,12 +390,12 @@ fun CalendarContent(
 
                 MonthGrid(
                     months = months,
-                    selectedMonth = selectedMonth,
-                    onMonthSelected = { selectedMonth = it }
+                    selectedMonth = selectedDate.monthValue,
+                    onMonthSelected = { calendarViewModel.onSelectedDate(month = it) }
                 )
 
                 Text(
-                    text = months[selectedMonth - 1],
+                    text = months[selectedDate.monthValue - 1],
                     style = TextStyle(
                         fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.primary
@@ -412,9 +408,9 @@ fun CalendarContent(
                 )
 
                 DaysOnlyCalendar(
-                    yearMonth = YearMonth.of(selectedYear, selectedMonth),
-                    selectedDay = selectedDay,
-                    onDateSelected = { selectedDay = it }
+                    yearMonth = YearMonth.of(selectedDate.year, selectedDate.monthValue),
+                    selectedDay = selectedDate.dayOfMonth,
+                    onDateSelected = { calendarViewModel.onSelectedDate(day = it) }
                 )
 
                 Row (
@@ -569,7 +565,7 @@ fun DaysOnlyCalendar(
                 repeat(7) { column ->
                     val cellIndex = row * 7 + column
 
-                    if (cellIndex < firstDayOfWeek) {
+                    if (cellIndex < firstDayOfWeek || cellIndex >= firstDayOfWeek + daysInMonth) {
                         Box(modifier = Modifier.size(40.dp))
                     } else {
                         val day =  cellIndex - firstDayOfWeek + 1
