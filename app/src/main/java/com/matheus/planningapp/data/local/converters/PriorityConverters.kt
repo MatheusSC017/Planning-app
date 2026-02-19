@@ -1,4 +1,4 @@
-package com.matheus.planningapp.data
+package com.matheus.planningapp.data.local.converters
 
 import androidx.room.TypeConverter
 

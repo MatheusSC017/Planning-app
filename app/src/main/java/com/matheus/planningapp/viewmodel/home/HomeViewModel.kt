@@ -1,11 +1,11 @@
-package com.matheus.planningapp.viewmodel
+package com.matheus.planningapp.viewmodel.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.matheus.planningapp.data.CalendarEntity
-import com.matheus.planningapp.data.CalendarRepository
-import com.matheus.planningapp.data.CommitmentEntity
-import com.matheus.planningapp.data.CommitmentRepository
+import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.data.calendar.CalendarRepository
+import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.data.commitment.CommitmentRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,14 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import java.time.LocalDate
-import java.time.Year
 import java.time.YearMonth
 
-data class CalendarState(
-    val selectedDate: LocalDate = LocalDate.now()
-)
-
-class CalendarViewModel(
+class HomeViewModel(
     private val calendarRepository: CalendarRepository,
     private val commitmentRepository: CommitmentRepository
 ): ViewModel() {
@@ -33,8 +28,8 @@ class CalendarViewModel(
         }
     }
 
-    private val _uiState = MutableStateFlow(CalendarState())
-    val uiState: StateFlow<CalendarState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(HomeState())
+    val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
 
     fun onSelectedDate(year: Int? = null, month: Int? = null, day: Int? = null) {
         _uiState.update {

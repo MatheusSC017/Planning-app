@@ -1,4 +1,4 @@
-package com.matheus.planningapp.data
+package com.matheus.planningapp.data.calendar
 
 import androidx.room.Dao
 import androidx.room.Delete

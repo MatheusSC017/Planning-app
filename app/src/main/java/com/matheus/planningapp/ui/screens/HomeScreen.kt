@@ -1,4 +1,4 @@
-package com.matheus.planningapp.view
+package com.matheus.planningapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -31,7 +30,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
@@ -40,7 +38,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,22 +48,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,40 +73,34 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.matheus.planningapp.R
-import com.matheus.planningapp.data.CalendarEntity
-import com.matheus.planningapp.data.CommitmentEntity
-import com.matheus.planningapp.data.Priority
-import com.matheus.planningapp.helper.indexToTimeString
-import com.matheus.planningapp.helper.timeToIndex
-import com.matheus.planningapp.view.components.ConfirmationDialog
-import com.matheus.planningapp.view.components.NavigationDrawerSheet
-import com.matheus.planningapp.viewmodel.CalendarViewModel
-import kotlinx.coroutines.launch
+import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.util.indexToTimeString
+import com.matheus.planningapp.util.timeToIndex
+import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
-import kotlin.compareTo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen (
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    calendarViewModel: CalendarViewModel = koinViewModel(),
+    homeViewModel: HomeViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
-    val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
+    val calendarsEntities by homeViewModel.calendars.collectAsStateWithLifecycle()
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var columnViewSelected by remember { mutableStateOf(true) }
 
@@ -156,7 +141,7 @@ fun CalendarScreen (
                 columnViewSelected = columnViewSelected,
                 onNavigateToAddCommitment = onNavigateToAddCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                calendarViewModel = calendarViewModel
+                homeViewModel = homeViewModel
             )
         }
     )
@@ -284,9 +269,9 @@ fun CalendarContent(
     columnViewSelected: Boolean,
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    calendarViewModel: CalendarViewModel
+    homeViewModel: HomeViewModel
 ) {
-    val uiState by calendarViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val selectedDate = uiState.selectedDate
     val months = listOf(
         "January", "February", "March", "April", "May", "June",
@@ -300,7 +285,7 @@ fun CalendarContent(
     val endOfDay = remember(selectedDate) {
         selectedDate.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
     }
-    val commitments by calendarViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
+    val commitments by homeViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
 
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -318,7 +303,7 @@ fun CalendarContent(
         title = "Delete commitment",
         message = "Are you sure you want to delete this commitment?",
         onConfirm = { commitmentEntity: CommitmentEntity ->
-            calendarViewModel.deleteCommitment(commitmentEntity)
+            homeViewModel.deleteCommitment(commitmentEntity)
         },
         onDismissRequest = {
             showDeleteDialog = false
@@ -359,7 +344,7 @@ fun CalendarContent(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .size(24.dp)
-                                .clickable { calendarViewModel.incrementYear() }
+                                .clickable { homeViewModel.incrementYear() }
                         )
 
                         Icon(
@@ -369,7 +354,7 @@ fun CalendarContent(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .size(24.dp)
-                                .clickable { calendarViewModel.decrementYear() }
+                                .clickable { homeViewModel.decrementYear() }
                         )
                     }
 
@@ -378,7 +363,7 @@ fun CalendarContent(
                 MonthGrid(
                     months = months,
                     selectedMonth = selectedDate.monthValue,
-                    onMonthSelected = { calendarViewModel.onSelectedDate(month = it) }
+                    onMonthSelected = { homeViewModel.onSelectedDate(month = it) }
                 )
 
                 Text(
@@ -397,7 +382,7 @@ fun CalendarContent(
                 DaysOnlyCalendar(
                     yearMonth = YearMonth.of(selectedDate.year, selectedDate.monthValue),
                     selectedDay = selectedDate.dayOfMonth,
-                    onDateSelected = { calendarViewModel.onSelectedDate(day = it) }
+                    onDateSelected = { homeViewModel.onSelectedDate(day = it) }
                 )
 
                 Row (

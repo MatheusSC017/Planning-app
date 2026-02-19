@@ -1,9 +1,11 @@
-package com.matheus.planningapp.data
+package com.matheus.planningapp.data.commitment
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.data.local.converters.Priority
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 

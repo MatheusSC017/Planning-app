@@ -1,4 +1,4 @@
-package com.matheus.planningapp.view.components
+package com.matheus.planningapp.ui.screens.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -23,9 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.matheus.planningapp.BuildConfig
-import com.matheus.planningapp.navigation.Screens
 
 @Composable
 fun NavigationDrawerSheet(

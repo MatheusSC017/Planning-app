@@ -1,4 +1,4 @@
-package com.matheus.planningapp.helper
+package com.matheus.planningapp.util
 
 import kotlinx.datetime.LocalTime
 import java.util.Locale

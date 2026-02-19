@@ -1,4 +1,4 @@
-package com.matheus.planningapp.viewmodel
+package com.matheus.planningapp.viewmodel.commitment
 
 import kotlinx.datetime.Instant
 

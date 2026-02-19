@@ -1,6 +1,6 @@
-package com.matheus.planningapp.viewmodel
+package com.matheus.planningapp.viewmodel.commitment
 
-import com.matheus.planningapp.data.Priority
+import com.matheus.planningapp.data.local.converters.Priority
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 

@@ -1,4 +1,4 @@
-package com.matheus.planningapp.data
+package com.matheus.planningapp.data.calendar
 
 import androidx.room.Entity
 import androidx.room.Index

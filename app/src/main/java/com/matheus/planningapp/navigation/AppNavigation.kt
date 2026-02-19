@@ -11,13 +11,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.matheus.planningapp.view.CalendarScreen
-import com.matheus.planningapp.view.CalendarsMenuScreen
-import com.matheus.planningapp.viewmodel.CommitmentFormMode
-import com.matheus.planningapp.view.CommitmentScreen
-import com.matheus.planningapp.view.components.NavigationDrawerSheet
+import com.matheus.planningapp.ui.screens.CalendarScreen
+import com.matheus.planningapp.ui.screens.CalendarsMenuScreen
+import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
+import com.matheus.planningapp.ui.screens.CommitmentScreen
+import com.matheus.planningapp.ui.screens.components.NavigationDrawerSheet
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 
 
@@ -32,11 +31,11 @@ fun AppNavigation () {
         drawerContent = {
             NavigationDrawerSheet(
                 onNavigateToCalendarScreen = {
-                    navHostController.navigate(Screens.CalendarScreen.route)
+                    navHostController.navigate(Screens.HomeScreen.route)
                     scope.launch { drawerState.close() }
                 },
                 onNavigateToCalendarsMenuScreen = {
-                    navHostController.navigate(Screens.CalendarsMenuScreen.route)
+                    navHostController.navigate(Screens.CalendarScreen.route)
                     scope.launch { drawerState.close() }
                 },
                 onNavigateToSettingsScreen = {
@@ -47,9 +46,9 @@ fun AppNavigation () {
     ) {
         NavHost(
             navController = navHostController,
-            startDestination = Screens.CalendarScreen.route
+            startDestination = Screens.HomeScreen.route
         ) {
-            composable(Screens.CalendarScreen.route) {
+            composable(Screens.HomeScreen.route) {
                 CalendarScreen(
                     onNavigateToAddCommitment = { datetimeInstant, selectedCalendar ->
                         val payload = Json.encodeToString(
@@ -111,7 +110,7 @@ fun AppNavigation () {
                 )
 
             }
-            composable(Screens.CalendarsMenuScreen.route) {
+            composable(Screens.CalendarScreen.route) {
                 CalendarsMenuScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }

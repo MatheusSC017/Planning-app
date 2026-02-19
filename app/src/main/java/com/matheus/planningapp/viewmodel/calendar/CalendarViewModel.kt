@@ -1,11 +1,11 @@
-package com.matheus.planningapp.viewmodel
+package com.matheus.planningapp.viewmodel.calendar
 
 import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.matheus.planningapp.data.CalendarEntity
-import com.matheus.planningapp.data.CalendarRepository
-import com.matheus.planningapp.ui.theme.DatabaseUiEvent
+import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.data.calendar.CalendarRepository
+import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -93,7 +93,7 @@ class CalendarMenuViewModel(
         .getCalendars()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.Companion.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 

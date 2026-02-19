@@ -1,8 +1,6 @@
-package com.matheus.planningapp.data
+package com.matheus.planningapp.data.calendar
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 
 class CalendarRepositoryImpl(
     private val calendarDao: CalendarDao

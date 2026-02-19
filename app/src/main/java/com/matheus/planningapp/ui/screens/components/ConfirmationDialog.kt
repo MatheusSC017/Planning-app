@@ -1,4 +1,4 @@
-package com.matheus.planningapp.view.components
+package com.matheus.planningapp.ui.screens.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

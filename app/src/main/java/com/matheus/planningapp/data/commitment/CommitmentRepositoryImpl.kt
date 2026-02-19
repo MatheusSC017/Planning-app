@@ -1,4 +1,4 @@
-package com.matheus.planningapp.data
+package com.matheus.planningapp.data.commitment
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant

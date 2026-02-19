@@ -1,11 +1,10 @@
-package com.matheus.planningapp.viewmodel
+package com.matheus.planningapp.viewmodel.commitment
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.matheus.planningapp.data.CommitmentEntity
-import com.matheus.planningapp.data.CommitmentRepository
-import com.matheus.planningapp.data.Priority
-import com.matheus.planningapp.ui.theme.DatabaseUiEvent
+import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.data.local.converters.Priority
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
