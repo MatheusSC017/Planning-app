@@ -50,6 +50,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.ui.theme.DatabaseUiEvent
 import com.matheus.planningapp.view.components.ConfirmationDialog
@@ -62,11 +64,9 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarsMenuScreen(
-    onNavigateToCalendarScreen: () -> Unit,
-    calendarMenuViewModel: CalendarMenuViewModel = koinViewModel()
+    calendarMenuViewModel: CalendarMenuViewModel = koinViewModel(),
+    onMenuClick: () -> Unit
 ) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -89,52 +89,40 @@ fun CalendarsMenuScreen(
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            NavigationDrawerSheet(
-                selectedScreen = "Calendars",
-                onNavigateToCalendar = onNavigateToCalendarScreen,
-                onNavigateToCalendarsMenu = {},
-                onNavigateToSettings = {}
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Calendars",
+                        style = TextStyle(
+                            fontSize = 36.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = onMenuClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                }
             )
         },
-    ) {
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackBarHostState) },
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Calendars",
-                            style = TextStyle(
-                                fontSize = 36.sp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = { scope.launch { drawerState.open() } }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(64.dp)
-                            )
-                        }
-                    }
-                )
-            },
-            content = { paddingValues ->
-                CalendarsMenuContent(
-                    modifier = Modifier.padding(paddingValues),
-                    calendarMenuViewModel = calendarMenuViewModel
-                )
-            }
-        )
-    }
+        content = { paddingValues ->
+            CalendarsMenuContent(
+                modifier = Modifier.padding(paddingValues),
+                calendarMenuViewModel = calendarMenuViewModel
+            )
+        }
+    )
 }
 
 @Composable

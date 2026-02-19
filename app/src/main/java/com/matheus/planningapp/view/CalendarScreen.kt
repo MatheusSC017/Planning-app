@@ -82,6 +82,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.CalendarEntity
 import com.matheus.planningapp.data.CommitmentEntity
@@ -110,12 +112,9 @@ import kotlin.compareTo
 fun CalendarScreen (
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    onNavigateToCalendarsMenu: () -> Unit,
-    calendarViewModel: CalendarViewModel = koinViewModel()
+    calendarViewModel: CalendarViewModel = koinViewModel(),
+    onMenuClick: () -> Unit
 ) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
     val calendarsEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var columnViewSelected by remember { mutableStateOf(true) }
@@ -126,53 +125,41 @@ fun CalendarScreen (
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            NavigationDrawerSheet(
-                selectedScreen = "Home",
-                onNavigateToCalendar = {},
-                onNavigateToCalendarsMenu = onNavigateToCalendarsMenu,
-                onNavigateToSettings = {}
+    Scaffold (
+        topBar = {
+            PlanningTopAppBar(
+                modifier = Modifier,
+                calendarsEntities = calendarsEntities,
+                selectedCalendar = selectedCalendar,
+                onCalendarSelected = { selectedCalendar = it},
+                columnViewSelected = columnViewSelected,
+                onViewSelected = { columnViewSelected = it },
+                onMenuClick = onMenuClick
             )
         },
-    ) {
-        Scaffold (
-            topBar = {
-                PlanningTopAppBar(
-                    modifier = Modifier,
-                    calendarsEntities = calendarsEntities,
-                    selectedCalendar = selectedCalendar,
-                    onCalendarSelected = { selectedCalendar = it},
-                    columnViewSelected = columnViewSelected,
-                    onViewSelected = { columnViewSelected = it },
-                    onMenuClick = { scope.launch { drawerState.open() } }
-                )
-            },
-            content = { paddingValues ->
-                CalendarContent(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                    MaterialTheme.colorScheme.background,
-                                ),
-                                start = Offset.Zero,
-                                end = Offset.Infinite
-                            )
-                        ),
-                    selectedCalendar = selectedCalendar,
-                    columnViewSelected = columnViewSelected,
-                    onNavigateToAddCommitment = onNavigateToAddCommitment,
-                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                    calendarViewModel = calendarViewModel
-                )
-            }
-        )
-    }
+        content = { paddingValues ->
+            CalendarContent(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.background,
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                MaterialTheme.colorScheme.background,
+                            ),
+                            start = Offset.Zero,
+                            end = Offset.Infinite
+                        )
+                    ),
+                selectedCalendar = selectedCalendar,
+                columnViewSelected = columnViewSelected,
+                onNavigateToAddCommitment = onNavigateToAddCommitment,
+                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                calendarViewModel = calendarViewModel
+            )
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

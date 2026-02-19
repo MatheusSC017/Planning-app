@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
@@ -22,18 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.matheus.planningapp.BuildConfig
+import com.matheus.planningapp.navigation.Screens
 
 @Composable
 fun NavigationDrawerSheet(
-    selectedScreen: String,
-    onNavigateToCalendar: () -> Unit,
-    onNavigateToCalendarsMenu: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToCalendarScreen: () -> Unit,
+    onNavigateToCalendarsMenuScreen: () -> Unit,
+    onNavigateToSettingsScreen: () -> Unit
 ) {
-    /*
-    TODO: Read documentation if I really need to pass the method to all screen,
-        or there is a form to get the methods to navigate automatically
-    */
     ModalDrawerSheet {
         Column(
             modifier = Modifier.background(
@@ -80,6 +79,8 @@ fun NavigationDrawerSheet(
                             modifier = Modifier.size(32.dp)
                         )
 
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         Text(
                             text = "Home",
                             style = MaterialTheme.typography.headlineMedium.copy(
@@ -88,10 +89,8 @@ fun NavigationDrawerSheet(
                         )
                     }
                 },
-                onClick = {
-                    onNavigateToCalendar()
-                },
-                selected = selectedScreen == "Home",
+                onClick = onNavigateToCalendarScreen,
+                selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )
 
@@ -110,6 +109,8 @@ fun NavigationDrawerSheet(
                             modifier = Modifier.size(32.dp)
                         )
 
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         Text(
                             text = "Calendars",
                             style = MaterialTheme.typography.headlineMedium.copy(
@@ -118,10 +119,8 @@ fun NavigationDrawerSheet(
                         )
                     }
                 },
-                onClick = {
-                    onNavigateToCalendarsMenu()
-                },
-                selected = selectedScreen == "Calendars",
+                onClick = onNavigateToCalendarsMenuScreen,
+                selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )
 
@@ -140,6 +139,8 @@ fun NavigationDrawerSheet(
                             modifier = Modifier.size(32.dp)
                         )
 
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         Text(
                             text = "Settings",
                             style = MaterialTheme.typography.headlineMedium.copy(
@@ -148,10 +149,8 @@ fun NavigationDrawerSheet(
                         )
                     }
                 },
-                onClick = {
-                    onNavigateToSettings()
-                },
-                selected = selectedScreen == "Settings",
+                onClick = onNavigateToSettingsScreen,
+                selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )
 
@@ -160,7 +159,7 @@ fun NavigationDrawerSheet(
             HorizontalDivider()
 
             Text(
-                text = "v 1.0.0",
+                text = "Version ${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.secondary
                 ),

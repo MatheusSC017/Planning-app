@@ -1,6 +1,10 @@
 package com.matheus.planningapp.navigation
 
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,6 +15,8 @@ import com.matheus.planningapp.view.CalendarScreen
 import com.matheus.planningapp.view.CalendarsMenuScreen
 import com.matheus.planningapp.viewmodel.CommitmentFormMode
 import com.matheus.planningapp.view.CommitmentScreen
+import com.matheus.planningapp.view.components.NavigationDrawerSheet
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 
@@ -18,79 +24,100 @@ import kotlinx.serialization.json.Json
 @Composable
 fun AppNavigation () {
     val navHostController: NavHostController = rememberNavController()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    NavHost(
-        navController = navHostController,
-        startDestination = Screens.CalendarScreen.route
-    ) {
-        composable(Screens.CalendarScreen.route) {
-            CalendarScreen(
-                onNavigateToAddCommitment = { datetimeInstant, selectedCalendar ->
-                    val payload = Json.encodeToString(CreateCommitmentPayload(
-                        calendarId = selectedCalendar,
-                        datetimeInstant = datetimeInstant
-                    ))
-
-                    navHostController.navigate(
-                        "${Screens.CommitmentFormScreen.route}/create/$payload"
-                    )
-                },
-                onNavigateToUpdateCommitment = { commitmentId ->
-                    navHostController.navigate(
-                        "${Screens.CommitmentFormScreen.route}/edit/$commitmentId"
-                    )
-                },
-                onNavigateToCalendarsMenu = {
-                    navHostController.navigate(
-                        Screens.CalendarsMenuScreen.route
-                    )
-                }
-            )
-        }
-        composable(
-            route = "${Screens.CommitmentFormScreen.route}/{mode}/{payload}",
-            arguments = listOf(
-                navArgument("mode") { type = NavType.StringType },
-                navArgument("payload") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-
-            val modeArg = backStackEntry.arguments?.getString("mode")!!
-            val payloadArg = backStackEntry.arguments?.getString("payload")!!
-
-            val mode = when (modeArg) {
-                "create" -> {
-                    val payloadData = Json.decodeFromString<CreateCommitmentPayload>(payloadArg)
-
-                    CommitmentFormMode.Create(
-                        calendarId = payloadData.calendarId,
-                        initialInstant = payloadData.datetimeInstant
-                    )
-                }
-                "edit" -> {
-                    CommitmentFormMode.Edit(
-                        commitmentId = payloadArg.toInt()
-                    )
-                }
-                else -> error("Invalid mode")
-            }
-
-            CommitmentScreen(
-                onBackPressed = {
-                    navHostController.popBackStack()
-                },
-                commitmentFormMode = mode
-            )
-
-        }
-        composable(Screens.CalendarsMenuScreen.route) {
-            CalendarsMenuScreen(
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            NavigationDrawerSheet(
                 onNavigateToCalendarScreen = {
-                    navHostController.navigate(
-                        Screens.CalendarScreen.route
-                    )
+                    navHostController.navigate(Screens.CalendarScreen.route)
+                    scope.launch { drawerState.close() }
+                },
+                onNavigateToCalendarsMenuScreen = {
+                    navHostController.navigate(Screens.CalendarsMenuScreen.route)
+                    scope.launch { drawerState.close() }
+                },
+                onNavigateToSettingsScreen = {
+                    scope.launch { drawerState.close() }
                 }
             )
+        },
+    ) {
+        NavHost(
+            navController = navHostController,
+            startDestination = Screens.CalendarScreen.route
+        ) {
+            composable(Screens.CalendarScreen.route) {
+                CalendarScreen(
+                    onNavigateToAddCommitment = { datetimeInstant, selectedCalendar ->
+                        val payload = Json.encodeToString(
+                            CreateCommitmentPayload(
+                                calendarId = selectedCalendar,
+                                datetimeInstant = datetimeInstant
+                            )
+                        )
+
+                        navHostController.navigate(
+                            "${Screens.CommitmentFormScreen.route}/create/$payload"
+                        )
+                    },
+                    onNavigateToUpdateCommitment = { commitmentId ->
+                        navHostController.navigate(
+                            "${Screens.CommitmentFormScreen.route}/edit/$commitmentId"
+                        )
+                    },
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    }
+                )
+            }
+            composable(
+                route = "${Screens.CommitmentFormScreen.route}/{mode}/{payload}",
+                arguments = listOf(
+                    navArgument("mode") { type = NavType.StringType },
+                    navArgument("payload") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+
+                val modeArg = backStackEntry.arguments?.getString("mode")!!
+                val payloadArg = backStackEntry.arguments?.getString("payload")!!
+
+                val mode = when (modeArg) {
+                    "create" -> {
+                        val payloadData = Json.decodeFromString<CreateCommitmentPayload>(payloadArg)
+
+                        CommitmentFormMode.Create(
+                            calendarId = payloadData.calendarId,
+                            initialInstant = payloadData.datetimeInstant
+                        )
+                    }
+
+                    "edit" -> {
+                        CommitmentFormMode.Edit(
+                            commitmentId = payloadArg.toInt()
+                        )
+                    }
+
+                    else -> error("Invalid mode")
+                }
+
+                CommitmentScreen(
+                    onBackPressed = {
+                        navHostController.popBackStack()
+                    },
+                    commitmentFormMode = mode
+                )
+
+            }
+            composable(Screens.CalendarsMenuScreen.route) {
+                CalendarsMenuScreen(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    }
+                )
+            }
         }
     }
 }
