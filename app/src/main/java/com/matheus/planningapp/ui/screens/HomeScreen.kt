@@ -621,7 +621,7 @@ fun LazyListScope.timelineGrid(
                                 // or if the current commitment is different from the previous one.
                                 if ((index % 4 == 0) || timelineItems[index - 1] != indexCommitment) {
                                     val commitmentEndIndex = finalIndexCommitments[indexCommitment]
-                                    val colspan = if (commitmentEndIndex - index + 1 > 4) 4 else commitmentEndIndex - index
+                                    val colspan = if (commitmentEndIndex - index + 1 > 4) 4 - (index % 4) else commitmentEndIndex - index
                                     TimelineGridItem(
                                         startTime = indexToTimeString(index),
                                         commitmentEntity = commitments[indexCommitment],
@@ -694,10 +694,10 @@ fun RowScope.TimelineGridItem(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                var titleOfCell = startTime
-                if (commitmentEntity != null && colspan > 1) {
-                    val commitmentEndDateTime =
-                        commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                var titleOfCell = ""
+                if (!continuesFromPreviousCell) titleOfCell += startTime
+                if (commitmentEntity != null && !continuesInNextCell && (continuesFromPreviousCell || colspan > 1)) {
+                    val commitmentEndDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                     titleOfCell += String.format(
                         Locale.US,
                         " ~ %02d:%02d",
