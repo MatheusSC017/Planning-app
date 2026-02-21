@@ -18,7 +18,7 @@ class CommitmentFormViewModel(
     private val commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository
 ): ViewModel() {
-    private val _uiState = MutableStateFlow(CommitmentFormState())
+    private val _uiState = MutableStateFlow(CommitmentFormUiState())
     val uiState = _uiState.asStateFlow()
 
     fun onTitleChange(title: String) {

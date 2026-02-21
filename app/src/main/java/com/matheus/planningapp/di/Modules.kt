@@ -28,12 +28,12 @@ val appModules = module {
     single { get<CalendarDatabase>().commitmentDao() }
     single<CalendarRepository> { CalendarRepositoryImpl(get())}
     single<CommitmentRepository> { CommitmentRepositoryImpl(get())}
-    single { HomeViewModel(get(), get()) }
-    single { CalendarMenuViewModel(get()) }
+    viewModel { HomeViewModel(get(), get()) }
+    viewModel { CalendarMenuViewModel(get()) }
     viewModel { (commitmentFormMode: CommitmentFormMode) ->
         CommitmentFormViewModel(
             commitmentFormMode = commitmentFormMode,
-            commitmentRepository =get()
+            commitmentRepository = get()
         )
     }
 }

@@ -80,6 +80,7 @@ import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -100,13 +101,14 @@ fun CalendarScreen (
     homeViewModel: HomeViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
-    val calendarsEntities by homeViewModel.calendars.collectAsStateWithLifecycle()
+    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var columnViewSelected by remember { mutableStateOf(true) }
 
-    LaunchedEffect(calendarsEntities) {
-        if (selectedCalendar == null && calendarsEntities.isNotEmpty()) {
-            selectedCalendar = calendarsEntities.first()
+    LaunchedEffect( uiState.calendars) {
+        if (selectedCalendar == null &&  uiState.calendars.isNotEmpty()) {
+            selectedCalendar =  uiState.calendars.first()
         }
     }
 
@@ -114,7 +116,7 @@ fun CalendarScreen (
         topBar = {
             PlanningTopAppBar(
                 modifier = Modifier,
-                calendarsEntities = calendarsEntities,
+                calendarsEntities =  uiState.calendars,
                 selectedCalendar = selectedCalendar,
                 onCalendarSelected = { selectedCalendar = it},
                 columnViewSelected = columnViewSelected,
@@ -141,7 +143,8 @@ fun CalendarScreen (
                 columnViewSelected = columnViewSelected,
                 onNavigateToAddCommitment = onNavigateToAddCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                homeViewModel = homeViewModel
+                homeViewModel = homeViewModel,
+                uiState = uiState
             )
         }
     )
@@ -269,9 +272,9 @@ fun CalendarContent(
     columnViewSelected: Boolean,
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    uiState: HomeUiState
 ) {
-    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val selectedDate = uiState.selectedDate
     val months = listOf(
         "January", "February", "March", "April", "May", "June",

@@ -4,7 +4,7 @@ import com.matheus.planningapp.data.local.converters.Priority
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
-data class CommitmentFormState(
+data class CommitmentFormUiState(
     val id: Int? = null,
     val calendarId: Int = 0,
     val title: String = "",

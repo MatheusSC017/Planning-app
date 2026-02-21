@@ -55,7 +55,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
-import com.matheus.planningapp.viewmodel.commitment.CommitmentFormState
+import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -170,7 +170,7 @@ fun CommitmentScreen(
 @Composable
 fun CommitmentForm(
     modifier: Modifier,
-    uiState: CommitmentFormState,
+    uiState: CommitmentFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
