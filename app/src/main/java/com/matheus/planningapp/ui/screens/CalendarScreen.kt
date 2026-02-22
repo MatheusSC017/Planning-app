@@ -39,6 +39,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +58,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarsMenuScreen(
+fun CalendarScreen(
     calendarMenuViewModel: CalendarMenuViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
@@ -111,7 +113,19 @@ fun CalendarsMenuScreen(
         },
         content = { paddingValues ->
             CalendarsMenuContent(
-                modifier = Modifier.padding(paddingValues),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.background,
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                MaterialTheme.colorScheme.background,
+                            ),
+                            start = Offset.Zero,
+                            end = Offset.Infinite
+                        )
+                    ),
                 calendarMenuViewModel = calendarMenuViewModel
             )
         }

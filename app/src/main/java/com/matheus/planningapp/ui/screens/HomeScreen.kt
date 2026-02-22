@@ -1,5 +1,6 @@
 package com.matheus.planningapp.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -82,6 +83,7 @@ import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
+import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -95,7 +97,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen (
+fun HomeScreen (
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
     homeViewModel: HomeViewModel = koinViewModel(),
@@ -104,7 +106,7 @@ fun CalendarScreen (
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
-    var columnViewSelected by remember { mutableStateOf(true) }
+    var columnViewSelected by remember(uiState.viewMode) { mutableStateOf(uiState.viewMode == ViewOptions.COLUMN) }
 
     LaunchedEffect( uiState.calendars) {
         if (selectedCalendar == null &&  uiState.calendars.isNotEmpty()) {
@@ -162,7 +164,7 @@ fun PlanningTopAppBar(
     onMenuClick: () -> Unit
 ) {
 
-    var expandedCalendarDropDown by remember { mutableStateOf(false) }
+    var isExpandedCalendarDropDown by remember { mutableStateOf(false) }
 
     TopAppBar(
         modifier = modifier,
@@ -200,15 +202,15 @@ fun PlanningTopAppBar(
         },
         actions = {
             ExposedDropdownMenuBox(
-                expanded = expandedCalendarDropDown,
-                onExpandedChange = { expandedCalendarDropDown = !expandedCalendarDropDown }
+                expanded = isExpandedCalendarDropDown,
+                onExpandedChange = { isExpandedCalendarDropDown = !isExpandedCalendarDropDown }
             ) {
                 TextField(
                     value = selectedCalendar?.name ?: "",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expandedCalendarDropDown)
+                        ExposedDropdownMenuDefaults.TrailingIcon(isExpandedCalendarDropDown)
                     },
                     modifier = Modifier
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -229,8 +231,8 @@ fun PlanningTopAppBar(
                 )
 
                 ExposedDropdownMenu(
-                    expanded = expandedCalendarDropDown,
-                    onDismissRequest = { expandedCalendarDropDown = false },
+                    expanded = isExpandedCalendarDropDown,
+                    onDismissRequest = { isExpandedCalendarDropDown = false },
                     containerColor = MaterialTheme.colorScheme.background,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 ) {
@@ -244,7 +246,7 @@ fun PlanningTopAppBar(
                             },
                             onClick = {
                                 onCalendarSelected(calendarEntity)
-                                expandedCalendarDropDown = false
+                                isExpandedCalendarDropDown = false
                             }
                         )
                     }

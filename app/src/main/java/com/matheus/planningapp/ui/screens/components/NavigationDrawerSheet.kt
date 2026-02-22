@@ -27,8 +27,8 @@ import com.matheus.planningapp.BuildConfig
 
 @Composable
 fun NavigationDrawerSheet(
+    onNavigateToHomeScreen: () -> Unit,
     onNavigateToCalendarScreen: () -> Unit,
-    onNavigateToCalendarsMenuScreen: () -> Unit,
     onNavigateToSettingsScreen: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -87,7 +87,7 @@ fun NavigationDrawerSheet(
                         )
                     }
                 },
-                onClick = onNavigateToCalendarScreen,
+                onClick = onNavigateToHomeScreen,
                 selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )
@@ -117,7 +117,7 @@ fun NavigationDrawerSheet(
                         )
                     }
                 },
-                onClick = onNavigateToCalendarsMenuScreen,
+                onClick = onNavigateToCalendarScreen,
                 selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )

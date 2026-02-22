@@ -1,10 +1,13 @@
 package com.matheus.planningapp.viewmodel.home
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.ui.screens.ViewOptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +21,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 class HomeViewModel(
+    private val application: Application,
     private val calendarRepository: CalendarRepository,
     private val commitmentRepository: CommitmentRepository
 ): ViewModel() {
@@ -27,15 +31,18 @@ class HomeViewModel(
         }
     }
 
+    private val repository: SettingsRepository = SettingsRepository(application)
     private val _selectedDate = MutableStateFlow(LocalDate.now())
 
     val uiState: StateFlow<HomeUiState> = combine(
         _selectedDate,
-        calendarRepository.getCalendars()
-    ) { selectedDate, calendars ->
+        calendarRepository.getCalendars(),
+        repository.viewModeFlow
+    ) { selectedDate, calendars, viewModeFlow ->
         HomeUiState(
             selectedDate = selectedDate,
-            calendars = calendars
+            calendars = calendars,
+            viewMode = viewModeFlow
         )
     }.stateIn(
         scope = viewModelScope,

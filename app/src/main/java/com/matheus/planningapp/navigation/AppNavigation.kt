@@ -11,10 +11,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.matheus.planningapp.ui.screens.HomeScreen
 import com.matheus.planningapp.ui.screens.CalendarScreen
-import com.matheus.planningapp.ui.screens.CalendarsMenuScreen
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.ui.screens.CommitmentScreen
+import com.matheus.planningapp.ui.screens.SettingScreen
 import com.matheus.planningapp.ui.screens.components.NavigationDrawerSheet
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -30,15 +31,16 @@ fun AppNavigation () {
         drawerState = drawerState,
         drawerContent = {
             NavigationDrawerSheet(
-                onNavigateToCalendarScreen = {
+                onNavigateToHomeScreen = {
                     navHostController.navigate(Screens.HomeScreen.route)
                     scope.launch { drawerState.close() }
                 },
-                onNavigateToCalendarsMenuScreen = {
+                onNavigateToCalendarScreen = {
                     navHostController.navigate(Screens.CalendarScreen.route)
                     scope.launch { drawerState.close() }
                 },
                 onNavigateToSettingsScreen = {
+                    navHostController.navigate(Screens.SettingScreen.route)
                     scope.launch { drawerState.close() }
                 }
             )
@@ -49,7 +51,7 @@ fun AppNavigation () {
             startDestination = Screens.HomeScreen.route
         ) {
             composable(Screens.HomeScreen.route) {
-                CalendarScreen(
+                HomeScreen(
                     onNavigateToAddCommitment = { datetimeInstant, selectedCalendar ->
                         val payload = Json.encodeToString(
                             CreateCommitmentPayload(
@@ -111,7 +113,14 @@ fun AppNavigation () {
 
             }
             composable(Screens.CalendarScreen.route) {
-                CalendarsMenuScreen(
+                CalendarScreen(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    }
+                )
+            }
+            composable(Screens.SettingScreen.route) {
+                SettingScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     }

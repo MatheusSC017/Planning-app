@@ -1,0 +1,18 @@
+package com.matheus.planningapp.ui.screens
+
+enum class EmailOptions(val label: String) {
+    NO_SEND("Do not send"),
+    ALL_COMMITMENT("All commitments"),
+    MEDIUM_AND_HIGH_PRIORITY("Medium and High priority"),
+    ONLY_HIGH_PRIORITY("Only High priority");
+
+    companion object {
+        fun fromLabel(label: String?): EmailOptions {
+            return entries.firstOrNull({ it.label == label} ) ?: entries.first()
+        }
+
+        fun fromName(name: String?): EmailOptions {
+            return entries.firstOrNull { it.name == name } ?: entries.first()
+        }
+    }
+}

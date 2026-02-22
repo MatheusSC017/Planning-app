@@ -1,6 +1,7 @@
 package com.matheus.planningapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -145,6 +148,17 @@ fun CommitmentScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues)
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.background,
+                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                        MaterialTheme.colorScheme.background,
+                                    ),
+                                    start = Offset.Zero,
+                                    end = Offset.Infinite
+                                )
+                            )
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
@@ -155,7 +169,18 @@ fun CommitmentScreen(
                 else -> {
                     CommitmentForm(
                         modifier = Modifier
-                            .padding(paddingValues),
+                            .padding(paddingValues)
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.background,
+                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                        MaterialTheme.colorScheme.background,
+                                    ),
+                                    start = Offset.Zero,
+                                    end = Offset.Infinite
+                                )
+                            ),
                         uiState = uiState,
                         commitmentFormViewModel = commitmentFormViewModel
                     )
