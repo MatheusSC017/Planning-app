@@ -42,8 +42,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.viewmodel.setting.EmailOptions
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
-import kotlinx.coroutines.flow.combine
+import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,18 +102,15 @@ fun SettingsForm(
     modifier: Modifier,
     settignsViewModel: SettingViewModel = koinViewModel()
 ) {
-    val viewMode by settignsViewModel.viewMode.collectAsState()
     var isExpandedViewDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
-    LaunchedEffect(viewMode) {
-        selectedViewOption = viewMode
-    }
-
-    val emailOption by settignsViewModel.emailOption.collectAsState()
     var isExpandedEmailDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedEmailOption: EmailOptions by rememberSaveable { mutableStateOf(EmailOptions.NO_SEND) }
-    LaunchedEffect(emailOption) {
-        selectedEmailOption = emailOption
+
+    val uiState by settignsViewModel.uiState.collectAsState()
+    LaunchedEffect(uiState) {
+        selectedViewOption = uiState.viewMode
+        selectedEmailOption = uiState.emailOption
     }
 
 

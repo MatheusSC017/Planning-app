@@ -7,7 +7,6 @@ import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.datastore.SettingsRepository
-import com.matheus.planningapp.ui.screens.ViewOptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

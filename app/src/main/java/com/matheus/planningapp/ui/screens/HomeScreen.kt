@@ -1,6 +1,5 @@
 package com.matheus.planningapp.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,7 +82,7 @@ import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
-import com.matheus.planningapp.viewmodel.setting.SettingViewModel
+import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone

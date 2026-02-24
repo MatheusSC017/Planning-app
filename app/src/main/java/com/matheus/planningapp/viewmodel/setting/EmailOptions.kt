@@ -1,4 +1,4 @@
-package com.matheus.planningapp.ui.screens
+package com.matheus.planningapp.viewmodel.setting
 
 enum class EmailOptions(val label: String) {
     NO_SEND("Do not send"),

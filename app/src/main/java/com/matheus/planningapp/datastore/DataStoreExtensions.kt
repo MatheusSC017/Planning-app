@@ -6,8 +6,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.matheus.planningapp.ui.screens.EmailOptions
-import com.matheus.planningapp.ui.screens.ViewOptions
+import com.matheus.planningapp.viewmodel.setting.EmailOptions
+import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

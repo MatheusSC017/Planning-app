@@ -1,7 +1,7 @@
 package com.matheus.planningapp.viewmodel.home
 
 import com.matheus.planningapp.data.calendar.CalendarEntity
-import com.matheus.planningapp.ui.screens.ViewOptions
+import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import java.time.LocalDate
 
 data class HomeUiState(
