@@ -24,6 +24,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -106,13 +108,14 @@ fun SettingsForm(
     var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
     var isExpandedEmailDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedEmailOption: EmailOptions by rememberSaveable { mutableStateOf(EmailOptions.NO_SEND) }
+    var activeNotifications: Boolean by rememberSaveable { mutableStateOf( false ) }
 
     val uiState by settignsViewModel.uiState.collectAsState()
     LaunchedEffect(uiState) {
         selectedViewOption = uiState.viewMode
         selectedEmailOption = uiState.emailOption
+        activeNotifications = uiState.activeNotifications
     }
-
 
     var showDialog by remember { mutableStateOf(false) }
 
@@ -123,7 +126,7 @@ fun SettingsForm(
         message = "Are you sure you want to save the settings",
         onDismissRequest = { showDialog = false },
         onConfirm = {
-            settignsViewModel.updateSettings(selectedViewOption, selectedEmailOption)
+            settignsViewModel.updateSettings(selectedViewOption, selectedEmailOption, activeNotifications)
             showDialog = false
         }
     )
@@ -202,7 +205,7 @@ fun SettingsForm(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Send e-mail?",
+            text = "E-mail configuration",
             style = TextStyle(
                 fontSize = 24.sp,
                 color = MaterialTheme.colorScheme.secondary
@@ -261,6 +264,34 @@ fun SettingsForm(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Enable notifications",
+            style = TextStyle(
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.secondary
+            ),
+            modifier = Modifier.padding(8.dp)
+        )
+
+        Switch(
+            checked = activeNotifications,
+            onCheckedChange = { activeNotifications = it },
+            colors = SwitchDefaults.colors(
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                uncheckedBorderColor = MaterialTheme.colorScheme.secondary,
+                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                checkedBorderColor = MaterialTheme.colorScheme.primary
+                ),
+            modifier = Modifier.padding(
+                start = 16.dp,
+                end = 16.dp
+            )
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 
