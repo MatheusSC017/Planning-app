@@ -1,5 +1,13 @@
 package com.matheus.planningapp.ui.screens
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,9 +48,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.viewmodel.setting.EmailOptions
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
@@ -118,6 +128,16 @@ fun SettingsForm(
     }
 
     var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            /* TODO: Permission Granted */
+        } else {
+            /* TODO: Permission Denied */
+        }
+    }
 
     ConfirmationDialog(
         item = listOf(selectedViewOption, selectedEmailOption),
@@ -128,6 +148,30 @@ fun SettingsForm(
         onConfirm = {
             settignsViewModel.updateSettings(selectedViewOption, selectedEmailOption, activeNotifications)
             showDialog = false
+            if (uiState.activeNotifications != activeNotifications) {
+                if (activeNotifications) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+                        when {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED -> {
+                                /* TODO: Check if activeNotification change and create the notification to future commitments */
+                            }
+
+                            else -> {
+                                notificationPermissionLauncher.launch(
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                )
+                            }
+                        }
+                    }
+
+                } else {
+                    /* TODO: Delete the notification to future commitments */
+                }
+            }
         }
     )
 
@@ -278,7 +322,9 @@ fun SettingsForm(
 
         Switch(
             checked = activeNotifications,
-            onCheckedChange = { activeNotifications = it },
+            onCheckedChange = {
+                activeNotifications = it
+            },
             colors = SwitchDefaults.colors(
                 uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
                 uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -320,5 +366,3 @@ fun SettingsForm(
         }
     }
 }
-
-

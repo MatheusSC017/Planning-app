@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.serialization.json)
     implementation(libs.kotlinx.datetime)
     implementation(libs.datastore.preference)
+    implementation(libs.activity)
+    implementation(libs.fragment)
     ksp(libs.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

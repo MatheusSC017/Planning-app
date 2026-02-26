@@ -34,8 +34,8 @@ data class CommitmentEntity (
     val description: String?,
     val startDateTime: Instant,
     val endDateTime: Instant,
-    val allDay: Boolean,
     val priority: Priority,
+    val notificationRequestCode: Int? = null,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
 )

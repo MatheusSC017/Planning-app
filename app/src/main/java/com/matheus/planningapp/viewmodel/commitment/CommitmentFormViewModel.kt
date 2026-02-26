@@ -99,7 +99,6 @@ class CommitmentFormViewModel(
             description = uiState.value.description,
             startDateTime = uiState.value.startInstant,
             endDateTime =  uiState.value.endInstant,
-            allDay = false,
             priority = uiState.value.priority
         )
 
