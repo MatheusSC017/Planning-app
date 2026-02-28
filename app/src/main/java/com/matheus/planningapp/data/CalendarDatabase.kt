@@ -12,7 +12,7 @@ import com.matheus.planningapp.data.local.converters.PriorityConverters
 
 @Database(
     entities = [CalendarEntity::class, CommitmentEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(DateTimeConverters::class, PriorityConverters::class)

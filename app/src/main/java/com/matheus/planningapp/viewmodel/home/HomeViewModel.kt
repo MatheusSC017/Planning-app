@@ -70,7 +70,7 @@ class HomeViewModel(
         onSelectedDate(year = _selectedDate.value.year - 1)
     }
 
-    fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Int): Flow<List<CommitmentEntity>> {
+    fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Long): Flow<List<CommitmentEntity>> {
         return commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar)
     }
 

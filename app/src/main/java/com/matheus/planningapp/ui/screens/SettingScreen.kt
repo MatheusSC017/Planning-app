@@ -1,12 +1,16 @@
 package com.matheus.planningapp.ui.screens
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -129,15 +133,7 @@ fun SettingsForm(
 
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            /* TODO: Permission Granted */
-        } else {
-            /* TODO: Permission Denied */
-        }
-    }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {}
 
     ConfirmationDialog(
         item = listOf(selectedViewOption, selectedEmailOption),
@@ -150,24 +146,7 @@ fun SettingsForm(
             showDialog = false
             if (uiState.activeNotifications != activeNotifications) {
                 if (activeNotifications) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-                        when {
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.POST_NOTIFICATIONS
-                            ) == PackageManager.PERMISSION_GRANTED -> {
-                                /* TODO: Check if activeNotification change and create the notification to future commitments */
-                            }
-
-                            else -> {
-                                notificationPermissionLauncher.launch(
-                                    Manifest.permission.POST_NOTIFICATIONS
-                                )
-                            }
-                        }
-                    }
-
+                    scheduleNotification(notificationPermissionLauncher, context)
                 } else {
                     /* TODO: Delete the notification to future commitments */
                 }
@@ -365,4 +344,27 @@ fun SettingsForm(
             }
         }
     }
+}
+
+fun scheduleNotification(notificationPermissionLauncher: ActivityResultLauncher<String>, context: Context) {
+    if (Build.VERSION.SDK_INT >= 33) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+            return
+        }
+    }
+
+    if (Build.VERSION.SDK_INT >= 31) {
+        val alarmManager = context.getSystemService(AlarmManager::class.java)
+        if (!alarmManager.canScheduleExactAlarms()) {
+            context.startActivity(
+                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            )
+            return
+        }
+    }
+
+    /* TODO: Create the notification to future commitments */
 }

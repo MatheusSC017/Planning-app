@@ -1,5 +1,11 @@
 package com.matheus.planningapp.ui.screens
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,19 +54,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.util.NotificationHelper
 import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -199,6 +209,8 @@ fun CommitmentForm(
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val notificationHelper = NotificationHelper(context)
 
     LazyColumn(
         modifier = modifier
@@ -361,9 +373,29 @@ fun CommitmentForm(
                     ),
                     onClick = {
                         if (uiState.id == null) {
-                            commitmentFormViewModel.insertCommitment()
+                            commitmentFormViewModel.insertCommitment(
+                                onResult = { commitmentEntity ->
+                                    if (Build.VERSION.SDK_INT >= 31) {
+                                        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+                                        if ((commitmentEntity.startDateTime > Clock.System.now()) &&
+                                            (ContextCompat.checkSelfPermission(
+                                                context,
+                                                Manifest.permission.POST_NOTIFICATIONS
+                                            ) == PackageManager.PERMISSION_GRANTED) &&
+                                            (alarmManager.canScheduleExactAlarms())
+                                        ) {
+                                            notificationHelper.scheduleTaskNotification(
+                                                commitmentEntity
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+
                         } else {
                             commitmentFormViewModel.updateCommitment()
+                            /* TODO: Implement method to update task time */
                         }
 
                     }

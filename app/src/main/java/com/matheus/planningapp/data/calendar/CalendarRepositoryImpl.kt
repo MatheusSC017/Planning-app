@@ -21,7 +21,7 @@ class CalendarRepositoryImpl(
         return calendarDao.getCalendars()
     }
 
-    override suspend fun getCalendarById(calendarId: Int): CalendarEntity? {
+    override suspend fun getCalendarById(calendarId: Long): CalendarEntity? {
         return calendarDao.getCalendarById(calendarId)
     }
 

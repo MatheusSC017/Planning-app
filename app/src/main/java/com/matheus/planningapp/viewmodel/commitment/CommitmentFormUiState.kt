@@ -5,8 +5,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 data class CommitmentFormUiState(
-    val id: Int? = null,
-    val calendarId: Int = 0,
+    val id: Long? = null,
+    val calendarId: Long = 0,
     val title: String = "",
     val description: String = "",
     val startInstant: Instant = Clock.System.now(),

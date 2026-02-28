@@ -97,8 +97,8 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen (
-    onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToAddCommitment: (date: Instant, selectedCalendar: Long) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
@@ -271,8 +271,8 @@ fun CalendarContent(
     modifier: Modifier,
     selectedCalendar: CalendarEntity?,
     columnViewSelected: Boolean,
-    onNavigateToAddCommitment: (date: Instant, selectedCalendar: Int) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToAddCommitment: (date: Instant, selectedCalendar: Long) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel,
     uiState: HomeUiState
 ) {
@@ -575,7 +575,7 @@ fun DaysOnlyCalendar(
 fun LazyListScope.timelineGrid(
     commitments: List<CommitmentEntity>,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     val timelineItems = List(48) { -1 }.toMutableList()
@@ -655,7 +655,7 @@ fun RowScope.TimelineGridItem(
     continuesInNextCell: Boolean,
     continuesFromPreviousCell: Boolean,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ){
     var menuExpanded by remember { mutableStateOf(false) }
@@ -817,7 +817,7 @@ fun RowScope.TimelineGridItem(
 fun LazyListScope.timelineColumn(
     commitments: List<CommitmentEntity>,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     var commitmentsLastIndex = 0
@@ -887,7 +887,7 @@ fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     Row(
@@ -931,7 +931,7 @@ fun TimelineRow(
 fun CommitmentCard(
     commitmentEntity: CommitmentEntity,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Int) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }

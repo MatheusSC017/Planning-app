@@ -7,16 +7,16 @@ import kotlinx.datetime.Instant
 class CommitmentRepositoryImpl(
     private val commitmentDao: CommitmentDao
 ): CommitmentRepository {
-    override suspend fun getCommitment(commitmentId: Int): CommitmentEntity? {
+    override suspend fun getCommitment(commitmentId: Long): CommitmentEntity? {
         return commitmentDao.getCommitment(commitmentId)
     }
 
-    override fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Int): Flow<List<CommitmentEntity>> {
+    override fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Long): Flow<List<CommitmentEntity>> {
         return commitmentDao.getCommitmentsForDay(dayStart, dayEnd, calendar)
     }
 
-    override suspend fun insertCommitment(commitmentEntity: CommitmentEntity) {
-        commitmentDao.insert(commitmentEntity)
+    override suspend fun insertCommitment(commitmentEntity: CommitmentEntity): Long {
+        return commitmentDao.insert(commitmentEntity)
     }
 
     override suspend fun updateCommitment(commitmentEntity: CommitmentEntity) {
@@ -30,8 +30,8 @@ class CommitmentRepositoryImpl(
     override suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,
-        calendarId: Int,
-        commitmentId: Int?
+        calendarId: Long,
+        commitmentId: Long?
     ): Int {
         return commitmentDao.checkSchedulingConflictsBetweenCommitments(startDateTime, endDateTime, calendarId, commitmentId)
     }

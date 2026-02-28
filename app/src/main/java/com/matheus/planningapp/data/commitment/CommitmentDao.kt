@@ -12,7 +12,7 @@ import kotlinx.datetime.Instant
 @Dao
 interface CommitmentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(commitmentEntity: CommitmentEntity)
+    suspend fun insert(commitmentEntity: CommitmentEntity): Long
 
     @Update
     suspend fun update(commitmentEntity: CommitmentEntity)
@@ -21,7 +21,7 @@ interface CommitmentDao {
     suspend fun delete(commitmentEntity: CommitmentEntity)
 
     @Query("SELECT * FROM commitment WHERE id = :commitmentId")
-    suspend fun getCommitment(commitmentId: Int): CommitmentEntity?
+    suspend fun getCommitment(commitmentId: Long): CommitmentEntity?
 
     @Query("""
         SELECT * FROM commitment
@@ -31,7 +31,7 @@ interface CommitmentDao {
     fun getCommitmentsForDay(
         dayStart: Instant,
         dayEnd: Instant,
-        calendar: Int
+        calendar: Long
     ): Flow<List<CommitmentEntity>>
 
     @Query("""
@@ -44,7 +44,7 @@ interface CommitmentDao {
     suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,
-        calendarId: Int,
-        commitmentId: Int? = null
+        calendarId: Long,
+        commitmentId: Long? = null
     ): Int
 }

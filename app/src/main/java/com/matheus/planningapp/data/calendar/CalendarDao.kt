@@ -29,7 +29,7 @@ interface CalendarDao {
     fun getCalendars(): Flow<List<CalendarEntity>>
 
     @Query("SELECT * FROM Calendar WHERE id = :calendarId")
-    suspend fun getCalendarById(calendarId: Int): CalendarEntity?
+    suspend fun getCalendarById(calendarId: Long): CalendarEntity?
 
     @Query("SELECT COUNT(*) FROM Calendar")
     suspend fun countCalendars(): Int

@@ -92,7 +92,9 @@ class CommitmentFormViewModel(
         }
     }
 
-    fun insertCommitment() {
+    fun insertCommitment(
+        onResult: (commitmentEntity: CommitmentEntity) -> Unit
+    ) {
         val commitmentEntity = CommitmentEntity(
             calendar = uiState.value.calendarId,
             title = uiState.value.title,
@@ -132,9 +134,11 @@ class CommitmentFormViewModel(
                 return@launch
             }
 
-            commitmentRepository.insertCommitment(commitmentEntity)
+            val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
             _events.emit(DatabaseUiEvent.Saved)
+
+            onResult(commitmentEntity.copy(id = commitmentId))
         }
     }
 

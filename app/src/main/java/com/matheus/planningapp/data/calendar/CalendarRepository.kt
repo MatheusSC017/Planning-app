@@ -7,7 +7,7 @@ interface CalendarRepository {
     suspend fun updateCalendar(calendarEntity: CalendarEntity)
     suspend fun deleteCalendar(calendarEntity: CalendarEntity)
     fun getCalendars(): Flow<List<CalendarEntity>>
-    suspend fun getCalendarById(calendarId: Int): CalendarEntity?
+    suspend fun getCalendarById(calendarId: Long): CalendarEntity?
     suspend fun ensureDefaultCalendarExists()
     suspend fun setAllDefaultAsFalse()
 }

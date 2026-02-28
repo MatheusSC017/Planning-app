@@ -20,15 +20,5 @@ class PlanningAppApplication: Application() {
 
         val notificationHelper: NotificationHelper = NotificationHelper(applicationContext)
         notificationHelper.createNotificationChannel()
-        // Testing notifications
-        /*
-        if (ContextCompat.checkSelfPermission(
-            applicationContext,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED) {
-            notificationHelper.showNotification()
-        }
-         */
-
     }
 }

@@ -97,7 +97,7 @@ fun AppNavigation () {
 
                     "edit" -> {
                         CommitmentFormMode.Edit(
-                            commitmentId = payloadArg.toInt()
+                            commitmentId = payloadArg.toLong()
                         )
                     }
 

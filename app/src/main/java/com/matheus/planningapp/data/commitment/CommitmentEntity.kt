@@ -28,14 +28,13 @@ import kotlinx.datetime.Instant
 )
 data class CommitmentEntity (
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val calendar: Int,
+    val id: Long = 0,
+    val calendar: Long,
     val title: String,
     val description: String?,
     val startDateTime: Instant,
     val endDateTime: Instant,
     val priority: Priority,
-    val notificationRequestCode: Int? = null,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
 )
