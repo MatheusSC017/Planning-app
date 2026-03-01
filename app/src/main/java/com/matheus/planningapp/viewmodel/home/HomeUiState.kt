@@ -7,5 +7,6 @@ import java.time.LocalDate
 data class HomeUiState(
     val selectedDate: LocalDate = LocalDate.now(),
     val calendars: List<CalendarEntity> = emptyList(),
-    val viewMode: ViewOptions = ViewOptions.COLUMN
+    val viewMode: ViewOptions = ViewOptions.COLUMN,
+    val activeNotification: Boolean = false
 )

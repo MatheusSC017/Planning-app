@@ -12,5 +12,6 @@ data class CommitmentFormUiState(
     val startInstant: Instant = Clock.System.now(),
     val endInstant: Instant = Clock.System.now(),
     val priority: Priority = Priority.LOW,
+    val activeNotification: Boolean = false,
     val isLoading: Boolean = true
 )

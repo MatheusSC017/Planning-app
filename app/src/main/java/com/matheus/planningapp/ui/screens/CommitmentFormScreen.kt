@@ -1,11 +1,5 @@
 package com.matheus.planningapp.ui.screens
 
-import android.Manifest
-import android.app.AlarmManager
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +53,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
@@ -209,8 +202,7 @@ fun CommitmentForm(
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val notificationHelper = NotificationHelper(context)
+    val notificationHelper = NotificationHelper(LocalContext.current)
 
     LazyColumn(
         modifier = modifier
@@ -375,7 +367,7 @@ fun CommitmentForm(
                         if (uiState.id == null) {
                             commitmentFormViewModel.insertCommitment(
                                 onResult = { commitmentEntity ->
-                                    if ((commitmentEntity.startDateTime > Clock.System.now())) {
+                                    if ((uiState.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
                                         notificationHelper.scheduleTaskNotification(
                                             commitmentEntity
                                         )

@@ -13,12 +13,12 @@ import kotlinx.coroutines.launch
 class SettingViewModel(
     application: Application
 ): ViewModel() {
-    private val repository: SettingsRepository = SettingsRepository(application)
+    private val settingsRepository: SettingsRepository = SettingsRepository(application)
 
     val uiState: StateFlow<SettingUiState> = combine(
-        repository.viewModeFlow,
-        repository.emailOptionFlow,
-        repository.activeNotificationFlow
+        settingsRepository.viewModeFlow,
+        settingsRepository.emailOptionFlow,
+        settingsRepository.activeNotificationFlow
     ) { viewMode, emailOption, activeNotification ->
         SettingUiState(
             viewMode = viewMode,
@@ -33,7 +33,7 @@ class SettingViewModel(
 
     fun updateSettings(viewMode: ViewOptions, emailOption: EmailOptions, activeNotifications: Boolean) {
         viewModelScope.launch {
-            repository.saveSettings(viewMode, emailOption, activeNotifications)
+            settingsRepository.saveSettings(viewMode, emailOption, activeNotifications)
         }
     }
 }

@@ -1,25 +1,48 @@
 package com.matheus.planningapp.viewmodel.commitment
 
+import android.app.Application
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.datastore.SettingsRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.minutes
 
 class CommitmentFormViewModel(
+    application: Application,
     private val commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository
 ): ViewModel() {
+    private val settingsRepository: SettingsRepository = SettingsRepository(application)
+
     private val _uiState = MutableStateFlow(CommitmentFormUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<CommitmentFormUiState> = combine(
+        _uiState,
+        settingsRepository.activeNotificationFlow
+    ) { currentUiState, activeNotifications ->
+        currentUiState.copy(
+            activeNotification = activeNotifications
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = CommitmentFormUiState()
+    )
+
 
     fun onTitleChange(title: String) {
         _uiState.update {

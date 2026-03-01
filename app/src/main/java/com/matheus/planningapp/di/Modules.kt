@@ -33,6 +33,7 @@ val appModules = module {
     viewModel { CalendarMenuViewModel(get()) }
     viewModel { (commitmentFormMode: CommitmentFormMode) ->
         CommitmentFormViewModel(
+            application = get(),
             commitmentFormMode = commitmentFormMode,
             commitmentRepository = get()
         )

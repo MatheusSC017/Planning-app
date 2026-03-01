@@ -66,6 +66,26 @@ class NotificationHelper(private val context: Context) {
         )
 
     }
+
+    fun updateTaskNotification(commitmentEntity: CommitmentEntity) {
+        TODO("Not yet implemented")
+    }
+
+    fun cancelTaskNotification(commitmentEntity: CommitmentEntity) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            commitmentEntity.id.toInt(),
+            Intent(context, NotificationReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        pendingIntent?.let {
+            alarmManager.cancel(it)
+            it.cancel()
+        }
+    }
 }
 
 class NotificationReceiver: BroadcastReceiver() {

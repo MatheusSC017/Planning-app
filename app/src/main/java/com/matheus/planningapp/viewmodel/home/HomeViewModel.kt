@@ -30,18 +30,20 @@ class HomeViewModel(
         }
     }
 
-    private val repository: SettingsRepository = SettingsRepository(application)
+    private val settingsRepository: SettingsRepository = SettingsRepository(application)
     private val _selectedDate = MutableStateFlow(LocalDate.now())
 
     val uiState: StateFlow<HomeUiState> = combine(
         _selectedDate,
         calendarRepository.getCalendars(),
-        repository.viewModeFlow
-    ) { selectedDate, calendars, viewModeFlow ->
+        settingsRepository.viewModeFlow,
+        settingsRepository.activeNotificationFlow
+    ) { selectedDate, calendars, viewModeFlow, activeNotification ->
         HomeUiState(
             selectedDate = selectedDate,
             calendars = calendars,
-            viewMode = viewModeFlow
+            viewMode = viewModeFlow,
+            activeNotification = activeNotification
         )
     }.stateIn(
         scope = viewModelScope,
