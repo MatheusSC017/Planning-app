@@ -375,20 +375,10 @@ fun CommitmentForm(
                         if (uiState.id == null) {
                             commitmentFormViewModel.insertCommitment(
                                 onResult = { commitmentEntity ->
-                                    if (Build.VERSION.SDK_INT >= 31) {
-                                        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-                                        if ((commitmentEntity.startDateTime > Clock.System.now()) &&
-                                            (ContextCompat.checkSelfPermission(
-                                                context,
-                                                Manifest.permission.POST_NOTIFICATIONS
-                                            ) == PackageManager.PERMISSION_GRANTED) &&
-                                            (alarmManager.canScheduleExactAlarms())
-                                        ) {
-                                            notificationHelper.scheduleTaskNotification(
-                                                commitmentEntity
-                                            )
-                                        }
+                                    if ((commitmentEntity.startDateTime > Clock.System.now())) {
+                                        notificationHelper.scheduleTaskNotification(
+                                            commitmentEntity
+                                        )
                                     }
                                 }
                             )

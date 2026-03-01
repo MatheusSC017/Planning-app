@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.util.checkNotificationPermission
+import com.matheus.planningapp.util.checkScheduleExactAlarmPermission
 import com.matheus.planningapp.viewmodel.setting.EmailOptions
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
@@ -146,7 +148,7 @@ fun SettingsForm(
             showDialog = false
             if (uiState.activeNotifications != activeNotifications) {
                 if (activeNotifications) {
-                    scheduleNotification(notificationPermissionLauncher, context)
+                    requestNotificationPermission(notificationPermissionLauncher, context)
                 } else {
                     /* TODO: Delete the notification to future commitments */
                 }
@@ -346,24 +348,17 @@ fun SettingsForm(
     }
 }
 
-fun scheduleNotification(notificationPermissionLauncher: ActivityResultLauncher<String>, context: Context) {
-    if (Build.VERSION.SDK_INT >= 33) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            notificationPermissionLauncher.launch(
-                Manifest.permission.POST_NOTIFICATIONS
-            )
-            return
-        }
+fun requestNotificationPermission(notificationPermissionLauncher: ActivityResultLauncher<String>, context: Context) {
+    if (checkNotificationPermission(context)) {
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        return
     }
 
-    if (Build.VERSION.SDK_INT >= 31) {
-        val alarmManager = context.getSystemService(AlarmManager::class.java)
-        if (!alarmManager.canScheduleExactAlarms()) {
-            context.startActivity(
-                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            )
-            return
-        }
+
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    if (checkScheduleExactAlarmPermission(alarmManager)) {
+        context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+        return
     }
 
     /* TODO: Create the notification to future commitments */
