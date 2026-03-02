@@ -165,7 +165,9 @@ class CommitmentFormViewModel(
         }
     }
 
-    fun updateCommitment() {
+    fun updateCommitment(
+        onResult: (commitmentEntity: CommitmentEntity, startTimeChanged: Boolean) -> Unit
+    ) {
         viewModelScope.launch {
             val oldCommitmentEntity = commitmentRepository.getCommitment(uiState.value.id!!)
 
@@ -213,6 +215,8 @@ class CommitmentFormViewModel(
             }
 
             commitmentRepository.updateCommitment(newCommitmentEntity)
+
+            onResult(newCommitmentEntity, oldCommitmentEntity.startDateTime != newCommitmentEntity.startDateTime)
 
             _events.emit(DatabaseUiEvent.Saved)
         }

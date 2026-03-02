@@ -376,8 +376,20 @@ fun CommitmentForm(
                             )
 
                         } else {
-                            commitmentFormViewModel.updateCommitment()
-                            /* TODO: Implement method to update task time */
+                            commitmentFormViewModel.updateCommitment(
+                                onResult = { commitmentEntity, startTimeChanged ->
+                                    if ((uiState.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
+                                        if (startTimeChanged) {
+                                            notificationHelper.cancelTaskNotification(
+                                                commitmentEntity
+                                            )
+                                        }
+                                        notificationHelper.scheduleTaskNotification(
+                                            commitmentEntity
+                                        )
+                                    }
+                                }
+                            )
                         }
 
                     }

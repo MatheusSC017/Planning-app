@@ -180,6 +180,7 @@ fun PlanningTopAppBar(
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
+                        .padding(2.dp)
                         .clickable {
                             onViewSelected(true)
                         }
@@ -195,6 +196,7 @@ fun PlanningTopAppBar(
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
+                        .padding(2.dp)
                         .clickable {
                             onViewSelected(false)
                         }
@@ -955,7 +957,7 @@ fun CommitmentCard(
     }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(6.dp),
         modifier = Modifier.fillMaxWidth()
