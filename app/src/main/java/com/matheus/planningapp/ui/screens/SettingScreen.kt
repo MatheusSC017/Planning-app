@@ -148,9 +148,9 @@ fun SettingsForm(
             showDialog = false
             if (uiState.activeNotifications != activeNotifications) {
                 if (activeNotifications) {
-                    requestNotificationPermission(notificationPermissionLauncher, context)
+                    requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel)
                 } else {
-                    /* TODO: Delete the notification to future commitments */
+                    settignsViewModel.deleteNotificationToFutureCommitments(context)
                 }
             }
         }
@@ -348,7 +348,11 @@ fun SettingsForm(
     }
 }
 
-fun requestNotificationPermission(notificationPermissionLauncher: ActivityResultLauncher<String>, context: Context) {
+fun requestNotificationPermission(
+    notificationPermissionLauncher: ActivityResultLauncher<String>,
+    context: Context,
+    settignsViewModel: SettingViewModel
+) {
     if (checkNotificationPermission(context)) {
         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         return
@@ -361,5 +365,5 @@ fun requestNotificationPermission(notificationPermissionLauncher: ActivityResult
         return
     }
 
-    /* TODO: Create the notification to future commitments */
+    settignsViewModel.setNotificationToFutureCommitment(context)
 }

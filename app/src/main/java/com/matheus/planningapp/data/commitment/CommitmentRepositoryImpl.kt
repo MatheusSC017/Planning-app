@@ -35,4 +35,8 @@ class CommitmentRepositoryImpl(
     ): Int {
         return commitmentDao.checkSchedulingConflictsBetweenCommitments(startDateTime, endDateTime, calendarId, commitmentId)
     }
+
+    override suspend fun getFutureCommitments(): List<CommitmentEntity> {
+        return commitmentDao.getFutureCommitments()
+    }
 }

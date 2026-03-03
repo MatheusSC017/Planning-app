@@ -38,5 +38,5 @@ val appModules = module {
             commitmentRepository = get()
         )
     }
-    viewModel { SettingViewModel(get()) }
+    viewModel { SettingViewModel(get(), get()) }
 }

@@ -16,4 +16,5 @@ interface CommitmentRepository {
         calendarId: Long,
         commitmentId: Long? = null
     ): Int
+    suspend fun getFutureCommitments(): List<CommitmentEntity>
 }

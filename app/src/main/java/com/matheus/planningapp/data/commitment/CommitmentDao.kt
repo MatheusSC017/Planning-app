@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 @Dao
@@ -47,4 +48,10 @@ interface CommitmentDao {
         calendarId: Long,
         commitmentId: Long? = null
     ): Int
+
+    @Query("""
+        SELECT * FROM commitment
+        WHERE startDateTime > :currentDateTime
+    """)
+    suspend fun getFutureCommitments(currentDateTime: Instant = Clock.System.now()): List<CommitmentEntity>
 }
