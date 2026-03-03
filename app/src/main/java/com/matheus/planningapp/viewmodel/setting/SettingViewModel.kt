@@ -18,10 +18,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingViewModel(
-    application: Application,
-    private val commitmentRepository: CommitmentRepository
+    private val commitmentRepository: CommitmentRepository,
+    private val settingsRepository: SettingsRepository
 ): ViewModel() {
-    private val settingsRepository: SettingsRepository = SettingsRepository(application)
 
     val uiState: StateFlow<SettingUiState> = combine(
         settingsRepository.viewModeFlow,

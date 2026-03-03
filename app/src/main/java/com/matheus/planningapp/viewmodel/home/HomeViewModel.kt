@@ -20,9 +20,9 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 class HomeViewModel(
-    private val application: Application,
     private val calendarRepository: CalendarRepository,
-    private val commitmentRepository: CommitmentRepository
+    private val commitmentRepository: CommitmentRepository,
+    private val settingsRepository: SettingsRepository
 ): ViewModel() {
     init {
         viewModelScope.launch {
@@ -30,7 +30,6 @@ class HomeViewModel(
         }
     }
 
-    private val settingsRepository: SettingsRepository = SettingsRepository(application)
     private val _selectedDate = MutableStateFlow(LocalDate.now())
 
     val uiState: StateFlow<HomeUiState> = combine(

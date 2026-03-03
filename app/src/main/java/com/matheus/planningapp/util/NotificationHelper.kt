@@ -20,7 +20,6 @@ const val CHANNEL_ID = "PlanningAppNotificationsId"
 const val CHANNEL_NAME = "Planning App Notifications"
 
 
-/* TODO: Put NotificationHelper in DI */
 class NotificationHelper(private val context: Context) {
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -67,10 +66,6 @@ class NotificationHelper(private val context: Context) {
 
     }
 
-    fun updateTaskNotification(commitmentEntity: CommitmentEntity) {
-        TODO("Not yet implemented")
-    }
-
     fun cancelTaskNotification(commitmentEntity: CommitmentEntity) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -105,7 +100,7 @@ class NotificationReceiver: BroadcastReceiver() {
         try {
             manager.notify(100, builder.build())
         } catch (e: SecurityException) {
-            // TODO: Handle the exception
+            // Notification exception
         }
     }
 }

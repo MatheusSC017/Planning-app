@@ -18,7 +18,6 @@ val VIEW_MODE = stringPreferencesKey("VIEW_MODE")
 val EMAIL_OPTION = stringPreferencesKey("EMAIL_OPTION")
 val ACTIVE_NOTIFICATIONS = booleanPreferencesKey("ACTIVE_NOTIFICATIONS")
 
-/* TODO: Use the DI to instance this class */
 class SettingsRepository(private val context: Context) {
 
     val viewModeFlow: Flow<ViewOptions> = context.dataStore.data.map { preferences -> ViewOptions.fromName(preferences[VIEW_MODE]) }
