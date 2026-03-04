@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.datastore.SettingsRepository
-import com.matheus.planningapp.util.TaskNotificationScheduler
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -37,15 +37,9 @@ class SettingViewModel(
         initialValue = SettingUiState()
     )
 
-    fun updateSettings(
-        viewMode: ViewOptions,
-        activeEmails: Boolean,
-        emailOption: NotificationEmailOptions,
-        activeNotifications: Boolean,
-        notificationOption: NotificationEmailOptions
-    ) {
+    fun updateSettings(settingUiState: SettingUiState) {
         viewModelScope.launch {
-            settingsRepository.saveSettings(viewMode, activeEmails, emailOption, activeNotifications, notificationOption)
+            settingsRepository.saveSettings(settingUiState)
         }
     }
 

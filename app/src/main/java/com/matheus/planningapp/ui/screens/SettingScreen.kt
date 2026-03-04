@@ -53,9 +53,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.util.canScheduleExact
-import com.matheus.planningapp.util.hasNotificationPermission
+import com.matheus.planningapp.util.notification.canScheduleExact
+import com.matheus.planningapp.util.notification.hasNotificationPermission
 import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
+import com.matheus.planningapp.viewmodel.setting.SettingUiState
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import org.koin.androidx.compose.koinViewModel
@@ -144,7 +145,14 @@ fun SettingsForm(
         message = "Are you sure you want to save the settings",
         onDismissRequest = { showDialog = false },
         onConfirm = {
-            settignsViewModel.updateSettings(selectedViewOption, activeEmails, selectedEmailOption, activeNotifications, selectedNotificationOption)
+            val settingUiState = SettingUiState(
+                viewMode = selectedViewOption,
+                activeEmails = activeEmails,
+                emailOption = selectedEmailOption,
+                activeNotifications = activeNotifications,
+                notificationOption = selectedNotificationOption
+            )
+            settignsViewModel.updateSettings(settingUiState)
             showDialog = false
             if (uiState.activeNotifications != activeNotifications) {
                 if (activeNotifications) {

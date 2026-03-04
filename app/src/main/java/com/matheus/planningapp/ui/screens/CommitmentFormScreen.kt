@@ -57,7 +57,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.local.converters.Priority
-import com.matheus.planningapp.util.TaskNotificationScheduler
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState

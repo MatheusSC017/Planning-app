@@ -81,7 +81,7 @@ import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.util.TaskNotificationScheduler
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
