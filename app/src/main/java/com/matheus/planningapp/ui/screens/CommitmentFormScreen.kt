@@ -57,7 +57,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.local.converters.Priority
-import com.matheus.planningapp.util.NotificationHelper
+import com.matheus.planningapp.util.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
@@ -202,7 +202,7 @@ fun CommitmentForm(
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
-    val notificationHelper = NotificationHelper(LocalContext.current)
+    val taskNotificationScheduler = TaskNotificationScheduler(LocalContext.current)
 
     LazyColumn(
         modifier = modifier
@@ -368,7 +368,7 @@ fun CommitmentForm(
                             commitmentFormViewModel.insertCommitment(
                                 onResult = { commitmentEntity ->
                                     if ((uiState.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
-                                        notificationHelper.scheduleTaskNotification(
+                                        taskNotificationScheduler.scheduleTaskNotification(
                                             commitmentEntity
                                         )
                                     }
@@ -379,14 +379,8 @@ fun CommitmentForm(
                             commitmentFormViewModel.updateCommitment(
                                 onResult = { commitmentEntity, startTimeChanged ->
                                     if ((uiState.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
-                                        if (startTimeChanged) {
-                                            notificationHelper.cancelTaskNotification(
-                                                commitmentEntity
-                                            )
-                                        }
-                                        notificationHelper.scheduleTaskNotification(
-                                            commitmentEntity
-                                        )
+                                        if (startTimeChanged) taskNotificationScheduler.cancelTaskNotification(commitmentEntity)
+                                        taskNotificationScheduler.scheduleTaskNotification(commitmentEntity)
                                     }
                                 }
                             )

@@ -1,19 +1,14 @@
 package com.matheus.planningapp.viewmodel.setting
 
-import android.app.Application
 import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.datastore.SettingsRepository
-import com.matheus.planningapp.util.NotificationHelper
-import kotlinx.coroutines.flow.Flow
+import com.matheus.planningapp.util.TaskNotificationScheduler
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -45,21 +40,21 @@ class SettingViewModel(
     }
 
     fun setNotificationToFutureCommitment(context: Context) {
-        val notificationHelper = NotificationHelper(context)
+        val taskNotificationScheduler = TaskNotificationScheduler(context)
 
         viewModelScope.launch {
             commitmentRepository.getFutureCommitments().forEach {
-                notificationHelper.scheduleTaskNotification(it)
+                taskNotificationScheduler.scheduleTaskNotification(it)
             }
         }
     }
 
     fun deleteNotificationToFutureCommitments(context: Context) {
-        val notificationHelper = NotificationHelper(context)
+        val taskNotificationScheduler = TaskNotificationScheduler(context)
 
         viewModelScope.launch {
             commitmentRepository.getFutureCommitments().forEach {
-                notificationHelper.cancelTaskNotification(it)
+                taskNotificationScheduler.cancelTaskNotification(it)
             }
         }
     }

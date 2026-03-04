@@ -20,9 +20,9 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.minutes
 
 class CommitmentFormViewModel(
-    private val commitmentFormMode: CommitmentFormMode,
+    commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository,
-    private val settingsRepository: SettingsRepository
+    settingsRepository: SettingsRepository
 ): ViewModel() {
     private val _uiState = MutableStateFlow(CommitmentFormUiState())
     val uiState: StateFlow<CommitmentFormUiState> = combine(

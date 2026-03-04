@@ -16,17 +16,24 @@ import androidx.core.content.ContextCompat
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 
-const val CHANNEL_ID = "PlanningAppNotificationsId"
-const val CHANNEL_NAME = "Planning App Notifications"
+object NotificationConfig {
+    const val CHANNEL_ID = "PlanningAppNotificationsId"
+    const val CHANNEL_NAME = "Planning App Notifications"
+}
 
+object NotificationExtras {
+    const val EXTRA_ID = 0
+    const val EXTRA_TITLE = "Task notification"
+    const val EXTRA_MESSAGE = "You have a task scheduled for now."
+}
 
-class NotificationHelper(private val context: Context) {
+class NotificationChannelManager(private val context: Context) {
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             /* TODO: Create a settings file with env variables */
             val channel: NotificationChannel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
+                NotificationConfig.CHANNEL_ID,
+                NotificationConfig.CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Channel for notifications of scheduled tasks."
@@ -36,17 +43,20 @@ class NotificationHelper(private val context: Context) {
             manager.createNotificationChannel(channel)
         }
     }
+}
 
+class TaskNotificationScheduler(private val context: Context) {
     fun scheduleTaskNotification(commitmentEntity: CommitmentEntity) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // SDK 33+ (Android 13+) requires a notification permission
-        if (checkNotificationPermission(context)) return
+        if (!context.hasNotificationPermission()) return
 
         // SDK 31+ (Android 12+) requires schedule exact alarms permission
-        if (checkScheduleExactAlarmPermission(alarmManager)) return
+        if (!alarmManager.canScheduleExact()) return
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
+            putExtra("id", commitmentEntity.id.toInt())
             putExtra("title", commitmentEntity.title)
             putExtra("message", commitmentEntity.description)
         }
@@ -76,7 +86,7 @@ class NotificationHelper(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        pendingIntent?.let {
+        pendingIntent.let {
             alarmManager.cancel(it)
             it.cancel()
         }
@@ -85,10 +95,11 @@ class NotificationHelper(private val context: Context) {
 
 class NotificationReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val title: String = intent.getStringExtra("title") ?: "Task notification"
-        val message: String = intent.getStringExtra("message") ?: "You have a task scheduled for now."
+        val commitmentId: Int = intent.getIntExtra("id", NotificationExtras.EXTRA_ID)
+        val title: String = intent.getStringExtra("title") ?: NotificationExtras.EXTRA_TITLE
+        val message: String = intent.getStringExtra("message") ?: NotificationExtras.EXTRA_MESSAGE
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, NotificationConfig.CHANNEL_ID)
             .setSmallIcon(R.drawable.outline_notifications_24)
             .setContentTitle(title)
             .setContentText(message)
@@ -98,19 +109,19 @@ class NotificationReceiver: BroadcastReceiver() {
         val manager = NotificationManagerCompat.from(context)
 
         try {
-            manager.notify(100, builder.build())
+            manager.notify(commitmentId, builder.build())
         } catch (e: SecurityException) {
             // Notification exception
         }
     }
 }
 
-fun checkNotificationPermission(context: Context): Boolean {
+fun Context.hasNotificationPermission(): Boolean {
     return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED)
+            (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_GRANTED)
 }
 
-fun checkScheduleExactAlarmPermission(alarmManager: AlarmManager): Boolean {
-    return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) && (!alarmManager.canScheduleExactAlarms())
+fun AlarmManager.canScheduleExact(): Boolean {
+    return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) && (this.canScheduleExactAlarms())
 }

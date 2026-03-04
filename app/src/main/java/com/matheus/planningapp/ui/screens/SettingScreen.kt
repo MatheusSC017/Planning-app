@@ -2,12 +2,8 @@ package com.matheus.planningapp.ui.screens
 
 import android.Manifest
 import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -56,10 +52,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.util.checkNotificationPermission
-import com.matheus.planningapp.util.checkScheduleExactAlarmPermission
+import com.matheus.planningapp.util.canScheduleExact
+import com.matheus.planningapp.util.hasNotificationPermission
 import com.matheus.planningapp.viewmodel.setting.EmailOptions
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
@@ -353,14 +348,14 @@ fun requestNotificationPermission(
     context: Context,
     settignsViewModel: SettingViewModel
 ) {
-    if (checkNotificationPermission(context)) {
+    if (!context.hasNotificationPermission()) {
         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         return
     }
 
 
     val alarmManager = context.getSystemService(AlarmManager::class.java)
-    if (checkScheduleExactAlarmPermission(alarmManager)) {
+    if (!alarmManager.canScheduleExact()) {
         context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
         return
     }

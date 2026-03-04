@@ -81,7 +81,7 @@ import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.util.NotificationHelper
+import com.matheus.planningapp.util.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
@@ -299,7 +299,7 @@ fun CalendarContent(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCommitmentViewDialog by remember { mutableStateOf(false) }
 
-    val notificationHelper = NotificationHelper(LocalContext.current)
+    val taskNotificationScheduler = TaskNotificationScheduler(LocalContext.current)
 
     CommitmentViewDialog(
         commitmentEntity = selectedCommitment,
@@ -315,7 +315,7 @@ fun CalendarContent(
         onConfirm = { commitmentEntity: CommitmentEntity ->
             homeViewModel.deleteCommitment(commitmentEntity)
             if (uiState.activeNotification) {
-                notificationHelper.cancelTaskNotification(commitmentEntity)
+                taskNotificationScheduler.cancelTaskNotification(commitmentEntity)
             }
         },
         onDismissRequest = {
