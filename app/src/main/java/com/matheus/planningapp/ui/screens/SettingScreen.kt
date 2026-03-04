@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.util.canScheduleExact
 import com.matheus.planningapp.util.hasNotificationPermission
-import com.matheus.planningapp.viewmodel.setting.EmailOptions
+import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import org.koin.androidx.compose.koinViewModel
@@ -117,15 +117,20 @@ fun SettingsForm(
 ) {
     var isExpandedViewDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
+    var activeEmails: Boolean by rememberSaveable { mutableStateOf( false ) }
     var isExpandedEmailDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedEmailOption: EmailOptions by rememberSaveable { mutableStateOf(EmailOptions.NO_SEND) }
+    var selectedEmailOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
     var activeNotifications: Boolean by rememberSaveable { mutableStateOf( false ) }
+    var isExpandedNotificationDropdown: Boolean by remember { mutableStateOf(false) }
+    var selectedNotificationOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
 
     val uiState by settignsViewModel.uiState.collectAsState()
     LaunchedEffect(uiState) {
         selectedViewOption = uiState.viewMode
+        activeEmails = uiState.activeEmails
         selectedEmailOption = uiState.emailOption
         activeNotifications = uiState.activeNotifications
+        selectedNotificationOption = uiState.notificationOption
     }
 
     var showDialog by remember { mutableStateOf(false) }
@@ -139,7 +144,7 @@ fun SettingsForm(
         message = "Are you sure you want to save the settings",
         onDismissRequest = { showDialog = false },
         onConfirm = {
-            settignsViewModel.updateSettings(selectedViewOption, selectedEmailOption, activeNotifications)
+            settignsViewModel.updateSettings(selectedViewOption, activeEmails, selectedEmailOption, activeNotifications, selectedNotificationOption)
             showDialog = false
             if (uiState.activeNotifications != activeNotifications) {
                 if (activeNotifications) {
@@ -225,6 +230,37 @@ fun SettingsForm(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
+            text = "Enable E-mails",
+            style = TextStyle(
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.secondary
+            ),
+            modifier = Modifier.padding(8.dp)
+        )
+
+        Switch(
+            checked = activeEmails,
+            onCheckedChange = {
+                activeEmails = it
+                activeEmails = it
+            },
+            colors = SwitchDefaults.colors(
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
+                uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                uncheckedBorderColor = MaterialTheme.colorScheme.secondary,
+                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                checkedBorderColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier.padding(
+                start = 16.dp,
+                end = 16.dp
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
             text = "E-mail configuration",
             style = TextStyle(
                 fontSize = 24.sp,
@@ -268,7 +304,7 @@ fun SettingsForm(
                 containerColor = MaterialTheme.colorScheme.background,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                EmailOptions.entries.forEach { emailOption ->
+                NotificationEmailOptions.entries.forEach { emailOption ->
                     DropdownMenuItem(
                         text = {
                             Text(
@@ -314,6 +350,69 @@ fun SettingsForm(
                 end = 16.dp
             )
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Notification configuration",
+            style = TextStyle(
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.secondary
+            ),
+            modifier = Modifier.padding(8.dp)
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = isExpandedNotificationDropdown,
+            onExpandedChange = { isExpandedNotificationDropdown = !isExpandedNotificationDropdown }
+        ) {
+            TextField(
+                value = selectedNotificationOption.label,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(isExpandedNotificationDropdown)
+                },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth(),
+                textStyle = TextStyle(
+                    fontSize = 16.sp
+                ),
+                colors = ExposedDropdownMenuDefaults.textFieldColors(
+                    focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                    disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                    focusedTextColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                    disabledTextColor = MaterialTheme.colorScheme.secondary
+                )
+            )
+
+            ExposedDropdownMenu(
+                expanded = isExpandedNotificationDropdown,
+                onDismissRequest = { isExpandedNotificationDropdown = false },
+                containerColor = MaterialTheme.colorScheme.background,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                NotificationEmailOptions.entries.forEach { notificationOption ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = notificationOption.label,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        },
+                        onClick = {
+                            selectedNotificationOption = notificationOption
+                            isExpandedNotificationDropdown = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 

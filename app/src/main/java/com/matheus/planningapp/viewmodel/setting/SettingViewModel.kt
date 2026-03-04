@@ -19,13 +19,17 @@ class SettingViewModel(
 
     val uiState: StateFlow<SettingUiState> = combine(
         settingsRepository.viewModeFlow,
+        settingsRepository.activeEmailFlow,
         settingsRepository.emailOptionFlow,
-        settingsRepository.activeNotificationFlow
-    ) { viewMode, emailOption, activeNotification ->
+        settingsRepository.activeNotificationFlow,
+        settingsRepository.notificationOptionFlow
+    ) { viewMode, activeEmails, emailOption, activeNotification, notificationOption ->
         SettingUiState(
             viewMode = viewMode,
+            activeEmails = activeEmails,
             emailOption = emailOption,
-            activeNotifications = activeNotification
+            activeNotifications = activeNotification,
+            notificationOption = notificationOption
         )
     }.stateIn(
         scope = viewModelScope,
@@ -33,9 +37,15 @@ class SettingViewModel(
         initialValue = SettingUiState()
     )
 
-    fun updateSettings(viewMode: ViewOptions, emailOption: EmailOptions, activeNotifications: Boolean) {
+    fun updateSettings(
+        viewMode: ViewOptions,
+        activeEmails: Boolean,
+        emailOption: NotificationEmailOptions,
+        activeNotifications: Boolean,
+        notificationOption: NotificationEmailOptions
+    ) {
         viewModelScope.launch {
-            settingsRepository.saveSettings(viewMode, emailOption, activeNotifications)
+            settingsRepository.saveSettings(viewMode, activeEmails, emailOption, activeNotifications, notificationOption)
         }
     }
 
