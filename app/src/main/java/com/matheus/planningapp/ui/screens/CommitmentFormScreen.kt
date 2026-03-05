@@ -48,7 +48,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -57,7 +56,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.local.converters.Priority
-import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
@@ -70,6 +68,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import kotlin.time.Duration.Companion.minutes
 
@@ -202,7 +201,6 @@ fun CommitmentForm(
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
-    val taskNotificationScheduler = TaskNotificationScheduler(LocalContext.current)
 
     LazyColumn(
         modifier = modifier
@@ -365,25 +363,10 @@ fun CommitmentForm(
                     ),
                     onClick = {
                         if (uiState.id == null) {
-                            commitmentFormViewModel.insertCommitment(
-                                onResult = { commitmentEntity ->
-                                    if ((uiState.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
-                                        taskNotificationScheduler.scheduleTaskNotification(
-                                            commitmentEntity
-                                        )
-                                    }
-                                }
-                            )
+                            commitmentFormViewModel.insertCommitment()
 
                         } else {
-                            commitmentFormViewModel.updateCommitment(
-                                onResult = { commitmentEntity, startTimeChanged ->
-                                    if ((uiState.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
-                                        if (startTimeChanged) taskNotificationScheduler.cancelTaskNotification(commitmentEntity)
-                                        taskNotificationScheduler.scheduleTaskNotification(commitmentEntity)
-                                    }
-                                }
-                            )
+                            commitmentFormViewModel.updateCommitment()
                         }
 
                     }

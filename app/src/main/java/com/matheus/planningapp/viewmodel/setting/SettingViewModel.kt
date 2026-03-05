@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 
 class SettingViewModel(
     private val commitmentRepository: CommitmentRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val taskNotificationScheduler: TaskNotificationScheduler
 ): ViewModel() {
 
     val uiState: StateFlow<SettingUiState> = combine(
@@ -43,9 +44,7 @@ class SettingViewModel(
         }
     }
 
-    fun setNotificationToFutureCommitment(context: Context) {
-        val taskNotificationScheduler = TaskNotificationScheduler(context)
-
+    fun setNotificationToFutureCommitment() {
         viewModelScope.launch {
             commitmentRepository.getFutureCommitments().forEach {
                 taskNotificationScheduler.scheduleTaskNotification(it)
@@ -53,9 +52,7 @@ class SettingViewModel(
         }
     }
 
-    fun deleteNotificationToFutureCommitments(context: Context) {
-        val taskNotificationScheduler = TaskNotificationScheduler(context)
-
+    fun deleteNotificationToFutureCommitments() {
         viewModelScope.launch {
             commitmentRepository.getFutureCommitments().forEach {
                 taskNotificationScheduler.cancelTaskNotification(it)

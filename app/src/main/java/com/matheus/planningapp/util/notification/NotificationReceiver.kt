@@ -32,7 +32,7 @@ class NotificationReceiver: BroadcastReceiver() {
         try {
             manager.notify(commitmentId, builder.build())
         } catch (e: SecurityException) {
-            // Notification exception
+            e.printStackTrace()
         }
     }
 }

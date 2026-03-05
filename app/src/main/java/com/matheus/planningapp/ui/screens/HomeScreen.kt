@@ -90,6 +90,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalTime
 import java.time.YearMonth
@@ -278,7 +279,8 @@ fun CalendarContent(
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Long) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel,
-    uiState: HomeUiState
+    uiState: HomeUiState,
+    taskNotificationScheduler: TaskNotificationScheduler = koinInject()
 ) {
     val selectedDate = uiState.selectedDate
     val months = listOf(
@@ -298,8 +300,6 @@ fun CalendarContent(
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCommitmentViewDialog by remember { mutableStateOf(false) }
-
-    val taskNotificationScheduler = TaskNotificationScheduler(LocalContext.current)
 
     CommitmentViewDialog(
         commitmentEntity = selectedCommitment,

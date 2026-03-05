@@ -5,9 +5,30 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
+import kotlinx.coroutines.flow.first
 
-class TaskNotificationScheduler(private val context: Context) {
-    fun scheduleTaskNotification(commitmentEntity: CommitmentEntity) {
+class TaskNotificationScheduler(
+    private val context: Context,
+    settingsRepository: SettingsRepository
+) {
+    private val notificationOptionFlow = settingsRepository.notificationOptionFlow
+
+    suspend fun scheduleTaskNotification(commitmentEntity: CommitmentEntity) {
+        val notificationOption = notificationOptionFlow.first()
+
+        if ((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
+            (commitmentEntity.priority == Priority.LOW)) {
+            return
+        }
+
+        if ((notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
+            (commitmentEntity.priority != Priority.HIGH)) {
+            return
+        }
+
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // SDK 33+ (Android 13+) requires a notification permission
@@ -29,12 +50,15 @@ class TaskNotificationScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            commitmentEntity.startDateTime.toEpochMilliseconds(),
-            pendingIntent,
-        )
-
+        try {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                commitmentEntity.startDateTime.toEpochMilliseconds(),
+                pendingIntent,
+            )
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
     }
 
     fun cancelTaskNotification(commitmentEntity: CommitmentEntity) {

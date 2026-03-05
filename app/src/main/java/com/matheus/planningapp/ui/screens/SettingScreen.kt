@@ -120,10 +120,10 @@ fun SettingsForm(
     var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
     var activeEmails: Boolean by rememberSaveable { mutableStateOf( false ) }
     var isExpandedEmailDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedEmailOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
+    var selectedEmailOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.ALL_COMMITMENT) }
     var activeNotifications: Boolean by rememberSaveable { mutableStateOf( false ) }
     var isExpandedNotificationDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedNotificationOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
+    var selectedNotificationOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.ALL_COMMITMENT) }
 
     val uiState by settignsViewModel.uiState.collectAsState()
     LaunchedEffect(uiState) {
@@ -158,7 +158,7 @@ fun SettingsForm(
                 if (activeNotifications) {
                     requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel)
                 } else {
-                    settignsViewModel.deleteNotificationToFutureCommitments(context)
+                    settignsViewModel.deleteNotificationToFutureCommitments()
                 }
             }
         }
@@ -467,5 +467,5 @@ fun requestNotificationPermission(
         return
     }
 
-    settignsViewModel.setNotificationToFutureCommitment(context)
+    settignsViewModel.setNotificationToFutureCommitment()
 }

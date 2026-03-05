@@ -1,28 +1,34 @@
 package com.matheus.planningapp.viewmodel.commitment
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
+import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.minutes
 
 class CommitmentFormViewModel(
     commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository,
-    settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val taskNotificationScheduler: TaskNotificationScheduler
 ): ViewModel() {
     private val _uiState = MutableStateFlow(CommitmentFormUiState())
     val uiState: StateFlow<CommitmentFormUiState> = combine(
@@ -110,9 +116,7 @@ class CommitmentFormViewModel(
         }
     }
 
-    fun insertCommitment(
-        onResult: (commitmentEntity: CommitmentEntity) -> Unit
-    ) {
+    fun insertCommitment() {
         val commitmentEntity = CommitmentEntity(
             calendar = uiState.value.calendarId,
             title = uiState.value.title,
@@ -154,15 +158,17 @@ class CommitmentFormViewModel(
 
             val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
-            _events.emit(DatabaseUiEvent.Saved)
+            if ((uiState.value.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
+                taskNotificationScheduler.scheduleTaskNotification(
+                    commitmentEntity.copy(id = commitmentId)
+                )
+            }
 
-            onResult(commitmentEntity.copy(id = commitmentId))
+            _events.emit(DatabaseUiEvent.Saved)
         }
     }
 
-    fun updateCommitment(
-        onResult: (commitmentEntity: CommitmentEntity, startTimeChanged: Boolean) -> Unit
-    ) {
+    fun updateCommitment() {
         viewModelScope.launch {
             val oldCommitmentEntity = commitmentRepository.getCommitment(uiState.value.id!!)
 
@@ -211,9 +217,23 @@ class CommitmentFormViewModel(
 
             commitmentRepository.updateCommitment(newCommitmentEntity)
 
-            onResult(newCommitmentEntity, oldCommitmentEntity.startDateTime != newCommitmentEntity.startDateTime)
-
             _events.emit(DatabaseUiEvent.Saved)
+
+            if ((uiState.value.activeNotification) && (newCommitmentEntity.startDateTime > Clock.System.now())) {
+                val notificationOption = settingsRepository.notificationOptionFlow.first()
+
+                if (((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
+                    (newCommitmentEntity.priority == Priority.LOW)) ||
+                    (notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
+                    (newCommitmentEntity.priority != Priority.HIGH)) {
+                    taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
+                    return@launch
+                }
+
+                if (oldCommitmentEntity.startDateTime != newCommitmentEntity.startDateTime) taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
+                taskNotificationScheduler.scheduleTaskNotification(newCommitmentEntity)
+            }
+
         }
 
     }

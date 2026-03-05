@@ -7,6 +7,7 @@ import com.matheus.planningapp.data.calendar.CalendarRepositoryImpl
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.commitment.CommitmentRepositoryImpl
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
@@ -31,14 +32,16 @@ val appModules = module {
     single<CalendarRepository> { CalendarRepositoryImpl(get())}
     single<CommitmentRepository> { CommitmentRepositoryImpl(get())}
     single<SettingsRepository> { SettingsRepository(get()) }
+    single<TaskNotificationScheduler> { TaskNotificationScheduler(get(), get()) }
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { CalendarMenuViewModel(get()) }
     viewModel { (commitmentFormMode: CommitmentFormMode) ->
         CommitmentFormViewModel(
             commitmentFormMode = commitmentFormMode,
             commitmentRepository = get(),
-            settingsRepository = get()
+            settingsRepository = get(),
+            taskNotificationScheduler = get()
         )
     }
-    viewModel { SettingViewModel(get(), get()) }
+    viewModel { SettingViewModel(get(), get(), get()) }
 }
