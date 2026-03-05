@@ -1,9 +1,9 @@
 package com.matheus.planningapp.viewmodel.setting
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,10 +44,16 @@ class SettingViewModel(
         }
     }
 
-    fun setNotificationToFutureCommitment() {
+    fun setNotificationToFutureCommitment(notificationOption: NotificationEmailOptions) {
         viewModelScope.launch {
             commitmentRepository.getFutureCommitments().forEach {
-                taskNotificationScheduler.scheduleTaskNotification(it)
+                if ((notificationOption == NotificationEmailOptions.ALL_COMMITMENT) ||
+                    ((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
+                    (it.priority != Priority.LOW)) ||
+                    ((notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
+                    (it.priority == Priority.HIGH))) {
+                    taskNotificationScheduler.scheduleTaskNotification(it)
+                }
             }
         }
     }

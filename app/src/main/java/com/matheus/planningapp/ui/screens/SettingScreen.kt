@@ -156,9 +156,14 @@ fun SettingsForm(
             showDialog = false
             if (uiState.activeNotifications != activeNotifications) {
                 if (activeNotifications) {
-                    requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel)
+                    requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel, selectedNotificationOption)
                 } else {
                     settignsViewModel.deleteNotificationToFutureCommitments()
+                }
+            } else {
+                if (activeNotifications && (uiState.notificationOption != selectedNotificationOption)) {
+                    settignsViewModel.deleteNotificationToFutureCommitments()
+                    requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel, selectedNotificationOption)
                 }
             }
         }
@@ -453,7 +458,8 @@ fun SettingsForm(
 fun requestNotificationPermission(
     notificationPermissionLauncher: ActivityResultLauncher<String>,
     context: Context,
-    settignsViewModel: SettingViewModel
+    settignsViewModel: SettingViewModel,
+    selectedNotificationOption: NotificationEmailOptions
 ) {
     if (!context.hasNotificationPermission()) {
         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -467,5 +473,5 @@ fun requestNotificationPermission(
         return
     }
 
-    settignsViewModel.setNotificationToFutureCommitment()
+    settignsViewModel.setNotificationToFutureCommitment(selectedNotificationOption)
 }
