@@ -84,6 +84,7 @@ import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
+import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -314,7 +315,7 @@ fun CalendarContent(
         message = "Are you sure you want to delete this commitment?",
         onConfirm = { commitmentEntity: CommitmentEntity ->
             homeViewModel.deleteCommitment(commitmentEntity)
-            if (uiState.activeNotification) {
+            if (uiState.notificationOption != NotificationEmailOptions.NO_SEND) {
                 taskNotificationScheduler.cancelTaskNotification(commitmentEntity)
             }
         },

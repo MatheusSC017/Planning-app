@@ -22,7 +22,7 @@ import java.time.YearMonth
 class HomeViewModel(
     private val calendarRepository: CalendarRepository,
     private val commitmentRepository: CommitmentRepository,
-    private val settingsRepository: SettingsRepository
+    settingsRepository: SettingsRepository
 ): ViewModel() {
     init {
         viewModelScope.launch {
@@ -36,13 +36,13 @@ class HomeViewModel(
         _selectedDate,
         calendarRepository.getCalendars(),
         settingsRepository.viewModeFlow,
-        settingsRepository.activeNotificationFlow
-    ) { selectedDate, calendars, viewModeFlow, activeNotification ->
+        settingsRepository.notificationOptionFlow
+    ) { selectedDate, calendars, viewModeFlow, notificationOption ->
         HomeUiState(
             selectedDate = selectedDate,
             calendars = calendars,
             viewMode = viewModeFlow,
-            activeNotification = activeNotification
+            notificationOption = notificationOption
         )
     }.stateIn(
         scope = viewModelScope,

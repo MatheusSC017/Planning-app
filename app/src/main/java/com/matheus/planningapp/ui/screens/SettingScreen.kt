@@ -118,19 +118,17 @@ fun SettingsForm(
 ) {
     var isExpandedViewDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
-    var activeEmails: Boolean by rememberSaveable { mutableStateOf( false ) }
+
     var isExpandedEmailDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedEmailOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.ALL_COMMITMENT) }
-    var activeNotifications: Boolean by rememberSaveable { mutableStateOf( false ) }
+    var selectedEmailOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
+
     var isExpandedNotificationDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedNotificationOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.ALL_COMMITMENT) }
+    var selectedNotificationOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
 
     val uiState by settignsViewModel.uiState.collectAsState()
     LaunchedEffect(uiState) {
         selectedViewOption = uiState.viewMode
-        activeEmails = uiState.activeEmails
         selectedEmailOption = uiState.emailOption
-        activeNotifications = uiState.activeNotifications
         selectedNotificationOption = uiState.notificationOption
     }
 
@@ -147,22 +145,16 @@ fun SettingsForm(
         onConfirm = {
             val settingUiState = SettingUiState(
                 viewMode = selectedViewOption,
-                activeEmails = activeEmails,
                 emailOption = selectedEmailOption,
-                activeNotifications = activeNotifications,
                 notificationOption = selectedNotificationOption
             )
             settignsViewModel.updateSettings(settingUiState)
             showDialog = false
-            if (uiState.activeNotifications != activeNotifications) {
-                if (activeNotifications) {
-                    requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel, selectedNotificationOption)
+            if (uiState.notificationOption != selectedNotificationOption) {
+                if (selectedNotificationOption == NotificationEmailOptions.NO_SEND) {
+                    settignsViewModel.deleteNotificationToFutureCommitments()
                 } else {
-                    settignsViewModel.deleteNotificationToFutureCommitments()
-                }
-            } else {
-                if (activeNotifications && (uiState.notificationOption != selectedNotificationOption)) {
-                    settignsViewModel.deleteNotificationToFutureCommitments()
+                    if (uiState.notificationOption != NotificationEmailOptions.NO_SEND) settignsViewModel.deleteNotificationToFutureCommitments()
                     requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel, selectedNotificationOption)
                 }
             }
@@ -243,37 +235,6 @@ fun SettingsForm(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Enable E-mails",
-            style = TextStyle(
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier.padding(8.dp)
-        )
-
-        Switch(
-            checked = activeEmails,
-            onCheckedChange = {
-                activeEmails = it
-                activeEmails = it
-            },
-            colors = SwitchDefaults.colors(
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                uncheckedBorderColor = MaterialTheme.colorScheme.secondary,
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                checkedBorderColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier.padding(
-                start = 16.dp,
-                end = 16.dp
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
             text = "E-mail configuration",
             style = TextStyle(
                 fontSize = 24.sp,
@@ -333,36 +294,6 @@ fun SettingsForm(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Enable notifications",
-            style = TextStyle(
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier.padding(8.dp)
-        )
-
-        Switch(
-            checked = activeNotifications,
-            onCheckedChange = {
-                activeNotifications = it
-            },
-            colors = SwitchDefaults.colors(
-                uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
-                uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                uncheckedBorderColor = MaterialTheme.colorScheme.secondary,
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                checkedBorderColor = MaterialTheme.colorScheme.primary
-                ),
-            modifier = Modifier.padding(
-                start = 16.dp,
-                end = 16.dp
-            )
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

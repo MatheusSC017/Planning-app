@@ -1,5 +1,6 @@
 package com.matheus.planningapp.viewmodel.setting
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentRepository
@@ -20,16 +21,12 @@ class SettingViewModel(
 
     val uiState: StateFlow<SettingUiState> = combine(
         settingsRepository.viewModeFlow,
-        settingsRepository.activeEmailFlow,
         settingsRepository.emailOptionFlow,
-        settingsRepository.activeNotificationFlow,
         settingsRepository.notificationOptionFlow
-    ) { viewMode, activeEmails, emailOption, activeNotification, notificationOption ->
+    ) { viewMode, emailOption, notificationOption ->
         SettingUiState(
             viewMode = viewMode,
-            activeEmails = activeEmails,
             emailOption = emailOption,
-            activeNotifications = activeNotification,
             notificationOption = notificationOption
         )
     }.stateIn(

@@ -33,10 +33,10 @@ class CommitmentFormViewModel(
     private val _uiState = MutableStateFlow(CommitmentFormUiState())
     val uiState: StateFlow<CommitmentFormUiState> = combine(
         _uiState,
-        settingsRepository.activeNotificationFlow
-    ) { currentUiState, activeNotifications ->
+        settingsRepository.notificationOptionFlow
+    ) { currentUiState, notificationOption ->
         currentUiState.copy(
-            activeNotification = activeNotifications
+            notificationOption = notificationOption
         )
     }.stateIn(
         scope = viewModelScope,
@@ -158,7 +158,8 @@ class CommitmentFormViewModel(
 
             val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
-            if ((uiState.value.activeNotification) && (commitmentEntity.startDateTime > Clock.System.now())) {
+            if ((uiState.value.notificationOption != NotificationEmailOptions.NO_SEND) &&
+                (commitmentEntity.startDateTime > Clock.System.now())) {
                 taskNotificationScheduler.scheduleTaskNotification(
                     commitmentEntity.copy(id = commitmentId)
                 )
@@ -219,12 +220,11 @@ class CommitmentFormViewModel(
 
             _events.emit(DatabaseUiEvent.Saved)
 
-            if ((uiState.value.activeNotification) && (newCommitmentEntity.startDateTime > Clock.System.now())) {
-                val notificationOption = settingsRepository.notificationOptionFlow.first()
-
-                if (((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
+            if ((uiState.value.notificationOption != NotificationEmailOptions.NO_SEND) &&
+                (newCommitmentEntity.startDateTime > Clock.System.now())) {
+                if (((uiState.value.notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
                     (newCommitmentEntity.priority == Priority.LOW)) ||
-                    (notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
+                    (uiState.value.notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
                     (newCommitmentEntity.priority != Priority.HIGH)) {
                     taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                     return@launch

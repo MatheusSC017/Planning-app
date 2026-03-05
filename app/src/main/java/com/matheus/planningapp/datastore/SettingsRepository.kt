@@ -16,25 +16,19 @@ import kotlinx.coroutines.flow.map
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 val VIEW_MODE = stringPreferencesKey("VIEW_MODE")
-val ACTIVE_EMAILS = booleanPreferencesKey("ACTIVE_EMAILS")
 val EMAIL_OPTION = stringPreferencesKey("EMAIL_OPTION")
-val ACTIVE_NOTIFICATIONS = booleanPreferencesKey("ACTIVE_NOTIFICATIONS")
 val NOTIFICATION_OPTION = stringPreferencesKey("NOTIFICATION_OPTION")
 
 class SettingsRepository(private val context: Context) {
 
     val viewModeFlow: Flow<ViewOptions> = context.dataStore.data.map { preferences -> ViewOptions.fromName(preferences[VIEW_MODE]) }
-    val activeEmailFlow: Flow<Boolean> = context.dataStore.data.map { preferences -> preferences[ACTIVE_EMAILS] ?: false }
     val emailOptionFlow: Flow<NotificationEmailOptions> = context.dataStore.data.map { preferences -> NotificationEmailOptions.fromName(preferences[EMAIL_OPTION]) }
-    val activeNotificationFlow: Flow<Boolean> = context.dataStore.data.map { preferences -> preferences[ACTIVE_NOTIFICATIONS] ?: false }
     val notificationOptionFlow: Flow<NotificationEmailOptions> = context.dataStore.data.map { preferences -> NotificationEmailOptions.fromName(preferences[NOTIFICATION_OPTION]) }
 
     suspend fun saveSettings(settingUiState: SettingUiState) {
         context.dataStore.edit { preferences ->
             preferences[VIEW_MODE] = settingUiState.viewMode.name
-            preferences[ACTIVE_EMAILS] = settingUiState.activeEmails
             preferences[EMAIL_OPTION] = settingUiState.emailOption.name
-            preferences[ACTIVE_NOTIFICATIONS] = settingUiState.activeNotifications
             preferences[NOTIFICATION_OPTION] = settingUiState.notificationOption.name
         }
     }
