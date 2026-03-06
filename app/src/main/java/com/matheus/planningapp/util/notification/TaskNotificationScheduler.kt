@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
@@ -12,20 +13,17 @@ import kotlinx.coroutines.flow.first
 
 class TaskNotificationScheduler(
     private val context: Context,
-    settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository
 ) {
-    private val notificationOptionFlow = settingsRepository.notificationOptionFlow
+    private suspend fun isPriorityInNotificationOption(priority: Priority): Boolean {
+        val notificationOption = settingsRepository.notificationOptionFlow.first()
+        return (notificationOption == NotificationEmailOptions.ALL_COMMITMENT) ||
+                ((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) && (priority != Priority.LOW)) ||
+                ((notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) && (priority == Priority.HIGH))
+    }
 
     suspend fun scheduleTaskNotification(commitmentEntity: CommitmentEntity) {
-        val notificationOption = notificationOptionFlow.first()
-
-        if ((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
-            (commitmentEntity.priority == Priority.LOW)) {
-            return
-        }
-
-        if ((notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
-            (commitmentEntity.priority != Priority.HIGH)) {
+        if (!isPriorityInNotificationOption(commitmentEntity.priority)) {
             return
         }
 
@@ -56,6 +54,7 @@ class TaskNotificationScheduler(
                 commitmentEntity.startDateTime.toEpochMilliseconds(),
                 pendingIntent,
             )
+
         } catch (e: SecurityException) {
             e.printStackTrace()
         }

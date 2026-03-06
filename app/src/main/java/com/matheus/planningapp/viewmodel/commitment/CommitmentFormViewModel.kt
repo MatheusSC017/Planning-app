@@ -1,7 +1,5 @@
 package com.matheus.planningapp.viewmodel.commitment
 
-import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
@@ -16,7 +14,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -160,6 +157,7 @@ class CommitmentFormViewModel(
 
             if ((uiState.value.notificationOption != NotificationEmailOptions.NO_SEND) &&
                 (commitmentEntity.startDateTime > Clock.System.now())) {
+
                 taskNotificationScheduler.scheduleTaskNotification(
                     commitmentEntity.copy(id = commitmentId)
                 )

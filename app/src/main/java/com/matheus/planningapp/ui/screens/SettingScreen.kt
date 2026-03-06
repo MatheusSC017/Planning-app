@@ -133,7 +133,6 @@ fun SettingsForm(
     }
 
     var showDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     val notificationPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {}
 
     ConfirmationDialog(
@@ -148,16 +147,8 @@ fun SettingsForm(
                 emailOption = selectedEmailOption,
                 notificationOption = selectedNotificationOption
             )
-            settignsViewModel.updateSettings(settingUiState)
+            settignsViewModel.updateSettings(settingUiState, notificationPermissionLauncher)
             showDialog = false
-            if (uiState.notificationOption != selectedNotificationOption) {
-                if (selectedNotificationOption == NotificationEmailOptions.NO_SEND) {
-                    settignsViewModel.deleteNotificationToFutureCommitments()
-                } else {
-                    if (uiState.notificationOption != NotificationEmailOptions.NO_SEND) settignsViewModel.deleteNotificationToFutureCommitments()
-                    requestNotificationPermission(notificationPermissionLauncher, context, settignsViewModel, selectedNotificationOption)
-                }
-            }
         }
     )
 
@@ -384,25 +375,4 @@ fun SettingsForm(
             }
         }
     }
-}
-
-fun requestNotificationPermission(
-    notificationPermissionLauncher: ActivityResultLauncher<String>,
-    context: Context,
-    settignsViewModel: SettingViewModel,
-    selectedNotificationOption: NotificationEmailOptions
-) {
-    if (!context.hasNotificationPermission()) {
-        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        return
-    }
-
-
-    val alarmManager = context.getSystemService(AlarmManager::class.java)
-    if (!alarmManager.canScheduleExact()) {
-        context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
-        return
-    }
-
-    settignsViewModel.setNotificationToFutureCommitment(selectedNotificationOption)
 }
