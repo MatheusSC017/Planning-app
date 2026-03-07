@@ -7,10 +7,6 @@ enum class NotificationEmailOptions(val label: String) {
     ONLY_HIGH_PRIORITY("Only High priority");
 
     companion object {
-        fun fromLabel(label: String?): NotificationEmailOptions {
-            return entries.firstOrNull({ it.label == label} ) ?: entries.first()
-        }
-
         fun fromName(name: String?): NotificationEmailOptions {
             return entries.firstOrNull { it.name == name } ?: entries.first()
         }

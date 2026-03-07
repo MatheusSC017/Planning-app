@@ -38,6 +38,7 @@ class CalendarMenuViewModel(
 
                 _events.emit(DatabaseUiEvent.Saved)
             } catch (e: SQLiteConstraintException) {
+                e.printStackTrace()
                 _events.emit(
                     DatabaseUiEvent.ShowError("Calendar name must be unique")
                 )
@@ -93,7 +94,7 @@ class CalendarMenuViewModel(
         .getCalendars()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 

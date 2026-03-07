@@ -1,6 +1,5 @@
 package com.matheus.planningapp.viewmodel.home
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.calendar.CalendarRepository

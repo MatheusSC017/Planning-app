@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.minutes
 class CommitmentFormViewModel(
     commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository,
-    private val settingsRepository: SettingsRepository,
+    settingsRepository: SettingsRepository,
     private val taskNotificationScheduler: TaskNotificationScheduler
 ): ViewModel() {
     private val _uiState = MutableStateFlow(CommitmentFormUiState())

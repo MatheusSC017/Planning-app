@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
@@ -54,7 +53,6 @@ class TaskNotificationScheduler(
                 commitmentEntity.startDateTime.toEpochMilliseconds(),
                 pendingIntent,
             )
-
         } catch (e: SecurityException) {
             e.printStackTrace()
         }

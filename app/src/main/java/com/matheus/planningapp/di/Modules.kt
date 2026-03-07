@@ -13,9 +13,6 @@ import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
