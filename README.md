@@ -57,3 +57,27 @@ Planningapp
 - MainActivity.kt: Root file that instantiates the navigation and screens.
 
 - PlanningAppApplication.kt: Root of the project responsible for creating the koin module instance and the data storage channel.
+
+## Technologies Used
+
+- Kotlin
+
+- Jetpack Compose
+
+- Android SDK
+
+- Gradle
+
+- Git
+
+## License
+
+This project is open-source and available under the MIT License.
+
+## Author
+
+Matheus\
+Software Developer
+
+GitHub:\
+https://github.com/MatheusSC017
