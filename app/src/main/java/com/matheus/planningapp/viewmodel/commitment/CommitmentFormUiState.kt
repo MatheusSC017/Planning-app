@@ -1,7 +1,7 @@
 package com.matheus.planningapp.viewmodel.commitment
 
 import com.matheus.planningapp.data.local.converters.Priority
-import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
+import com.matheus.planningapp.viewmodel.setting.NotificationOptions
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -13,6 +13,6 @@ data class CommitmentFormUiState(
     val startInstant: Instant = Clock.System.now(),
     val endInstant: Instant = Clock.System.now(),
     val priority: Priority = Priority.LOW,
-    val notificationOption: NotificationEmailOptions = NotificationEmailOptions.NO_SEND,
+    val notificationOption: NotificationOptions = NotificationOptions.NO_SEND,
     val isLoading: Boolean = true
 )

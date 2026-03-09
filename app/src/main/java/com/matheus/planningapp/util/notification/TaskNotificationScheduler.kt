@@ -7,7 +7,7 @@ import android.content.Intent
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
-import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
+import com.matheus.planningapp.viewmodel.setting.NotificationOptions
 import kotlinx.coroutines.flow.first
 
 class TaskNotificationScheduler(
@@ -16,9 +16,9 @@ class TaskNotificationScheduler(
 ) {
     private suspend fun isPriorityInNotificationOption(priority: Priority): Boolean {
         val notificationOption = settingsRepository.notificationOptionFlow.first()
-        return (notificationOption == NotificationEmailOptions.ALL_COMMITMENT) ||
-                ((notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) && (priority != Priority.LOW)) ||
-                ((notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) && (priority == Priority.HIGH))
+        return (notificationOption == NotificationOptions.ALL_COMMITMENT) ||
+                ((notificationOption == NotificationOptions.MEDIUM_AND_HIGH_PRIORITY) && (priority != Priority.LOW)) ||
+                ((notificationOption == NotificationOptions.ONLY_HIGH_PRIORITY) && (priority == Priority.HIGH))
     }
 
     suspend fun scheduleTaskNotification(commitmentEntity: CommitmentEntity) {

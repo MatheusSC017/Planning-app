@@ -44,7 +44,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
+import com.matheus.planningapp.viewmodel.setting.NotificationOptions
 import com.matheus.planningapp.viewmodel.setting.SettingUiState
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import com.matheus.planningapp.viewmodel.setting.ViewOptions
@@ -108,16 +108,12 @@ fun SettingsForm(
     var isExpandedViewDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
 
-    var isExpandedEmailDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedEmailOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
-
     var isExpandedNotificationDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedNotificationOption: NotificationEmailOptions by rememberSaveable { mutableStateOf(NotificationEmailOptions.NO_SEND) }
+    var selectedNotificationOption: NotificationOptions by rememberSaveable { mutableStateOf(NotificationOptions.NO_SEND) }
 
     val uiState by settignsViewModel.uiState.collectAsState()
     LaunchedEffect(uiState) {
         selectedViewOption = uiState.viewMode
-        selectedEmailOption = uiState.emailOption
         selectedNotificationOption = uiState.notificationOption
     }
 
@@ -125,7 +121,7 @@ fun SettingsForm(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {}
 
     ConfirmationDialog(
-        item = listOf(selectedViewOption, selectedEmailOption),
+        item = listOf(selectedViewOption, selectedNotificationOption),
         showDialog = showDialog,
         title = "Confirm the settings",
         message = "Are you sure you want to save the settings",
@@ -133,7 +129,6 @@ fun SettingsForm(
         onConfirm = {
             val settingUiState = SettingUiState(
                 viewMode = selectedViewOption,
-                emailOption = selectedEmailOption,
                 notificationOption = selectedNotificationOption
             )
             settignsViewModel.updateSettings(settingUiState, notificationPermissionLauncher)
@@ -215,69 +210,6 @@ fun SettingsForm(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "E-mail configuration",
-            style = TextStyle(
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier.padding(8.dp)
-        )
-
-        ExposedDropdownMenuBox(
-            expanded = isExpandedEmailDropdown,
-            onExpandedChange = { isExpandedEmailDropdown = !isExpandedEmailDropdown }
-        ) {
-            TextField(
-                value = selectedEmailOption.label,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(isExpandedEmailDropdown)
-                },
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                textStyle = TextStyle(
-                    fontSize = 16.sp
-                ),
-                colors = ExposedDropdownMenuDefaults.textFieldColors(
-                    focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedTextColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                    disabledTextColor = MaterialTheme.colorScheme.secondary
-                )
-            )
-
-            ExposedDropdownMenu(
-                expanded = isExpandedEmailDropdown,
-                onDismissRequest = { isExpandedEmailDropdown = false },
-                containerColor = MaterialTheme.colorScheme.background,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-            ) {
-                NotificationEmailOptions.entries.forEach { emailOption ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = emailOption.label,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        },
-                        onClick = {
-                            selectedEmailOption = emailOption
-                            isExpandedEmailDropdown = false
-                        }
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
             text = "Notification configuration",
             style = TextStyle(
                 fontSize = 24.sp,
@@ -321,7 +253,7 @@ fun SettingsForm(
                 containerColor = MaterialTheme.colorScheme.background,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                NotificationEmailOptions.entries.forEach { notificationOption ->
+                NotificationOptions.entries.forEach { notificationOption ->
                     DropdownMenuItem(
                         text = {
                             Text(

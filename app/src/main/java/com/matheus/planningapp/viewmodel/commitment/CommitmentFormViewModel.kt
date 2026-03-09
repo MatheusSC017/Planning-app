@@ -7,7 +7,7 @@ import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.local.converters.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
-import com.matheus.planningapp.viewmodel.setting.NotificationEmailOptions
+import com.matheus.planningapp.viewmodel.setting.NotificationOptions
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -155,7 +155,7 @@ class CommitmentFormViewModel(
 
             val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
-            if ((uiState.value.notificationOption != NotificationEmailOptions.NO_SEND) &&
+            if ((uiState.value.notificationOption != NotificationOptions.NO_SEND) &&
                 (commitmentEntity.startDateTime > Clock.System.now())) {
 
                 taskNotificationScheduler.scheduleTaskNotification(
@@ -218,11 +218,11 @@ class CommitmentFormViewModel(
 
             _events.emit(DatabaseUiEvent.Saved)
 
-            if ((uiState.value.notificationOption != NotificationEmailOptions.NO_SEND) &&
+            if ((uiState.value.notificationOption != NotificationOptions.NO_SEND) &&
                 (newCommitmentEntity.startDateTime > Clock.System.now())) {
-                if (((uiState.value.notificationOption == NotificationEmailOptions.MEDIUM_AND_HIGH_PRIORITY) &&
+                if (((uiState.value.notificationOption == NotificationOptions.MEDIUM_AND_HIGH_PRIORITY) &&
                     (newCommitmentEntity.priority == Priority.LOW)) ||
-                    (uiState.value.notificationOption == NotificationEmailOptions.ONLY_HIGH_PRIORITY) &&
+                    (uiState.value.notificationOption == NotificationOptions.ONLY_HIGH_PRIORITY) &&
                     (newCommitmentEntity.priority != Priority.HIGH)) {
                     taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                     return@launch

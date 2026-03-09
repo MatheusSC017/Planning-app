@@ -28,12 +28,10 @@ class SettingViewModel(
 
     val uiState: StateFlow<SettingUiState> = combine(
         settingsRepository.viewModeFlow,
-        settingsRepository.emailOptionFlow,
         settingsRepository.notificationOptionFlow
-    ) { viewMode, emailOption, notificationOption ->
+    ) { viewMode, notificationOption ->
         SettingUiState(
             viewMode = viewMode,
-            emailOption = emailOption,
             notificationOption = notificationOption
         )
     }.stateIn(
@@ -44,15 +42,15 @@ class SettingViewModel(
 
     fun updateSettings(settingUiState: SettingUiState, notificationPermissionLauncher: ActivityResultLauncher<String>) {
         viewModelScope.launch {
-            val currentNotificationOption: NotificationEmailOptions = uiState.value.notificationOption
+            val currentNotificationOption: NotificationOptions = uiState.value.notificationOption
 
             settingsRepository.saveSettings(settingUiState)
 
             if (currentNotificationOption != settingUiState.notificationOption) {
-                if (settingUiState.notificationOption == NotificationEmailOptions.NO_SEND) {
+                if (settingUiState.notificationOption == NotificationOptions.NO_SEND) {
                     deleteNotificationToFutureCommitments()
                 } else {
-                    if (currentNotificationOption != NotificationEmailOptions.NO_SEND) deleteNotificationToFutureCommitments()
+                    if (currentNotificationOption != NotificationOptions.NO_SEND) deleteNotificationToFutureCommitments()
 
                     requestNotificationPermission(notificationPermissionLauncher)
                 }
