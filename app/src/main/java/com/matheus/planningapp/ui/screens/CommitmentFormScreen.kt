@@ -1,7 +1,11 @@
 package com.matheus.planningapp.ui.screens
 
+import android.util.Log
+import android.view.MotionEvent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +52,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -60,6 +66,7 @@ import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -387,10 +394,43 @@ fun TimeStepperField(
     isEndTime: Boolean = false,
     onTimeChange: (Instant) -> Unit
 ) {
-    val localDateTime: LocalDateTime = time.toLocalDateTime(TimeZone.currentSystemDefault())
+    var selectedTime by remember { mutableStateOf(time) }
+    val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val currentDayOfMonth: Int = remember { localDateTime.dayOfMonth }
     val hourLimit: Int = if (isEndTime) 24 else 23
     val minuteLimit: Int = if (isEndTime) 30 else 0
+
+    var increaseButtonPressed by remember { mutableStateOf(false) }
+    var decreaseButtonPressed by remember { mutableStateOf(false) }
+
+    fun increaseTime() {
+        if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
+            || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
+            onTimeChange(selectedTime + 30.minutes)
+            selectedTime += 30.minutes
+        }
+    }
+
+    fun decreaseTime() {
+        if ((localDateTime.hour * 60)  + localDateTime.minute > minuteLimit) {
+            onTimeChange(selectedTime - 30.minutes)
+            selectedTime -= 30.minutes
+        }
+    }
+
+    LaunchedEffect(increaseButtonPressed,) {
+        while (increaseButtonPressed) {
+            increaseTime()
+            delay(200)
+        }
+    }
+
+    LaunchedEffect(decreaseButtonPressed) {
+        while (decreaseButtonPressed) {
+            decreaseTime()
+            delay(200)
+        }
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -414,21 +454,30 @@ fun TimeStepperField(
 
         Column {
             IconButton(
-                onClick = {
-                    if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
-                        || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
-                        onTimeChange(time + 30.minutes)
+                onClick = {},
+                modifier = Modifier.pointerInteropFilter {
+                    increaseButtonPressed = when (it.action) {
+                        MotionEvent.ACTION_DOWN -> true
+
+                        else -> false
                     }
+
+                    true
                 }
             ) {
                 Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Increase")
             }
 
             IconButton(
-                onClick = {
-                    if ((localDateTime.hour * 60)  + localDateTime.minute > minuteLimit) {
-                        onTimeChange(time - 30.minutes)
+                onClick = {},
+                modifier = Modifier.pointerInteropFilter {
+                    decreaseButtonPressed = when (it.action) {
+                        MotionEvent.ACTION_DOWN -> true
+
+                        else -> false
                     }
+
+                    true
                 }
             ) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Decrease")
