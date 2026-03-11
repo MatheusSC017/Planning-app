@@ -1,6 +1,7 @@
 package com.matheus.planningapp.data.local.converters
 
 import androidx.room.TypeConverter
+import com.matheus.planningapp.data.local.enums.Priority
 
 class PriorityConverters {
 

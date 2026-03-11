@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
 
-class CommitmentRepositoryImpl(
+class CommitmentRepositoryImpl (
     private val commitmentDao: CommitmentDao
 ): CommitmentRepository {
     override suspend fun getCommitment(commitmentId: Long): CommitmentEntity? {

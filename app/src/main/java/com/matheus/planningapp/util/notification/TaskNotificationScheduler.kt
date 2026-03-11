@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.data.local.enums.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.viewmodel.setting.NotificationOptions
 import kotlinx.coroutines.flow.first

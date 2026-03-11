@@ -75,7 +75,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.data.local.enums.Priority
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog

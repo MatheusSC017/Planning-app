@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
-import com.matheus.planningapp.data.local.converters.Priority
+import com.matheus.planningapp.data.local.enums.Priority
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.setting.NotificationOptions
