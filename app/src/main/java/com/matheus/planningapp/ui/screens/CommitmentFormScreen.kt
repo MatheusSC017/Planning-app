@@ -1,11 +1,8 @@
 package com.matheus.planningapp.ui.screens
 
-import android.util.Log
 import android.view.MotionEvent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -403,32 +399,28 @@ fun TimeStepperField(
     var increaseButtonPressed by remember { mutableStateOf(false) }
     var decreaseButtonPressed by remember { mutableStateOf(false) }
 
-    fun increaseTime() {
-        if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
-            || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
-            onTimeChange(selectedTime + 30.minutes)
-            selectedTime += 30.minutes
-        }
-    }
+    LaunchedEffect(increaseButtonPressed, selectedTime) {
+        val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
 
-    fun decreaseTime() {
-        if ((localDateTime.hour * 60)  + localDateTime.minute > minuteLimit) {
-            onTimeChange(selectedTime - 30.minutes)
-            selectedTime -= 30.minutes
-        }
-    }
-
-    LaunchedEffect(increaseButtonPressed,) {
         while (increaseButtonPressed) {
-            increaseTime()
-            delay(200)
+            if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
+                || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
+                onTimeChange(selectedTime + 30.minutes)
+                selectedTime += 30.minutes
+            }
+            delay(100)
         }
     }
 
-    LaunchedEffect(decreaseButtonPressed) {
+    LaunchedEffect(decreaseButtonPressed, selectedTime) {
+        val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
+
         while (decreaseButtonPressed) {
-            decreaseTime()
-            delay(200)
+            if (((localDateTime.hour * 60) + localDateTime.minute > minuteLimit) || (localDateTime.dayOfMonth > currentDayOfMonth)) {
+                onTimeChange(selectedTime - 30.minutes)
+                selectedTime -= 30.minutes
+            }
+            delay(100)
         }
     }
 
@@ -458,10 +450,8 @@ fun TimeStepperField(
                 modifier = Modifier.pointerInteropFilter {
                     increaseButtonPressed = when (it.action) {
                         MotionEvent.ACTION_DOWN -> true
-
                         else -> false
                     }
-
                     true
                 }
             ) {
@@ -473,10 +463,8 @@ fun TimeStepperField(
                 modifier = Modifier.pointerInteropFilter {
                     decreaseButtonPressed = when (it.action) {
                         MotionEvent.ACTION_DOWN -> true
-
                         else -> false
                     }
-
                     true
                 }
             ) {
