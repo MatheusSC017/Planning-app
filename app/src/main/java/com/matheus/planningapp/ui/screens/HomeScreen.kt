@@ -75,15 +75,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.data.local.enums.Priority
+import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
-import com.matheus.planningapp.viewmodel.setting.NotificationOptions
-import com.matheus.planningapp.viewmodel.setting.ViewOptions
+import com.matheus.planningapp.util.enums.NotificationEnum
+import com.matheus.planningapp.util.enums.ViewEnum
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -107,7 +107,7 @@ fun HomeScreen (
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
-    var columnViewSelected by remember(uiState.viewMode) { mutableStateOf(uiState.viewMode == ViewOptions.COLUMN) }
+    var columnViewSelected by remember(uiState.viewMode) { mutableStateOf(uiState.viewMode == ViewEnum.COLUMN) }
 
     LaunchedEffect( uiState.calendars) {
         if (selectedCalendar == null &&  uiState.calendars.isNotEmpty()) {
@@ -313,7 +313,7 @@ fun CalendarContent(
         message = "Are you sure you want to delete this commitment?",
         onConfirm = { commitmentEntity: CommitmentEntity ->
             homeViewModel.deleteCommitment(commitmentEntity)
-            if (uiState.notificationOption != NotificationOptions.NO_SEND) {
+            if (uiState.notificationOption != NotificationEnum.NO_SEND) {
                 taskNotificationScheduler.cancelTaskNotification(commitmentEntity)
             }
         },
@@ -725,10 +725,10 @@ fun TimelineGridItem(
                 )
 
                 if (commitmentEntity != null) {
-                    val statusColor = when(commitmentEntity.priority) {
-                        Priority.LOW -> Color.Green.copy(alpha = .6f)
-                        Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-                        Priority.HIGH -> Color.Red.copy(alpha = .6f)
+                    val statusColor = when(commitmentEntity.priorityEnum) {
+                        PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+                        PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+                        PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
                     }
 
                     Box(
@@ -949,10 +949,10 @@ fun CommitmentCard(
     val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
-    val statusColor = when(commitmentEntity.priority) {
-        Priority.LOW -> Color.Green.copy(alpha = .6f)
-        Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-        Priority.HIGH -> Color.Red.copy(alpha = .6f)
+    val statusColor = when(commitmentEntity.priorityEnum) {
+        PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+        PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+        PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
     }
 
     Card(
@@ -1072,10 +1072,10 @@ fun CommitmentViewDialog(
 ) {
     if (commitmentEntity == null) return
 
-    val statusColor = when(commitmentEntity.priority) {
-        Priority.LOW -> Color.Green.copy(alpha = .6f)
-        Priority.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-        Priority.HIGH -> Color.Red.copy(alpha = .6f)
+    val statusColor = when(commitmentEntity.priorityEnum) {
+        PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+        PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+        PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
     }
 
     val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())

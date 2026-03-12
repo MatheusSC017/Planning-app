@@ -44,10 +44,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.viewmodel.setting.NotificationOptions
+import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.viewmodel.setting.SettingUiState
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
-import com.matheus.planningapp.viewmodel.setting.ViewOptions
+import com.matheus.planningapp.util.enums.ViewEnum
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,10 +106,10 @@ fun SettingsForm(
     settignsViewModel: SettingViewModel = koinViewModel()
 ) {
     var isExpandedViewDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedViewOption: ViewOptions by rememberSaveable { mutableStateOf(ViewOptions.COLUMN) }
+    var selectedViewOption: ViewEnum by rememberSaveable { mutableStateOf(ViewEnum.COLUMN) }
 
     var isExpandedNotificationDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedNotificationOption: NotificationOptions by rememberSaveable { mutableStateOf(NotificationOptions.NO_SEND) }
+    var selectedNotificationOption: NotificationEnum by rememberSaveable { mutableStateOf(NotificationEnum.NO_SEND) }
 
     val uiState by settignsViewModel.uiState.collectAsState()
     LaunchedEffect(uiState) {
@@ -190,7 +190,7 @@ fun SettingsForm(
                 containerColor = MaterialTheme.colorScheme.background,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                ViewOptions.entries.forEach { viewOption ->
+                ViewEnum.entries.forEach { viewOption ->
                     DropdownMenuItem(
                         text = {
                             Text(
@@ -253,7 +253,7 @@ fun SettingsForm(
                 containerColor = MaterialTheme.colorScheme.background,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                NotificationOptions.entries.forEach { notificationOption ->
+                NotificationEnum.entries.forEach { notificationOption ->
                     DropdownMenuItem(
                         text = {
                             Text(

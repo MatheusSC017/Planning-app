@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
-import com.matheus.planningapp.data.local.enums.Priority
+import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
-import com.matheus.planningapp.viewmodel.setting.NotificationOptions
+import com.matheus.planningapp.util.enums.NotificationEnum
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -66,9 +66,9 @@ class CommitmentFormViewModel(
         }
     }
 
-    fun onPriorityChange(priority: Priority) {
+    fun onPriorityChange(priorityEnum: PriorityEnum) {
         _uiState.update {
-            it.copy(priority = priority)
+            it.copy(priorityEnum = priorityEnum)
         }
     }
 
@@ -105,7 +105,7 @@ class CommitmentFormViewModel(
                             description = commitmentEntity.description ?: "",
                             startInstant = commitmentEntity.startDateTime,
                             endInstant = commitmentEntity.endDateTime,
-                            priority = commitmentEntity.priority,
+                            priorityEnum = commitmentEntity.priorityEnum,
                         )
                     }
                 }
@@ -120,7 +120,7 @@ class CommitmentFormViewModel(
             description = uiState.value.description,
             startDateTime = uiState.value.startInstant,
             endDateTime =  uiState.value.endInstant,
-            priority = uiState.value.priority
+            priorityEnum = uiState.value.priorityEnum
         )
 
         viewModelScope.launch {
@@ -155,7 +155,7 @@ class CommitmentFormViewModel(
 
             val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
-            if ((uiState.value.notificationOption != NotificationOptions.NO_SEND) &&
+            if ((uiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (commitmentEntity.startDateTime > Clock.System.now())) {
 
                 taskNotificationScheduler.scheduleTaskNotification(
@@ -181,7 +181,7 @@ class CommitmentFormViewModel(
                 description = uiState.value.description,
                 startDateTime = uiState.value.startInstant,
                 endDateTime =  uiState.value.endInstant,
-                priority = uiState.value.priority
+                priorityEnum = uiState.value.priorityEnum
             )
 
             // Check if start time is lesser than end time
@@ -218,12 +218,12 @@ class CommitmentFormViewModel(
 
             _events.emit(DatabaseUiEvent.Saved)
 
-            if ((uiState.value.notificationOption != NotificationOptions.NO_SEND) &&
+            if ((uiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (newCommitmentEntity.startDateTime > Clock.System.now())) {
-                if (((uiState.value.notificationOption == NotificationOptions.MEDIUM_AND_HIGH_PRIORITY) &&
-                    (newCommitmentEntity.priority == Priority.LOW)) ||
-                    (uiState.value.notificationOption == NotificationOptions.ONLY_HIGH_PRIORITY) &&
-                    (newCommitmentEntity.priority != Priority.HIGH)) {
+                if (((uiState.value.notificationOption == NotificationEnum.MEDIUM_AND_HIGH_PRIORITY) &&
+                    (newCommitmentEntity.priorityEnum == PriorityEnum.LOW)) ||
+                    (uiState.value.notificationOption == NotificationEnum.ONLY_HIGH_PRIORITY) &&
+                    (newCommitmentEntity.priorityEnum != PriorityEnum.HIGH)) {
                     taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                     return@launch
                 }

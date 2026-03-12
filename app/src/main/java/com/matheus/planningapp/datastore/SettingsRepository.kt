@@ -6,9 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.matheus.planningapp.viewmodel.setting.NotificationOptions
+import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.viewmodel.setting.SettingUiState
-import com.matheus.planningapp.viewmodel.setting.ViewOptions
+import com.matheus.planningapp.util.enums.ViewEnum
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -19,8 +19,8 @@ val NOTIFICATION_OPTION = stringPreferencesKey("NOTIFICATION_OPTION")
 
 class SettingsRepository(private val context: Context) {
 
-    val viewModeFlow: Flow<ViewOptions> = context.dataStore.data.map { preferences -> ViewOptions.fromName(preferences[VIEW_MODE]) }
-    val notificationOptionFlow: Flow<NotificationOptions> = context.dataStore.data.map { preferences -> NotificationOptions.fromName(preferences[NOTIFICATION_OPTION]) }
+    val viewModeFlow: Flow<ViewEnum> = context.dataStore.data.map { preferences -> ViewEnum.fromName(preferences[VIEW_MODE]) }
+    val notificationOptionFlow: Flow<NotificationEnum> = context.dataStore.data.map { preferences -> NotificationEnum.fromName(preferences[NOTIFICATION_OPTION]) }
 
     suspend fun saveSettings(settingUiState: SettingUiState) {
         context.dataStore.edit { preferences ->

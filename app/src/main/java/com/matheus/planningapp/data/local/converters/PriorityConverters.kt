@@ -1,14 +1,14 @@
 package com.matheus.planningapp.data.local.converters
 
 import androidx.room.TypeConverter
-import com.matheus.planningapp.data.local.enums.Priority
+import com.matheus.planningapp.util.enums.PriorityEnum
 
 class PriorityConverters {
 
     @TypeConverter
-    fun fromPriority(priority: Priority): String = priority.name
+    fun fromPriority(priorityEnum: PriorityEnum): String = priorityEnum.name
 
     @TypeConverter
-    fun toPriority(value: String): Priority = Priority.valueOf(value)
+    fun toPriority(value: String): PriorityEnum = PriorityEnum.valueOf(value)
 
 }

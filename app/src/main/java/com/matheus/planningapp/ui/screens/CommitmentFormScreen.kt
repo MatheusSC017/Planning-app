@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.matheus.planningapp.data.local.enums.Priority
+import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
@@ -304,7 +304,7 @@ fun CommitmentForm(
                 onExpandedChange = { expandedPriorityDropDown = !expandedPriorityDropDown }
             ) {
                 TextField(
-                    value = uiState.priority.name,
+                    value = uiState.priorityEnum.name,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -334,7 +334,7 @@ fun CommitmentForm(
                     containerColor = MaterialTheme.colorScheme.background,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 ) {
-                    Priority.entries.forEach { priority ->
+                    PriorityEnum.entries.forEach { priority ->
                         DropdownMenuItem(
                             text = {
                                 Text(
@@ -408,7 +408,7 @@ fun TimeStepperField(
                 onTimeChange(selectedTime + 30.minutes)
                 selectedTime += 30.minutes
             }
-            delay(100)
+            delay(150)
         }
     }
 
@@ -420,7 +420,7 @@ fun TimeStepperField(
                 onTimeChange(selectedTime - 30.minutes)
                 selectedTime -= 30.minutes
             }
-            delay(100)
+            delay(150)
         }
     }
 

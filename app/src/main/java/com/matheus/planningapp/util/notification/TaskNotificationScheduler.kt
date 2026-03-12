@@ -5,24 +5,24 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.data.local.enums.Priority
+import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.datastore.SettingsRepository
-import com.matheus.planningapp.viewmodel.setting.NotificationOptions
+import com.matheus.planningapp.util.enums.NotificationEnum
 import kotlinx.coroutines.flow.first
 
 class TaskNotificationScheduler(
     private val context: Context,
     private val settingsRepository: SettingsRepository
 ) {
-    private suspend fun isPriorityInNotificationOption(priority: Priority): Boolean {
+    private suspend fun isPriorityInNotificationOption(priorityEnum: PriorityEnum): Boolean {
         val notificationOption = settingsRepository.notificationOptionFlow.first()
-        return (notificationOption == NotificationOptions.ALL_COMMITMENT) ||
-                ((notificationOption == NotificationOptions.MEDIUM_AND_HIGH_PRIORITY) && (priority != Priority.LOW)) ||
-                ((notificationOption == NotificationOptions.ONLY_HIGH_PRIORITY) && (priority == Priority.HIGH))
+        return (notificationOption == NotificationEnum.ALL_COMMITMENT) ||
+                ((notificationOption == NotificationEnum.MEDIUM_AND_HIGH_PRIORITY) && (priorityEnum != PriorityEnum.LOW)) ||
+                ((notificationOption == NotificationEnum.ONLY_HIGH_PRIORITY) && (priorityEnum == PriorityEnum.HIGH))
     }
 
     suspend fun scheduleTaskNotification(commitmentEntity: CommitmentEntity) {
-        if (!isPriorityInNotificationOption(commitmentEntity.priority)) {
+        if (!isPriorityInNotificationOption(commitmentEntity.priorityEnum)) {
             return
         }
 

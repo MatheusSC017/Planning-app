@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.util.notification.canScheduleExact
 import com.matheus.planningapp.util.notification.hasNotificationPermission
@@ -42,15 +43,15 @@ class SettingViewModel(
 
     fun updateSettings(settingUiState: SettingUiState, notificationPermissionLauncher: ActivityResultLauncher<String>) {
         viewModelScope.launch {
-            val currentNotificationOption: NotificationOptions = uiState.value.notificationOption
+            val currentNotificationOption: NotificationEnum = uiState.value.notificationOption
 
             settingsRepository.saveSettings(settingUiState)
 
             if (currentNotificationOption != settingUiState.notificationOption) {
-                if (settingUiState.notificationOption == NotificationOptions.NO_SEND) {
+                if (settingUiState.notificationOption == NotificationEnum.NO_SEND) {
                     deleteNotificationToFutureCommitments()
                 } else {
-                    if (currentNotificationOption != NotificationOptions.NO_SEND) deleteNotificationToFutureCommitments()
+                    if (currentNotificationOption != NotificationEnum.NO_SEND) deleteNotificationToFutureCommitments()
 
                     requestNotificationPermission(notificationPermissionLauncher)
                 }

@@ -4,8 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.data.local.enums.DayOfWeek
-import com.matheus.planningapp.data.local.enums.Frequency
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
+import com.matheus.planningapp.util.enums.FrequencyEnum
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -24,9 +24,9 @@ class RecurrenceEntity (
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val commitment: Long,
-    val frequency: Frequency,
+    val frequencyEnum: FrequencyEnum,
     val interval: Int,
-    val dayOfWeek: DayOfWeek,
+    val dayOfWeekEnum: DayOfWeekEnum,
     val dayOfMonth: Int,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant  = Clock.System.now()

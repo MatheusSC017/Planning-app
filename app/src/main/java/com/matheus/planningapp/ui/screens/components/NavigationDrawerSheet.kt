@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,7 @@ import com.matheus.planningapp.BuildConfig
 @Composable
 fun NavigationDrawerSheet(
     onNavigateToHomeScreen: () -> Unit,
+    onNavigateToRecurrenceScreen: () -> Unit,
     onNavigateToCalendarScreen: () -> Unit,
     onNavigateToSettingsScreen: () -> Unit
 ) {
@@ -71,7 +74,7 @@ fun NavigationDrawerSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.DateRange,
+                            imageVector = Icons.Default.Home,
                             contentDescription = "Timeline",
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(32.dp)
@@ -88,6 +91,36 @@ fun NavigationDrawerSheet(
                     }
                 },
                 onClick = onNavigateToHomeScreen,
+                selected = false,
+                modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+            )
+
+            NavigationDrawerItem(
+                label = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Recurrences",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(32.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "Recurrences",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    }
+                },
+                onClick = onNavigateToRecurrenceScreen,
                 selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )

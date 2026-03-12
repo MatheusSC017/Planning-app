@@ -5,7 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.matheus.planningapp.data.calendar.CalendarEntity
-import com.matheus.planningapp.data.local.enums.Priority
+import com.matheus.planningapp.util.enums.PriorityEnum
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -34,7 +34,7 @@ data class CommitmentEntity (
     val description: String?,
     val startDateTime: Instant,
     val endDateTime: Instant,
-    val priority: Priority,
+    val priorityEnum: PriorityEnum,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()
 )
