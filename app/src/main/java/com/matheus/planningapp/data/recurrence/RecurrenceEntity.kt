@@ -24,9 +24,9 @@ class RecurrenceEntity (
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val commitment: Long,
-    val frequencyEnum: FrequencyEnum,
+    val frequency: FrequencyEnum,
     val interval: Int,
-    val dayOfWeekEnum: DayOfWeekEnum,
+    val dayOfWeekList: List<DayOfWeekEnum>,
     val dayOfMonth: Int,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant  = Clock.System.now()

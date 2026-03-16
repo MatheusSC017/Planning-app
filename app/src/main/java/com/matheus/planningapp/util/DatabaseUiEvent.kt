@@ -1,4 +1,4 @@
-package com.matheus.planningapp.viewmodel.commitment
+package com.matheus.planningapp.util
 
 sealed class DatabaseUiEvent {
     data class ShowError(val message: String): DatabaseUiEvent()

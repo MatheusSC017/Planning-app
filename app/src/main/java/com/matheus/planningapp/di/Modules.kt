@@ -6,6 +6,8 @@ import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.calendar.CalendarRepositoryImpl
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.commitment.CommitmentRepositoryImpl
+import com.matheus.planningapp.data.recurrence.RecurrenceRepository
+import com.matheus.planningapp.data.recurrence.RecurrenceRepositoryImpl
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
@@ -27,12 +29,17 @@ val appModules = module {
             .fallbackToDestructiveMigration(false)
             .build()
     }
+
     single { get<CalendarDatabase>().calendarDao() }
     single { get<CalendarDatabase>().commitmentDao() }
+    single { get<CalendarDatabase>().recurrenceDao() }
+
     single<CalendarRepository> { CalendarRepositoryImpl(get())}
     single<CommitmentRepository> { CommitmentRepositoryImpl(get())}
+    single<RecurrenceRepository> { RecurrenceRepositoryImpl(get()) }
     single<SettingsRepository> { SettingsRepository(get()) }
     single<TaskNotificationScheduler> { TaskNotificationScheduler(get(), get()) }
+
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { CalendarMenuViewModel(get()) }
     viewModel { (commitmentFormMode: CommitmentFormMode) ->
@@ -40,6 +47,7 @@ val appModules = module {
             commitmentFormMode = commitmentFormMode,
             commitmentRepository = get(),
             settingsRepository = get(),
+            recurrenceRepository = get(),
             taskNotificationScheduler = get()
         )
     }

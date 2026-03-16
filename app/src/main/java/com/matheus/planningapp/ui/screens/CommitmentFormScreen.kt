@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -55,7 +54,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -68,7 +66,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
-import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
+import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
@@ -92,13 +90,13 @@ fun CommitmentScreen(
     val commitmentFormViewModel: CommitmentFormViewModel = koinViewModel(
         parameters = { parametersOf(commitmentFormMode) }
     )
-    val uiState by commitmentFormViewModel.uiState.collectAsState()
+    val commitmentUiState by commitmentFormViewModel.commitmentUiState.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    val localDate: LocalDate = uiState.startInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val localDate: LocalDate = commitmentUiState.startInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     LaunchedEffect(Unit) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
@@ -126,7 +124,7 @@ fun CommitmentScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    if (!uiState.isLoading) {
+                    if (!commitmentUiState.isLoading) {
                         Text(
                             text = "%04d-%02d-%02d".format(
                                 localDate.year,
@@ -156,7 +154,7 @@ fun CommitmentScreen(
         content = { paddingValues ->
 
             when {
-                uiState.isLoading -> {
+                commitmentUiState.isLoading -> {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -194,7 +192,7 @@ fun CommitmentScreen(
                                     end = Offset.Infinite
                                 )
                             ),
-                        uiState = uiState,
+                        commitmentUiState = commitmentUiState,
                         commitmentFormViewModel = commitmentFormViewModel
                     )
                 }
@@ -209,7 +207,7 @@ fun CommitmentScreen(
 @Composable
 fun CommitmentForm(
     modifier: Modifier,
-    uiState: CommitmentFormUiState,
+    commitmentUiState: CommitmentFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
@@ -224,7 +222,7 @@ fun CommitmentForm(
     ) {
         item {
             TextField(
-                value = uiState.title,
+                value = commitmentUiState.title,
                 onValueChange = { commitmentFormViewModel.onTitleChange(it) },
                 label = {
                     Text(
@@ -249,7 +247,7 @@ fun CommitmentForm(
 
         item {
             TextField(
-                value = uiState.description,
+                value = commitmentUiState.description,
                 onValueChange = { commitmentFormViewModel.onDescriptionChange(it) },
                 label = {
                     Text(
@@ -281,7 +279,7 @@ fun CommitmentForm(
             )
 
             TimeStepperField(
-                time = uiState.startInstant,
+                time = commitmentUiState.startInstant,
                 onTimeChange = { commitmentFormViewModel.onStartInstantChange(it) }
             )
         }
@@ -296,7 +294,7 @@ fun CommitmentForm(
             )
 
             TimeStepperField(
-                time = uiState.endInstant,
+                time = commitmentUiState.endInstant,
                 isEndTime = true,
                 onTimeChange = { commitmentFormViewModel.onEndInstantChange(it) }
             )
@@ -318,7 +316,7 @@ fun CommitmentForm(
                 onExpandedChange = { expandedPriorityDropDown = !expandedPriorityDropDown }
             ) {
                 TextField(
-                    value = uiState.priorityEnum.name,
+                    value = commitmentUiState.priorityEnum.name,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -374,7 +372,10 @@ fun CommitmentForm(
             ) {
                 Switch(
                     checked = isRecurrence,
-                    onCheckedChange = { isRecurrence = !isRecurrence }
+                    onCheckedChange = {
+                        isRecurrence = !isRecurrence
+                        commitmentFormViewModel.onRecurrenceFormActiveChange(isRecurrence)
+                    }
                 )
 
                 Text(
@@ -389,7 +390,7 @@ fun CommitmentForm(
 
         item {
             if (isRecurrence) {
-                RecurrenceForm()
+                RecurrenceForm(commitmentFormViewModel)
             }
         }
 
@@ -404,7 +405,7 @@ fun CommitmentForm(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     onClick = {
-                        if (uiState.id == null) {
+                        if (commitmentUiState.id == null) {
                             commitmentFormViewModel.insertCommitment()
 
                         } else {
@@ -428,7 +429,9 @@ fun CommitmentForm(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecurrenceForm () {
+fun RecurrenceForm (
+    commitmentFormViewModel: CommitmentFormViewModel
+) {
     var isExpandedFrequencyDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedFrequencyEnum: FrequencyEnum by rememberSaveable { mutableStateOf(FrequencyEnum.DAILY) }
 
@@ -488,6 +491,7 @@ fun RecurrenceForm () {
                             )
                         },
                         onClick = {
+                            commitmentFormViewModel.onFrequencyChange(frequencyEnum)
                             selectedFrequencyEnum = frequencyEnum
                             isExpandedFrequencyDropdown = false
                         }
@@ -506,7 +510,9 @@ fun RecurrenceForm () {
             )
 
             DaysOfWeek(
-                onSelection = {}
+                onSelection = { dayOfWeekList ->
+                    commitmentFormViewModel.onDaysOfWeekChange(dayOfWeekList)
+                }
             )
         }
 
@@ -520,7 +526,9 @@ fun RecurrenceForm () {
             )
 
             IntegerField(
-                onIntegerValueChange = {},
+                onIntegerValueChange = { newDayOfMonth ->
+                    commitmentFormViewModel.onDayOfMonthChange(newDayOfMonth)
+                },
                 minValue = 1,
                 maxValue = 28
             )
@@ -536,7 +544,9 @@ fun RecurrenceForm () {
             )
 
             IntegerField(
-                onIntegerValueChange = {},
+                onIntegerValueChange = { newInterval ->
+                    commitmentFormViewModel.onIntervalChange(newInterval)
+                },
                 minValue = 1,
                 maxValue = 7
             )
@@ -562,7 +572,7 @@ fun DaysOfWeek(
                 onClick = {
                     if (isSelected) selectedDaysOfWeek.remove(dayOfWeekEnum)
                     else selectedDaysOfWeek.add(dayOfWeekEnum)
-
+                    onSelection(selectedDaysOfWeek)
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -603,15 +613,18 @@ fun IntegerField(
 
     LaunchedEffect(increaseButtonPressed, selectedValue) {
         while (increaseButtonPressed) {
+            delay(100)
             if (selectedValue < maxValue) selectedValue += 1
-            delay(150)
+            onIntegerValueChange(selectedValue)
         }
     }
 
     LaunchedEffect(decreaseButtonPressed, selectedValue) {
+
         while (decreaseButtonPressed) {
+            delay(100)
             if (selectedValue > minValue) selectedValue -= 1
-            delay(150)
+            onIntegerValueChange(selectedValue)
         }
     }
 
@@ -621,9 +634,7 @@ fun IntegerField(
     ) {
         TextField(
             value = selectedValue.toString(),
-            onValueChange = { newValue ->
-                onIntegerValueChange(newValue.toInt())
-            },
+            onValueChange = {},
             readOnly = true,
             label = {
                 Text(
@@ -694,12 +705,12 @@ fun TimeStepperField(
         val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
 
         while (increaseButtonPressed) {
+            delay(50)
             if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
                 || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
                 onTimeChange(selectedTime + 30.minutes)
                 selectedTime += 30.minutes
             }
-            delay(150)
         }
     }
 
@@ -707,11 +718,11 @@ fun TimeStepperField(
         val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
 
         while (decreaseButtonPressed) {
+            delay(50)
             if (((localDateTime.hour * 60) + localDateTime.minute > minuteLimit) || (localDateTime.dayOfMonth > currentDayOfMonth)) {
                 onTimeChange(selectedTime - 30.minutes)
                 selectedTime -= 30.minutes
             }
-            delay(150)
         }
     }
 

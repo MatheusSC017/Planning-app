@@ -50,7 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.viewmodel.commitment.DatabaseUiEvent
+import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock

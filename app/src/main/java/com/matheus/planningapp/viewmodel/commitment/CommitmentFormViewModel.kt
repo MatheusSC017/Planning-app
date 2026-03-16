@@ -1,11 +1,17 @@
 package com.matheus.planningapp.viewmodel.commitment
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.data.recurrence.RecurrenceEntity
+import com.matheus.planningapp.data.recurrence.RecurrenceRepository
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.util.DatabaseUiEvent
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
+import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.util.enums.NotificationEnum
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,11 +31,15 @@ class CommitmentFormViewModel(
     commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository,
     settingsRepository: SettingsRepository,
+    private val recurrenceRepository: RecurrenceRepository,
     private val taskNotificationScheduler: TaskNotificationScheduler
 ): ViewModel() {
-    private val _uiState = MutableStateFlow(CommitmentFormUiState())
-    val uiState: StateFlow<CommitmentFormUiState> = combine(
-        _uiState,
+    private val _events = MutableSharedFlow<DatabaseUiEvent>()
+    val events = _events.asSharedFlow()
+
+    private val _commitmentUiState: MutableStateFlow<CommitmentFormUiState> = MutableStateFlow(CommitmentFormUiState())
+    val commitmentUiState: StateFlow<CommitmentFormUiState> = combine(
+        _commitmentUiState,
         settingsRepository.notificationOptionFlow
     ) { currentUiState, notificationOption ->
         currentUiState.copy(
@@ -41,44 +51,74 @@ class CommitmentFormViewModel(
         initialValue = CommitmentFormUiState()
     )
 
+    private val _recurrenceUiState: MutableStateFlow<RecurrenceFormUiState> = MutableStateFlow(RecurrenceFormUiState())
 
     fun onTitleChange(title: String) {
-        _uiState.update {
+        _commitmentUiState.update {
             it.copy(title = title)
         }
     }
 
     fun onDescriptionChange(description: String) {
-        _uiState.update {
+        _commitmentUiState.update {
             it.copy(description = description)
         }
     }
 
     fun onStartInstantChange(startInstant: Instant) {
-        _uiState.update {
+        _commitmentUiState.update {
             it.copy(startInstant = startInstant)
         }
     }
 
     fun onEndInstantChange(endInstant: Instant) {
-        _uiState.update {
+        _commitmentUiState.update {
             it.copy(endInstant = endInstant)
         }
     }
 
     fun onPriorityChange(priorityEnum: PriorityEnum) {
-        _uiState.update {
+        _commitmentUiState.update {
             it.copy(priorityEnum = priorityEnum)
         }
     }
 
-    private val _events = MutableSharedFlow<DatabaseUiEvent>()
-    val events = _events.asSharedFlow()
+    fun onFrequencyChange(frequencyEnum: FrequencyEnum) {
+        _recurrenceUiState.update {
+            it.copy(frequencyEnum = frequencyEnum)
+        }
+    }
+
+    fun onIntervalChange(interval: Int) {
+        _recurrenceUiState.update {
+            it.copy(interval = interval)
+        }
+    }
+
+    fun onDaysOfWeekChange(daysOfWeekList: List<DayOfWeekEnum>) {
+        _recurrenceUiState.update {
+            it.copy(daysOfWeekList = daysOfWeekList)
+        }
+    }
+
+    fun onDayOfMonthChange(dayOfMonth: Int) {
+        _recurrenceUiState.update {
+            it.copy(dayOfMonth = dayOfMonth)
+        }
+    }
+
+    fun onRecurrenceFormActiveChange(isRecurrenceActive: Boolean) {
+        _recurrenceUiState.update {
+            it.copy(
+                isRecurrenceActive = isRecurrenceActive
+            )
+        }
+    }
 
     init {
         when (commitmentFormMode) {
             is CommitmentFormMode.Create -> {
-                _uiState.update {
+                _commitmentUiState.update {
                     it.copy(
                         isLoading = false,
                         calendarId = commitmentFormMode.calendarId,
@@ -96,7 +136,7 @@ class CommitmentFormViewModel(
                         return@launch
                     }
 
-                    _uiState.update {
+                    _commitmentUiState.update {
                         it.copy(
                             isLoading = false,
                             id = commitmentEntity.id,
@@ -115,12 +155,12 @@ class CommitmentFormViewModel(
 
     fun insertCommitment() {
         val commitmentEntity = CommitmentEntity(
-            calendar = uiState.value.calendarId,
-            title = uiState.value.title,
-            description = uiState.value.description,
-            startDateTime = uiState.value.startInstant,
-            endDateTime =  uiState.value.endInstant,
-            priorityEnum = uiState.value.priorityEnum
+            calendar = commitmentUiState.value.calendarId,
+            title = commitmentUiState.value.title,
+            description = commitmentUiState.value.description,
+            startDateTime = commitmentUiState.value.startInstant,
+            endDateTime =  commitmentUiState.value.endInstant,
+            priorityEnum = commitmentUiState.value.priorityEnum
         )
 
         viewModelScope.launch {
@@ -155,12 +195,15 @@ class CommitmentFormViewModel(
 
             val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
-            if ((uiState.value.notificationOption != NotificationEnum.NO_SEND) &&
+            if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (commitmentEntity.startDateTime > Clock.System.now())) {
-
                 taskNotificationScheduler.scheduleTaskNotification(
                     commitmentEntity.copy(id = commitmentId)
                 )
+            }
+
+            if (_recurrenceUiState.value.isRecurrenceActive) {
+                insertRecurrence(commitmentId)
             }
 
             _events.emit(DatabaseUiEvent.Saved)
@@ -169,7 +212,7 @@ class CommitmentFormViewModel(
 
     fun updateCommitment() {
         viewModelScope.launch {
-            val oldCommitmentEntity = commitmentRepository.getCommitment(uiState.value.id!!)
+            val oldCommitmentEntity = commitmentRepository.getCommitment(commitmentUiState.value.id!!)
 
             if (oldCommitmentEntity == null) {
                 _events.emit(DatabaseUiEvent.ShowError("Commitment not found"))
@@ -177,11 +220,11 @@ class CommitmentFormViewModel(
             }
 
             val newCommitmentEntity = oldCommitmentEntity.copy(
-                title = uiState.value.title,
-                description = uiState.value.description,
-                startDateTime = uiState.value.startInstant,
-                endDateTime =  uiState.value.endInstant,
-                priorityEnum = uiState.value.priorityEnum
+                title = commitmentUiState.value.title,
+                description = commitmentUiState.value.description,
+                startDateTime = commitmentUiState.value.startInstant,
+                endDateTime =  commitmentUiState.value.endInstant,
+                priorityEnum = commitmentUiState.value.priorityEnum
             )
 
             // Check if start time is lesser than end time
@@ -218,11 +261,11 @@ class CommitmentFormViewModel(
 
             _events.emit(DatabaseUiEvent.Saved)
 
-            if ((uiState.value.notificationOption != NotificationEnum.NO_SEND) &&
+            if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (newCommitmentEntity.startDateTime > Clock.System.now())) {
-                if (((uiState.value.notificationOption == NotificationEnum.MEDIUM_AND_HIGH_PRIORITY) &&
+                if (((commitmentUiState.value.notificationOption == NotificationEnum.MEDIUM_AND_HIGH_PRIORITY) &&
                     (newCommitmentEntity.priorityEnum == PriorityEnum.LOW)) ||
-                    (uiState.value.notificationOption == NotificationEnum.ONLY_HIGH_PRIORITY) &&
+                    (commitmentUiState.value.notificationOption == NotificationEnum.ONLY_HIGH_PRIORITY) &&
                     (newCommitmentEntity.priorityEnum != PriorityEnum.HIGH)) {
                     taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                     return@launch
@@ -238,6 +281,20 @@ class CommitmentFormViewModel(
 
     private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {
         return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
+    }
+
+    fun insertRecurrence(commitmentId: Long) {
+        viewModelScope.launch {
+            val recurrenceEntity = RecurrenceEntity(
+                commitment = commitmentId,
+                frequency = _recurrenceUiState.value.frequencyEnum,
+                interval = _recurrenceUiState.value.interval,
+                dayOfWeekList = _recurrenceUiState.value.daysOfWeekList,
+                dayOfMonth = _recurrenceUiState.value.dayOfMonth
+            )
+
+            recurrenceRepository.insert(recurrenceEntity)
+        }
     }
 
 }
