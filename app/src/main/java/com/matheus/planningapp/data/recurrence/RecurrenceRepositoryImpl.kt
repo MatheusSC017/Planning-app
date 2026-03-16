@@ -20,4 +20,7 @@ class RecurrenceRepositoryImpl (
         return recurrenceDao.getRecurrenceByCalendar(calendarId)
     }
 
+    override suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity? {
+        return recurrenceDao.getRecurrenceByCommitment(commitmentId)
+    }
 }

@@ -22,4 +22,7 @@ interface RecurrenceDao {
             "JOIN Commitment c ON r.commitment = c.id " +
             "WHERE c.calendar = :calendarId")
     suspend fun getRecurrenceByCalendar(calendarId: Long): List<RecurrenceEntity>
+
+    @Query("SELECT * FROM Recurrence WHERE commitment = :commitmentId")
+    suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity?
 }

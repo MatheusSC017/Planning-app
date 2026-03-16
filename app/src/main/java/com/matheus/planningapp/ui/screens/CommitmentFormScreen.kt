@@ -70,6 +70,7 @@ import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
+import com.matheus.planningapp.viewmodel.commitment.RecurrenceFormUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -210,8 +211,8 @@ fun CommitmentForm(
     commitmentUiState: CommitmentFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
+    val recurrenceUiState by commitmentFormViewModel.recurrenceUiState.collectAsState()
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
-    var isRecurrence by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -371,10 +372,9 @@ fun CommitmentForm(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Switch(
-                    checked = isRecurrence,
+                    checked = recurrenceUiState.isRecurrenceActive,
                     onCheckedChange = {
-                        isRecurrence = !isRecurrence
-                        commitmentFormViewModel.onRecurrenceFormActiveChange(isRecurrence)
+                        commitmentFormViewModel.onRecurrenceFormActiveChange(!recurrenceUiState.isRecurrenceActive)
                     }
                 )
 
@@ -389,8 +389,11 @@ fun CommitmentForm(
         }
 
         item {
-            if (isRecurrence) {
-                RecurrenceForm(commitmentFormViewModel)
+            if (recurrenceUiState.isRecurrenceActive) {
+                RecurrenceForm(
+                    recurrenceUiState = recurrenceUiState,
+                    commitmentFormViewModel = commitmentFormViewModel
+                )
             }
         }
 
@@ -430,10 +433,10 @@ fun CommitmentForm(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurrenceForm (
+    recurrenceUiState: RecurrenceFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
     var isExpandedFrequencyDropdown: Boolean by remember { mutableStateOf(false) }
-    var selectedFrequencyEnum: FrequencyEnum by rememberSaveable { mutableStateOf(FrequencyEnum.DAILY) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -452,7 +455,7 @@ fun RecurrenceForm (
             onExpandedChange = { isExpandedFrequencyDropdown = !isExpandedFrequencyDropdown }
         ) {
             TextField(
-                value = selectedFrequencyEnum.label,
+                value = recurrenceUiState.frequencyEnum.label,
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = {
@@ -492,7 +495,6 @@ fun RecurrenceForm (
                         },
                         onClick = {
                             commitmentFormViewModel.onFrequencyChange(frequencyEnum)
-                            selectedFrequencyEnum = frequencyEnum
                             isExpandedFrequencyDropdown = false
                         }
                     )
@@ -500,7 +502,7 @@ fun RecurrenceForm (
             }
         }
 
-        if (selectedFrequencyEnum == FrequencyEnum.WEEKLY) {
+        if (recurrenceUiState.frequencyEnum == FrequencyEnum.WEEKLY) {
             Text(
                 text = "Days of Week",
                 style = TextStyle(
@@ -510,13 +512,14 @@ fun RecurrenceForm (
             )
 
             DaysOfWeek(
+                daysOfWeekList = recurrenceUiState.daysOfWeekList,
                 onSelection = { dayOfWeekList ->
                     commitmentFormViewModel.onDaysOfWeekChange(dayOfWeekList)
                 }
             )
         }
 
-        if (selectedFrequencyEnum == FrequencyEnum.MONTHLY) {
+        if (recurrenceUiState.frequencyEnum == FrequencyEnum.MONTHLY) {
             Text(
                 text = "Day of Month",
                 style = TextStyle(
@@ -526,6 +529,7 @@ fun RecurrenceForm (
             )
 
             IntegerField(
+                selectedValue = recurrenceUiState.dayOfMonth,
                 onIntegerValueChange = { newDayOfMonth ->
                     commitmentFormViewModel.onDayOfMonthChange(newDayOfMonth)
                 },
@@ -534,7 +538,7 @@ fun RecurrenceForm (
             )
         }
 
-        if (selectedFrequencyEnum == FrequencyEnum.CUSTOMIZED) {
+        if (recurrenceUiState.frequencyEnum == FrequencyEnum.CUSTOMIZED) {
             Text(
                 text = "Interval",
                 style = TextStyle(
@@ -544,6 +548,7 @@ fun RecurrenceForm (
             )
 
             IntegerField(
+                selectedValue = recurrenceUiState.interval,
                 onIntegerValueChange = { newInterval ->
                     commitmentFormViewModel.onIntervalChange(newInterval)
                 },
@@ -557,22 +562,22 @@ fun RecurrenceForm (
 
 @Composable
 fun DaysOfWeek(
+    daysOfWeekList: List<DayOfWeekEnum>,
     onSelection: (List<DayOfWeekEnum>) -> Unit
 ) {
-    val selectedDaysOfWeek = remember { mutableStateListOf<DayOfWeekEnum>() }
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         DayOfWeekEnum.entries.forEach { dayOfWeekEnum ->
-            val isSelected = selectedDaysOfWeek.contains(dayOfWeekEnum)
+            val isSelected = daysOfWeekList.contains(dayOfWeekEnum)
 
             Button(
                 onClick = {
-                    if (isSelected) selectedDaysOfWeek.remove(dayOfWeekEnum)
-                    else selectedDaysOfWeek.add(dayOfWeekEnum)
-                    onSelection(selectedDaysOfWeek)
+                    val newSelectedDaysOfWeek = daysOfWeekList.toMutableList()
+                    if (isSelected) newSelectedDaysOfWeek.remove(dayOfWeekEnum)
+                    else newSelectedDaysOfWeek.add(dayOfWeekEnum)
+                    onSelection(newSelectedDaysOfWeek)
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -603,19 +608,18 @@ fun DaysOfWeek(
 
 @Composable
 fun IntegerField(
+    selectedValue: Int,
     onIntegerValueChange: (Int) -> Unit,
     minValue: Int,
     maxValue: Int
 ) {
-    var selectedValue by remember { mutableIntStateOf(minValue) }
     var increaseButtonPressed by remember { mutableStateOf(false) }
     var decreaseButtonPressed by remember { mutableStateOf(false) }
 
     LaunchedEffect(increaseButtonPressed, selectedValue) {
         while (increaseButtonPressed) {
             delay(100)
-            if (selectedValue < maxValue) selectedValue += 1
-            onIntegerValueChange(selectedValue)
+            if (selectedValue < maxValue) onIntegerValueChange(selectedValue + 1)
         }
     }
 
@@ -623,8 +627,7 @@ fun IntegerField(
 
         while (decreaseButtonPressed) {
             delay(100)
-            if (selectedValue > minValue) selectedValue -= 1
-            onIntegerValueChange(selectedValue)
+            if (selectedValue > minValue) onIntegerValueChange(selectedValue - 1)
         }
     }
 

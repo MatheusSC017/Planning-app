@@ -5,4 +5,5 @@ interface RecurrenceRepository {
     suspend fun update(recurrenceEntity: RecurrenceEntity)
     suspend fun delete(recurrenceEntity: RecurrenceEntity)
     suspend fun getRecurrenceByCalendar(calendarId: Long): List<RecurrenceEntity>
+    suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity?
 }

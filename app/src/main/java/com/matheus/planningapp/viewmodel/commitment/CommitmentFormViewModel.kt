@@ -52,6 +52,11 @@ class CommitmentFormViewModel(
     )
 
     private val _recurrenceUiState: MutableStateFlow<RecurrenceFormUiState> = MutableStateFlow(RecurrenceFormUiState())
+    val recurrenceUiState: StateFlow<RecurrenceFormUiState> = _recurrenceUiState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = RecurrenceFormUiState()
+    )
 
     fun onTitleChange(title: String) {
         _commitmentUiState.update {
@@ -147,6 +152,21 @@ class CommitmentFormViewModel(
                             endInstant = commitmentEntity.endDateTime,
                             priorityEnum = commitmentEntity.priorityEnum,
                         )
+                    }
+
+                    val recurrenceEntity = recurrenceRepository.getRecurrenceByCommitment(commitmentEntity.id)
+
+                    if (recurrenceEntity != null) {
+                        _recurrenceUiState.update {
+                            it.copy(
+                                id = recurrenceEntity.id,
+                                isRecurrenceActive = true,
+                                frequencyEnum = recurrenceEntity.frequency,
+                                interval = recurrenceEntity.interval,
+                                daysOfWeekList = recurrenceEntity.dayOfWeekList,
+                                dayOfMonth = recurrenceEntity.dayOfMonth
+                            )
+                        }
                     }
                 }
             }
