@@ -283,20 +283,27 @@ class CommitmentFormViewModel(
 
             if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (newCommitmentEntity.startDateTime > Clock.System.now())) {
-                if (((commitmentUiState.value.notificationOption == NotificationEnum.MEDIUM_AND_HIGH_PRIORITY) &&
-                    (newCommitmentEntity.priorityEnum == PriorityEnum.LOW)) ||
-                    (commitmentUiState.value.notificationOption == NotificationEnum.ONLY_HIGH_PRIORITY) &&
-                    (newCommitmentEntity.priorityEnum != PriorityEnum.HIGH)) {
-                    taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
-                    return@launch
-                }
-
-                if (oldCommitmentEntity.startDateTime != newCommitmentEntity.startDateTime) taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
+                // TODO: To reduce the code complexity the task is always canceled and rescheduled when updated, check for a better solution
+                taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                 taskNotificationScheduler.scheduleTaskNotification(newCommitmentEntity)
             }
 
-        }
+            val recurrenceEntity = recurrenceRepository.getRecurrenceByCommitment(commitmentUiState.value.id!!)
+            if (_recurrenceUiState.value.isRecurrenceActive) {
+                val newRecurrenceEntity = RecurrenceEntity(
+                    id = recurrenceEntity?.id ?: 0,
+                    commitment = _commitmentUiState.value.id!!,
+                    frequency = _recurrenceUiState.value.frequencyEnum,
+                    interval = _recurrenceUiState.value.interval,
+                    dayOfWeekList = _recurrenceUiState.value.daysOfWeekList,
+                    dayOfMonth = _recurrenceUiState.value.dayOfMonth
+                )
 
+                if (recurrenceEntity == null) recurrenceRepository.insert(newRecurrenceEntity) else recurrenceRepository.update(newRecurrenceEntity)
+            } else {
+                if (recurrenceEntity != null) recurrenceRepository.delete(recurrenceEntity)
+            }
+        }
     }
 
     private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {

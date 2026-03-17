@@ -13,7 +13,6 @@ object NotificationConfig {
 class NotificationChannelManager(private val context: Context) {
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            /* TODO: Create a settings file with env variables */
             val channel: NotificationChannel = NotificationChannel(
                 NotificationConfig.CHANNEL_ID,
                 NotificationConfig.CHANNEL_NAME,
