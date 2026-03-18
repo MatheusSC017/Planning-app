@@ -6,6 +6,10 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
+import com.matheus.planningapp.util.enums.FrequencyEnum
+import kotlinx.datetime.Instant
 
 @Dao
 interface RecurrenceDao {

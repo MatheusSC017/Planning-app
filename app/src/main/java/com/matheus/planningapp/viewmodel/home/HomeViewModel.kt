@@ -6,6 +6,7 @@ import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -71,7 +75,18 @@ class HomeViewModel(
     }
 
     fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Long): Flow<List<CommitmentEntity>> {
-        return commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar)
+        val startDateTime: LocalDateTime = dayStart.toLocalDateTime(TimeZone.currentSystemDefault())
+        return combine(
+            commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar),
+            commitmentRepository.getCommitmentByRecurrence(
+                today = dayStart,
+                dayOfWeek = DayOfWeekEnum.valueOf(startDateTime.dayOfWeek.name),
+                dayOfMonth = startDateTime.dayOfMonth
+            )
+        ) {
+            commitments, recurrenceCommitments ->
+            commitments + recurrenceCommitments
+        }
     }
 
     fun deleteCommitment(commitmentEntity: CommitmentEntity) {

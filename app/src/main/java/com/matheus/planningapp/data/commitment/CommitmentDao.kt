@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -54,4 +55,17 @@ interface CommitmentDao {
         WHERE startDateTime > :currentDateTime
     """)
     suspend fun getFutureCommitments(currentDateTime: Instant = Clock.System.now()): List<CommitmentEntity>
+
+    @Query("SELECT c.* FROM Commitment c " +
+            "JOIN Recurrence r ON c.id = r.commitment " +
+            "WHERE c.startDateTime <= :today AND " +
+            "(r.frequency = 'DAILY' OR " +
+            "(r.frequency = 'WEEKLY' AND r.dayOfWeekList LIKE '%' || :dayOfWeek || '%') OR " +
+            "(r.frequency = 'MONTHLY' AND r.dayOfMonth = :dayOfMonth) OR " +
+            "(r.frequency = 'CUSTOMIZED' AND CAST((julianday(:today) - julianday(c.startDateTime)) AS INTERGER) % R.interval = 0))")
+    fun getCommitmentByRecurrence(
+        today: Instant,
+        dayOfWeek: DayOfWeekEnum,
+        dayOfMonth: Int
+    ): Flow<List<CommitmentEntity>>
 }

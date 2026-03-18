@@ -2,6 +2,7 @@ package com.matheus.planningapp.data.recurrence
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
@@ -18,6 +19,9 @@ import kotlinx.datetime.Instant
             childColumns = ["commitment"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index("commitment")
     ]
 )
 class RecurrenceEntity (

@@ -16,7 +16,7 @@ import com.matheus.planningapp.data.recurrence.RecurrenceEntity
 
 @Database(
     entities = [CalendarEntity::class, CommitmentEntity::class, RecurrenceEntity::class],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(

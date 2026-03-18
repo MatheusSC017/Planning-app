@@ -1,5 +1,6 @@
 package com.matheus.planningapp.data.commitment
 
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
@@ -38,5 +39,9 @@ class CommitmentRepositoryImpl (
 
     override suspend fun getFutureCommitments(): List<CommitmentEntity> {
         return commitmentDao.getFutureCommitments()
+    }
+
+    override fun getCommitmentByRecurrence(today: Instant, dayOfWeek: DayOfWeekEnum, dayOfMonth: Int): Flow<List<CommitmentEntity>> {
+        return commitmentDao.getCommitmentByRecurrence(today, dayOfWeek, dayOfMonth)
     }
 }
