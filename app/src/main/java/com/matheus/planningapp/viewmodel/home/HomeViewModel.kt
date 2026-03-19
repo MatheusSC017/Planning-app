@@ -79,6 +79,7 @@ class HomeViewModel(
         return combine(
             commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar),
             commitmentRepository.getCommitmentByRecurrence(
+                calendar = calendar,
                 today = dayStart,
                 dayOfWeek = DayOfWeekEnum.valueOf(startDateTime.dayOfWeek.name),
                 dayOfMonth = startDateTime.dayOfMonth

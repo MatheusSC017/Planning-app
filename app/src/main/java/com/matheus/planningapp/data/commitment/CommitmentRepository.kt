@@ -18,5 +18,5 @@ interface CommitmentRepository {
         commitmentId: Long? = null
     ): Int
     suspend fun getFutureCommitments(): List<CommitmentEntity>
-    fun getCommitmentByRecurrence(today: Instant, dayOfWeek: DayOfWeekEnum, dayOfMonth: Int): Flow<List<CommitmentEntity>>
+    fun getCommitmentByRecurrence(calendar: Long, today: Instant, dayOfWeek: DayOfWeekEnum, dayOfMonth: Int): Flow<List<CommitmentEntity>>
 }

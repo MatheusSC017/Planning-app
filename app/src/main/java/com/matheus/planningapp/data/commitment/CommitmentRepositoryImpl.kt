@@ -3,6 +3,9 @@ package com.matheus.planningapp.data.commitment
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 
 class CommitmentRepositoryImpl (
@@ -34,14 +37,22 @@ class CommitmentRepositoryImpl (
         calendarId: Long,
         commitmentId: Long?
     ): Int {
-        return commitmentDao.checkSchedulingConflictsBetweenCommitments(startDateTime, endDateTime, calendarId, commitmentId)
+        val localDateTime: LocalDateTime = startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+        return commitmentDao.checkSchedulingConflictsBetweenCommitments(
+            startDateTime,
+            endDateTime,
+            calendarId,
+            commitmentId,
+            DayOfWeekEnum.valueOf(localDateTime.dayOfWeek.name),
+            localDateTime.dayOfMonth
+        )
     }
 
     override suspend fun getFutureCommitments(): List<CommitmentEntity> {
         return commitmentDao.getFutureCommitments()
     }
 
-    override fun getCommitmentByRecurrence(today: Instant, dayOfWeek: DayOfWeekEnum, dayOfMonth: Int): Flow<List<CommitmentEntity>> {
-        return commitmentDao.getCommitmentByRecurrence(today, dayOfWeek, dayOfMonth)
+    override fun getCommitmentByRecurrence(calendar: Long, today: Instant, dayOfWeek: DayOfWeekEnum, dayOfMonth: Int): Flow<List<CommitmentEntity>> {
+        return commitmentDao.getCommitmentByRecurrence(calendar, today, dayOfWeek, dayOfMonth)
     }
 }

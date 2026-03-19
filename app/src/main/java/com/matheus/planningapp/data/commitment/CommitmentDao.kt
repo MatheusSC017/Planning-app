@@ -37,17 +37,42 @@ interface CommitmentDao {
     ): Flow<List<CommitmentEntity>>
 
     @Query("""
-        SELECT COUNT(*) FROM commitment 
-        WHERE calendar = :calendarId AND
-        startDateTime < :endDateTime AND
-        endDateTime > :startDateTime AND
-        (:commitmentId IS NULL OR id != :commitmentId)
+        SELECT COUNT(c.id) FROM commitment c
+        LEFT JOIN Recurrence r ON c.id = r.commitment
+        WHERE (:commitmentId IS NULL OR c.id != :commitmentId) AND 
+        c.calendar = :calendarId AND
+        (
+            (
+                c.startDateTime < :endDateTime AND
+                c.endDateTime > :startDateTime
+            ) OR
+            (
+                r.id IS NOT NULL  AND
+                c.startDateTime <= :startDateTime AND
+                (
+                    r.frequency = 'DAILY' OR
+                    (r.frequency = 'WEEKLY' AND r.dayOfWeekList LIKE '%' || :dayOfWeek || '%') OR
+                    (r.frequency = 'MONTHLY' AND r.dayOfMonth = :dayOfMonth) OR
+                    (
+                        r.frequency = 'CUSTOMIZED' AND
+                        CAST((
+                            julianday(:startDateTime / 1000, 'unixepoch') -
+                            julianday(c.startDateTime / 1000, 'unixepoch')
+                        ) AS INTEGER) % r.interval = 0
+                    )
+                ) AND 
+                time(c.startDateTime / 1000, 'unixepoch') < time(:endDateTime / 1000, 'unixepoch') AND
+                time(c.endDateTime / 1000, 'unixepoch') > time(:startDateTime / 1000, 'unixepoch')
+            )
+        )
     """)
     suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,
         calendarId: Long,
-        commitmentId: Long? = null
+        commitmentId: Long? = null,
+        dayOfWeek: DayOfWeekEnum,
+        dayOfMonth: Int
     ): Int
 
     @Query("""
@@ -56,14 +81,28 @@ interface CommitmentDao {
     """)
     suspend fun getFutureCommitments(currentDateTime: Instant = Clock.System.now()): List<CommitmentEntity>
 
-    @Query("SELECT c.* FROM Commitment c " +
-            "JOIN Recurrence r ON c.id = r.commitment " +
-            "WHERE c.startDateTime <= :today AND " +
-            "(r.frequency = 'DAILY' OR " +
-            "(r.frequency = 'WEEKLY' AND r.dayOfWeekList LIKE '%' || :dayOfWeek || '%') OR " +
-            "(r.frequency = 'MONTHLY' AND r.dayOfMonth = :dayOfMonth) OR " +
-            "(r.frequency = 'CUSTOMIZED' AND CAST((julianday(:today) - julianday(c.startDateTime)) AS INTERGER) % R.interval = 0))")
+    /* TODO: Check Customized query */
+    @Query("""
+        SELECT c.* FROM Commitment c 
+        JOIN Recurrence r ON c.id = r.commitment 
+        WHERE 
+        c.calendar = :calendarId AND
+        c.startDateTime <= :today AND 
+        (
+            r.frequency = 'DAILY' OR 
+            (r.frequency = 'WEEKLY' AND r.dayOfWeekList LIKE '%' || :dayOfWeek || '%') OR 
+            (r.frequency = 'MONTHLY' AND r.dayOfMonth = :dayOfMonth) OR 
+            (
+                r.frequency = 'CUSTOMIZED' AND
+                CAST((
+                    julianday(:today / 1000, 'unixepoch') -
+                    julianday(c.startDateTime / 1000, 'unixepoch')
+                ) AS INTEGER) % r.interval = 0
+            )
+        )
+    """)
     fun getCommitmentByRecurrence(
+        calendarId: Long,
         today: Instant,
         dayOfWeek: DayOfWeekEnum,
         dayOfMonth: Int
