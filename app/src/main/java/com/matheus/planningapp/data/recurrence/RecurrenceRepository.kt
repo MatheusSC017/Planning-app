@@ -1,9 +1,11 @@
 package com.matheus.planningapp.data.recurrence
 
+import kotlinx.coroutines.flow.Flow
+
 interface RecurrenceRepository {
     suspend fun insert(recurrenceEntity: RecurrenceEntity)
     suspend fun update(recurrenceEntity: RecurrenceEntity)
     suspend fun delete(recurrenceEntity: RecurrenceEntity)
-    suspend fun getRecurrenceByCalendar(calendarId: Long): List<RecurrenceEntity>
+    fun getRecurrenceByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>>
     suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity?
 }

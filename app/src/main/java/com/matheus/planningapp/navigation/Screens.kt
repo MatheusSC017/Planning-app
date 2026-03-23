@@ -5,4 +5,5 @@ sealed class Screens(val route: String) {
     object CommitmentFormScreen: Screens( "commitmentForm")
     object CalendarScreen: Screens("calendar")
     object SettingScreen: Screens("setting")
+    object RecurrenceScreen: Screens("recurrence")
 }

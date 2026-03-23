@@ -31,7 +31,8 @@ import com.matheus.planningapp.BuildConfig
 fun NavigationDrawerSheet(
     onNavigateToHomeScreen: () -> Unit,
     onNavigateToCalendarScreen: () -> Unit,
-    onNavigateToSettingsScreen: () -> Unit
+    onNavigateToSettingsScreen: () -> Unit,
+    onNavigateToRecurrenceScreen: () -> Unit
 ) {
     ModalDrawerSheet {
         Column(
@@ -120,6 +121,36 @@ fun NavigationDrawerSheet(
                     }
                 },
                 onClick = onNavigateToCalendarScreen,
+                selected = false,
+                modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+            )
+
+            NavigationDrawerItem(
+                label = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Recurrences",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(32.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "Recurrences",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    }
+                },
+                onClick = onNavigateToRecurrenceScreen,
                 selected = false,
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
             )

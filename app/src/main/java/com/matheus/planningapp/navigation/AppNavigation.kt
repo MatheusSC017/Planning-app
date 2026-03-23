@@ -15,6 +15,7 @@ import com.matheus.planningapp.ui.screens.HomeScreen
 import com.matheus.planningapp.ui.screens.CalendarScreen
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.ui.screens.CommitmentScreen
+import com.matheus.planningapp.ui.screens.RecurrenceScreen
 import com.matheus.planningapp.ui.screens.SettingScreen
 import com.matheus.planningapp.ui.screens.components.NavigationDrawerSheet
 import kotlinx.coroutines.launch
@@ -41,6 +42,10 @@ fun AppNavigation () {
                 },
                 onNavigateToSettingsScreen = {
                     navHostController.navigate(Screens.SettingScreen.route)
+                    scope.launch { drawerState.close() }
+                },
+                onNavigateToRecurrenceScreen = {
+                    navHostController.navigate(Screens.RecurrenceScreen.route)
                     scope.launch { drawerState.close() }
                 }
             )
@@ -114,6 +119,13 @@ fun AppNavigation () {
             }
             composable(Screens.CalendarScreen.route) {
                 CalendarScreen(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    }
+                )
+            }
+            composable(Screens.RecurrenceScreen.route) {
+                RecurrenceScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     }

@@ -81,7 +81,6 @@ interface CommitmentDao {
     """)
     suspend fun getFutureCommitments(currentDateTime: Instant = Clock.System.now()): List<CommitmentEntity>
 
-    /* TODO: Check Customized query */
     @Query("""
         SELECT c.* FROM Commitment c 
         JOIN Recurrence r ON c.id = r.commitment 

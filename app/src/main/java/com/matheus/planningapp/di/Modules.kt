@@ -14,6 +14,7 @@ import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
+import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -52,4 +53,5 @@ val appModules = module {
         )
     }
     viewModel { SettingViewModel(get(), get(), get(), get()) }
+    viewModel { RecurrenceViewModel(get(), get()) }
 }

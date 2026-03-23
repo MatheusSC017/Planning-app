@@ -111,12 +111,12 @@ fun HomeScreen (
     var columnViewSelected by remember(uiState.viewMode) { mutableStateOf(uiState.viewMode == ViewEnum.COLUMN) }
 
     LaunchedEffect( uiState.calendars) {
-        if (selectedCalendar == null &&  uiState.calendars.isNotEmpty()) {
-            selectedCalendar =  uiState.calendars.first()
+        if (selectedCalendar == null && uiState.calendars.isNotEmpty()) {
+            selectedCalendar = uiState.calendars.first()
         }
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             PlanningTopAppBar(
                 modifier = Modifier,
@@ -295,7 +295,9 @@ fun CalendarContent(
     val endOfDay = remember(selectedDate) {
         selectedDate.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
     }
-    val commitments by homeViewModel.getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0).collectAsState(initial = emptyList())
+    val commitments by homeViewModel
+        .getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0)
+        .collectAsState(initial = emptyList())
 
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -964,8 +966,7 @@ fun CommitmentCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .padding(end = 12.dp),
+            modifier = Modifier.padding(end = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -988,7 +989,7 @@ fun CommitmentCard(
                     text = commitmentEntity.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSecondary
+                    color = MaterialTheme.colorScheme.secondary
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -996,7 +997,7 @@ fun CommitmentCard(
                 Text(
                     text = "$startTimeString — $endTimeString",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
                 )
             }
 

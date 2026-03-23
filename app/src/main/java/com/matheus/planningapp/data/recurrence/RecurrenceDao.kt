@@ -6,10 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.util.enums.DayOfWeekEnum
-import com.matheus.planningapp.util.enums.FrequencyEnum
-import kotlinx.datetime.Instant
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RecurrenceDao {
@@ -22,10 +19,14 @@ interface RecurrenceDao {
     @Delete
     suspend fun delete(recurrenceEntity: RecurrenceEntity)
 
-    @Query("SELECT r.* FROM Recurrence r " +
-            "JOIN Commitment c ON r.commitment = c.id " +
-            "WHERE c.calendar = :calendarId")
-    suspend fun getRecurrenceByCalendar(calendarId: Long): List<RecurrenceEntity>
+    @Query("""
+        SELECT 
+            c.id AS commitmentId, r.id AS recurrenceId, c.title, c.startDateTime, c.endDateTime, r.frequency, r.dayOfWeekList, r.dayOfMonth, r.interval
+        FROM Recurrence r 
+        JOIN Commitment c ON r.commitment = c.id 
+        WHERE c.calendar = :calendarId
+    """)
+    fun getRecurrenceByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>>
 
     @Query("SELECT * FROM Recurrence WHERE commitment = :commitmentId")
     suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity?

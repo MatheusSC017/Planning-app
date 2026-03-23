@@ -1,5 +1,7 @@
 package com.matheus.planningapp.data.recurrence
 
+import kotlinx.coroutines.flow.Flow
+
 class RecurrenceRepositoryImpl (
     private val recurrenceDao: RecurrenceDao
 ): RecurrenceRepository {
@@ -17,8 +19,7 @@ class RecurrenceRepositoryImpl (
         recurrenceDao.delete(recurrenceEntity)
     }
 
-    override suspend fun getRecurrenceByCalendar(calendarId: Long): List<RecurrenceEntity> {
-        /* TODO: Create page with all the active recurrence by Calendar */
+    override fun getRecurrenceByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> {
         return recurrenceDao.getRecurrenceByCalendar(calendarId)
     }
 
