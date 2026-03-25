@@ -2,12 +2,10 @@ package com.matheus.planningapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,9 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -58,7 +60,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
-import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import kotlinx.datetime.LocalDateTime
@@ -71,7 +72,8 @@ import java.util.Locale
 @Composable
 fun RecurrenceScreen(
     recurrenceViewModel: RecurrenceViewModel = koinViewModel(),
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit
 ) {
     val uiState by recurrenceViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -111,7 +113,9 @@ fun RecurrenceScreen(
                             end = Offset.Infinite
                         )
                     ),
-                recurrences = recurrences
+                recurrenceViewModel = recurrenceViewModel,
+                recurrences = recurrences,
+                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment
             )
         }
     )
@@ -199,8 +203,19 @@ fun RecurrenceTopAppBar(
 @Composable
 fun RecurrenceList(
     modifier: Modifier,
-    recurrences: List<CommitmentRecurrenceDataClass>
+    recurrenceViewModel: RecurrenceViewModel,
+    recurrences: List<CommitmentRecurrenceDataClass>,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit
 ) {
+    var selectedRecurrence by remember { mutableStateOf<CommitmentRecurrenceDataClass?>(null) }
+    var showRecurrenceViewDialog by remember { mutableStateOf(false) }
+
+    RecurrenceViewDialog(
+        recurrence = selectedRecurrence,
+        showDialog = showRecurrenceViewDialog,
+        onDismissRequest = { showRecurrenceViewDialog = false }
+    )
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -211,7 +226,17 @@ fun RecurrenceList(
         ) {
             recurrences.forEach { recurrence ->
                 item {
-                    RecurrenceCard(recurrence)
+                    RecurrenceCard(
+                        recurrence = recurrence,
+                        onViewRecurrence = { recurrence ->
+                            selectedRecurrence = recurrence
+                            showRecurrenceViewDialog = true
+                        },
+                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                        onDeleteRecurrence = { recurrenceId ->
+                            recurrenceViewModel.deleteRecurrence(recurrenceId)
+                        }
+                    )
                 }
             }
         }
@@ -220,7 +245,10 @@ fun RecurrenceList(
 
 @Composable
 fun RecurrenceCard(
-    recurrence: CommitmentRecurrenceDataClass
+    recurrence: CommitmentRecurrenceDataClass,
+    onViewRecurrence: (CommitmentRecurrenceDataClass) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
+    onDeleteRecurrence: (recurrenceId: Long) -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -307,7 +335,7 @@ fun RecurrenceCard(
                         text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
-                            /* TODO: Create View Commitment/Recurrence */
+                            onViewRecurrence(recurrence)
                         },
                         leadingIcon = {
                             Icon(
@@ -322,7 +350,7 @@ fun RecurrenceCard(
                         text = { Text("Edit", color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
-                            /* TODO: Redirect to Edit commitment Screen */
+                            onNavigateToUpdateCommitment(recurrence.commitmentId)
                         },
                         leadingIcon = {
                             Icon(
@@ -339,7 +367,7 @@ fun RecurrenceCard(
                         text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             menuExpanded = false
-                            /* TODO: Delete this commitment and/or Recurrence */
+                            onDeleteRecurrence(recurrence.recurrenceId)
                         },
                         leadingIcon = {
                             Icon(
@@ -352,5 +380,130 @@ fun RecurrenceCard(
             }
 
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecurrenceViewDialog(
+    recurrence: CommitmentRecurrenceDataClass?,
+    showDialog: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    if (recurrence == null) return
+
+    val commitmentStartDateTime: LocalDateTime = recurrence.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val commitmentEndDateTime: LocalDateTime = recurrence.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+
+    var recurrenceText = "Frequency: ${recurrence.frequency.label}"
+    when (recurrence.frequency) {
+        FrequencyEnum.CUSTOMIZED -> recurrenceText += " - Interval: ${recurrence.interval}"
+        FrequencyEnum.MONTHLY -> recurrenceText += " - Day of month: ${recurrence.dayOfMonth}"
+        FrequencyEnum.WEEKLY -> {
+            recurrenceText += " - Week days: ${
+                recurrence.dayOfWeekList.joinToString(", ") { dayOfWeek -> dayOfWeek.label }
+            }"
+        }
+        else -> recurrenceText
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = {
+                Column {
+                    Text(
+                        text = recurrence.title,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+
+                    HorizontalDivider()
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 8.dp)
+                        )
+
+                        Text(
+                            text = recurrenceText,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 8.dp)
+                        )
+
+                        Text(
+                            text = "$startTimeString — $endTimeString",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                        )
+                    }
+                }
+            },
+            text = {
+                Column {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.secondary,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = recurrence.description ?: "",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    HorizontalDivider()
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                Button(
+                    onClick = onDismissRequest,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Dismiss",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.onBackground
+        )
     }
 }

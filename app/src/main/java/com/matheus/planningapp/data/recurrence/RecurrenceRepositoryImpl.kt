@@ -19,6 +19,10 @@ class RecurrenceRepositoryImpl (
         recurrenceDao.delete(recurrenceEntity)
     }
 
+    override suspend fun getRecurrenceById(recurrenceId: Long): RecurrenceEntity? {
+        return recurrenceDao.getRecurrenceById(recurrenceId)
+    }
+
     override fun getRecurrenceByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> {
         return recurrenceDao.getRecurrenceByCalendar(calendarId)
     }

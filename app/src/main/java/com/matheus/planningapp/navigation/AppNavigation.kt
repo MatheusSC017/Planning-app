@@ -128,7 +128,12 @@ fun AppNavigation () {
                 RecurrenceScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
-                    }
+                    },
+                    onNavigateToUpdateCommitment = { commitmentId ->
+                        navHostController.navigate(
+                            "${Screens.CommitmentFormScreen.route}/edit/$commitmentId"
+                        )
+                    },
                 )
             }
             composable(Screens.SettingScreen.route) {

@@ -8,6 +8,7 @@ data class CommitmentRecurrenceDataClass(
     val commitmentId: Long = 0L,
     val recurrenceId: Long = 0L,
     val title: String = "",
+    val description: String? = null,
     val startDateTime: Instant = Instant.fromEpochMilliseconds(0),
     val endDateTime: Instant = Instant.fromEpochMilliseconds(0),
     val frequency: FrequencyEnum = FrequencyEnum.DAILY,

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class RecurrenceViewModel(
     calendarRepository: CalendarRepository,
@@ -31,6 +32,16 @@ class RecurrenceViewModel(
 
     fun getRecurrencesByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> {
         return recurrenceRepository.getRecurrenceByCalendar(calendarId = calendarId)
+    }
+
+    fun deleteRecurrence(recurrenceId: Long) {
+        viewModelScope.launch {
+            val recurrence: RecurrenceEntity? = recurrenceRepository.getRecurrenceById(recurrenceId = recurrenceId)
+
+            if (recurrence != null) {
+                recurrenceRepository.delete(recurrence)
+            }
+        }
     }
 
 }

@@ -20,8 +20,15 @@ interface RecurrenceDao {
     suspend fun delete(recurrenceEntity: RecurrenceEntity)
 
     @Query("""
+        SELECT * FROM Recurrence 
+        WHERE id = :recurrenceId
+    """)
+    suspend fun getRecurrenceById(recurrenceId: Long): RecurrenceEntity?
+
+    @Query("""
         SELECT 
-            c.id AS commitmentId, r.id AS recurrenceId, c.title, c.startDateTime, c.endDateTime, r.frequency, r.dayOfWeekList, r.dayOfMonth, r.interval
+            c.id AS commitmentId, r.id AS recurrenceId, c.title, c.description, c.startDateTime, 
+            c.endDateTime, r.frequency, r.dayOfWeekList, r.dayOfMonth, r.interval
         FROM Recurrence r 
         JOIN Commitment c ON r.commitment = c.id 
         WHERE c.calendar = :calendarId
