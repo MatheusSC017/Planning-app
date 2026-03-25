@@ -669,7 +669,7 @@ fun TimelineGridItem(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
-){
+) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     Column (
@@ -721,6 +721,7 @@ fun TimelineGridItem(
                         commitmentEndDateTime.minute
                     )
                 }
+
                 Text(
                     text = titleOfCell,
                     fontSize = 16.sp,
@@ -1001,12 +1002,14 @@ fun CommitmentCard(
                 )
             }
 
-            Box {
+            Box(
+                modifier = Modifier.align(Alignment.Top)
+            ) {
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         painterResource(R.drawable.outline_more_horiz_24),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondary.copy(.6f)
+                        tint = MaterialTheme.colorScheme.secondary.copy(.6f)
                     )
                 }
 

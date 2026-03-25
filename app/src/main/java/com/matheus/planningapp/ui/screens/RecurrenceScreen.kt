@@ -1,33 +1,41 @@
 package com.matheus.planningapp.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +58,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
-import com.matheus.planningapp.data.recurrence.RecurrenceEntity
+import com.matheus.planningapp.util.enums.DayOfWeekEnum
+import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -79,28 +89,11 @@ fun RecurrenceScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Recurrences",
-                        style = TextStyle(
-                            fontSize = 36.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                },
-                actions = {
-                    IconButton(
-                        onClick = onMenuClick
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(64.dp)
-                        )
-                    }
-                }
+            RecurrenceTopAppBar(
+                calendarsEntities = uiState.calendars,
+                selectedCalendar = selectedCalendar,
+                onCalendarSelected = { selectedCalendar = it },
+                onMenuClick = onMenuClick
             )
         },
         content = { paddingValues ->
@@ -120,6 +113,85 @@ fun RecurrenceScreen(
                     ),
                 recurrences = recurrences
             )
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecurrenceTopAppBar(
+    calendarsEntities: List<CalendarEntity>,
+    selectedCalendar: CalendarEntity?,
+    onCalendarSelected: (CalendarEntity) -> Unit,
+    onMenuClick: () -> Unit
+) {
+    var isExpandedCalendarDropDown by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = {},
+        actions = {
+            ExposedDropdownMenuBox(
+                expanded = isExpandedCalendarDropDown,
+                onExpandedChange = { isExpandedCalendarDropDown = !isExpandedCalendarDropDown }
+            ) {
+                TextField(
+                    value = selectedCalendar?.name ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(isExpandedCalendarDropDown)
+                    },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .width(200.dp),
+                    textStyle = TextStyle(
+                        fontSize = 16.sp
+                    ),
+                    colors = ExposedDropdownMenuDefaults.textFieldColors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        focusedTextColor = MaterialTheme.colorScheme.secondary,
+                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary
+                    )
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isExpandedCalendarDropDown,
+                    onDismissRequest = { isExpandedCalendarDropDown = false },
+                    containerColor = MaterialTheme.colorScheme.background,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                ) {
+                    calendarsEntities.forEach { calendarEntity ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = calendarEntity.name,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                            },
+                            onClick = {
+                                onCalendarSelected(calendarEntity)
+                                isExpandedCalendarDropDown = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = onMenuClick
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
         }
     )
 }
@@ -157,6 +229,18 @@ fun RecurrenceCard(
     val commitmentEndDateTime: LocalDateTime = recurrence.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
+    var recurrenceText = "Frequency: ${recurrence.frequency.label}"
+    when (recurrence.frequency) {
+        FrequencyEnum.CUSTOMIZED -> recurrenceText += " - Interval: ${recurrence.interval}"
+        FrequencyEnum.MONTHLY -> recurrenceText += " - Day of month: ${recurrence.dayOfMonth}"
+        FrequencyEnum.WEEKLY -> {
+            recurrenceText += " - Week days: ${
+                recurrence.dayOfWeekList.joinToString(", ") { dayOfWeek -> dayOfWeek.label }
+            }"
+        }
+        else -> recurrenceText
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         shape = RoundedCornerShape(18.dp),
@@ -167,8 +251,16 @@ fun RecurrenceCard(
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
+
+            Icon(
+                Icons.Default.Refresh,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary.copy(.6f),
+                modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterVertically)
+            )
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -191,7 +283,7 @@ fun RecurrenceCard(
                 )
 
                 Text(
-                    text = recurrence.frequency.label,
+                    text = recurrenceText,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
                 )
@@ -202,7 +294,7 @@ fun RecurrenceCard(
                     Icon(
                         painterResource(R.drawable.outline_more_horiz_24),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondary.copy(.6f)
+                        tint = MaterialTheme.colorScheme.secondary.copy(.6f)
                     )
                 }
 
@@ -258,6 +350,7 @@ fun RecurrenceCard(
                     )
                 }
             }
+
         }
     }
 }
