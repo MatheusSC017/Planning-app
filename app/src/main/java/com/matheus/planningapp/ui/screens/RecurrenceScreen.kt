@@ -2,6 +2,8 @@ package com.matheus.planningapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -48,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -270,34 +274,83 @@ fun RecurrenceCard(
     }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
         shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
+        elevation = CardDefaults.cardElevation(0.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(0.dp, 8.dp)
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
+                    )
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
+            .border(
+                BorderStroke(
+                    1.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
+                        ),
+                        start = Offset.Zero,
+                        end = Offset.Infinite
+                    )
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
 
-            Icon(
-                Icons.Default.Refresh,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary.copy(.6f),
-                modifier = Modifier.padding(end = 8.dp).align(Alignment.CenterVertically)
-            )
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .align(Alignment.CenterVertically)
+            ) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .border(
+                            BorderStroke(.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = .5f)),
+                            CircleShape
+                        )
+                        .clip(CircleShape)
+                        .padding(2.dp)
+
+                )
+            }
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = 8.dp)
             ) {
 
                 Text(
                     text = recurrence.title,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "$startTimeString — $endTimeString",
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -305,15 +358,9 @@ fun RecurrenceCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "$startTimeString — $endTimeString",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
-                )
-
-                Text(
                     text = recurrenceText,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
 
@@ -373,12 +420,12 @@ fun RecurrenceCard(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Edit commitment",
-                                tint = MaterialTheme.colorScheme.error)
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     )
                 }
             }
-
         }
     }
 }

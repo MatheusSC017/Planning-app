@@ -283,7 +283,6 @@ class CommitmentFormViewModel(
 
             if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (newCommitmentEntity.startDateTime > Clock.System.now())) {
-                // TODO: To reduce the code complexity the task is always canceled and rescheduled when updated, check for a better solution
                 taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                 taskNotificationScheduler.scheduleTaskNotification(newCommitmentEntity)
             }

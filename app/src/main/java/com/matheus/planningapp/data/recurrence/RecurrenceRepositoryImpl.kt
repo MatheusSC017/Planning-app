@@ -15,7 +15,6 @@ class RecurrenceRepositoryImpl (
     }
 
     override suspend fun delete(recurrenceEntity: RecurrenceEntity) {
-        /* TODO: Use softdelete in the part to maintain a history of recurrency? */
         recurrenceDao.delete(recurrenceEntity)
     }
 

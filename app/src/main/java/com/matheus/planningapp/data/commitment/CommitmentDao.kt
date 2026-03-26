@@ -86,7 +86,7 @@ interface CommitmentDao {
         JOIN Recurrence r ON c.id = r.commitment 
         WHERE 
         c.calendar = :calendarId AND
-        c.startDateTime <= :today AND 
+        c.startDateTime < :today AND 
         (
             r.frequency = 'DAILY' OR 
             (r.frequency = 'WEEKLY' AND r.dayOfWeekList LIKE '%' || :dayOfWeek || '%') OR 

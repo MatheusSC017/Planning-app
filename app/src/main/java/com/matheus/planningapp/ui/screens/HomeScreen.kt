@@ -2,6 +2,7 @@ package com.matheus.planningapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -105,6 +106,8 @@ fun HomeScreen (
     homeViewModel: HomeViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
+    /* TODO: Reorganize magic numbers as variables */
+
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
@@ -705,6 +708,26 @@ fun TimelineGridItem(
                         bottomStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
                     )
                 )
+                .border(
+                    BorderStroke(
+                        .5.dp,
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                MaterialTheme.colorScheme.secondary,
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
+                            ),
+                            start = Offset.Zero,
+                            end = Offset.Infinite
+                        )
+                    ),
+                    shape = RoundedCornerShape(
+                        topEnd = if (continuesInNextCell) 0.dp else 12.dp,
+                        bottomEnd = if (continuesInNextCell) 0.dp else 12.dp,
+                        topStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
+                        bottomStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
+                    )
+                )
         ) {
 
             Column(
@@ -964,7 +987,23 @@ fun CommitmentCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(6.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                BorderStroke(
+                    1.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        start = Offset.Zero,
+                        end = Offset.Infinite
+                    )
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
     ) {
         Row(
             modifier = Modifier.padding(end = 12.dp),
