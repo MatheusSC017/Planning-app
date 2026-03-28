@@ -3,7 +3,6 @@ package com.matheus.planningapp.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
@@ -58,12 +56,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
+import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import kotlinx.datetime.LocalDateTime
@@ -151,9 +148,9 @@ fun RecurrenceTopAppBar(
                     },
                     modifier = Modifier
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .width(200.dp),
+                        .width(PageDesignSettings.largeComponentSize),
                     textStyle = TextStyle(
-                        fontSize = 16.sp
+                        fontSize = PageDesignSettings.mediumText
                     ),
                     colors = ExposedDropdownMenuDefaults.textFieldColors(
                         focusedContainerColor = Color.Transparent,
@@ -171,7 +168,7 @@ fun RecurrenceTopAppBar(
                     expanded = isExpandedCalendarDropDown,
                     onDismissRequest = { isExpandedCalendarDropDown = false },
                     containerColor = MaterialTheme.colorScheme.background,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                    border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary),
                 ) {
                     calendarsEntities.forEach { calendarEntity ->
                         DropdownMenuItem(
@@ -197,7 +194,7 @@ fun RecurrenceTopAppBar(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Menu",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(PageDesignSettings.largeIconSize)
                 )
             }
         }
@@ -223,7 +220,7 @@ fun RecurrenceList(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(PageDesignSettings.extraLargePaddingValue)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize()
@@ -277,11 +274,11 @@ fun RecurrenceCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         ),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(0.dp),
+        shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+        elevation = CardDefaults.cardElevation(PageDesignSettings.zeroPaddingValue),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(0.dp, 8.dp)
+            .padding(PageDesignSettings.zeroPaddingValue, PageDesignSettings.mediumPaddingValue)
             .background(
                 Brush.horizontalGradient(
                     listOf(
@@ -289,11 +286,11 @@ fun RecurrenceCard(
                         MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
                     )
                 ),
-                shape = RoundedCornerShape(18.dp)
+                shape = RoundedCornerShape(PageDesignSettings.largeIconClip)
             )
             .border(
                 BorderStroke(
-                    1.dp,
+                    PageDesignSettings.borderWidth,
                     Brush.linearGradient(
                         listOf(
                             MaterialTheme.colorScheme.primaryContainer,
@@ -304,17 +301,17 @@ fun RecurrenceCard(
                         end = Offset.Infinite
                     )
                 ),
-                shape = RoundedCornerShape(18.dp)
+                shape = RoundedCornerShape(PageDesignSettings.largeIconClip)
             )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(PageDesignSettings.largePaddingValue),
             verticalAlignment = Alignment.Top
         ) {
 
             Box(
                 modifier = Modifier
-                    .padding(end = 8.dp)
+                    .padding(end = PageDesignSettings.mediumPaddingValue)
                     .align(Alignment.CenterVertically)
             ) {
                 Icon(
@@ -322,13 +319,13 @@ fun RecurrenceCard(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(PageDesignSettings.mediumIconSize)
                         .border(
-                            BorderStroke(.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = .5f)),
+                            BorderStroke(PageDesignSettings.borderWidth / 2, MaterialTheme.colorScheme.primary.copy(alpha = .5f)),
                             CircleShape
                         )
                         .clip(CircleShape)
-                        .padding(2.dp)
+                        .padding(PageDesignSettings.extraSmallPaddingValue)
 
                 )
             }
@@ -336,30 +333,30 @@ fun RecurrenceCard(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = PageDesignSettings.mediumPaddingValue)
             ) {
 
                 Text(
                     text = recurrence.title,
-                    fontSize = 20.sp,
+                    fontSize = PageDesignSettings.largeText,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
 
                 Text(
                     text = "$startTimeString — $endTimeString",
-                    fontSize = 20.sp,
+                    fontSize = PageDesignSettings.largeText,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(PageDesignSettings.smallPaddingValue))
 
                 Text(
                     text = recurrenceText,
-                    fontSize = 14.sp,
+                    fontSize = PageDesignSettings.smallText,
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
@@ -463,7 +460,7 @@ fun RecurrenceViewDialog(
                 Column {
                     Text(
                         text = recurrence.title,
-                        fontSize = 20.sp,
+                        fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSecondary
                     )
@@ -478,13 +475,13 @@ fun RecurrenceViewDialog(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                             modifier = Modifier
-                                .size(24.dp)
-                                .padding(end = 8.dp)
+                                .size(PageDesignSettings.smallIconSize)
+                                .padding(end = PageDesignSettings.smallIconClip)
                         )
 
                         Text(
                             text = recurrenceText,
-                            fontSize = 16.sp,
+                            fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
                         )
                     }
@@ -497,13 +494,13 @@ fun RecurrenceViewDialog(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                             modifier = Modifier
-                                .size(24.dp)
-                                .padding(end = 8.dp)
+                                .size(PageDesignSettings.smallIconSize)
+                                .padding(end = PageDesignSettings.smallIconSize)
                         )
 
                         Text(
                             text = "$startTimeString — $endTimeString",
-                            fontSize = 16.sp,
+                            fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
                         )
                     }
@@ -516,18 +513,18 @@ fun RecurrenceViewDialog(
                             .fillMaxWidth()
                             .background(
                                 MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip)
                             )
-                            .padding(8.dp)
+                            .padding(PageDesignSettings.mediumPaddingValue)
                     ) {
                         Text(
                             text = recurrence.description ?: "",
-                            fontSize = 12.sp,
+                            fontSize = PageDesignSettings.smallText,
                             color = MaterialTheme.colorScheme.onSecondary,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
 
                     HorizontalDivider()
                 }
@@ -544,7 +541,7 @@ fun RecurrenceViewDialog(
                 ) {
                     Text(
                         text = "Dismiss",
-                        fontSize = 18.sp,
+                        fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary
                     )

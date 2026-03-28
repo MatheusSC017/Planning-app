@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -71,8 +70,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
@@ -81,6 +78,7 @@ import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
@@ -98,6 +96,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen (
@@ -106,8 +105,6 @@ fun HomeScreen (
     homeViewModel: HomeViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
-    /* TODO: Reorganize magic numbers as variables */
-
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
@@ -168,7 +165,6 @@ fun PlanningTopAppBar(
     onCalendarSelected: (CalendarEntity) -> Unit,
     onMenuClick: () -> Unit
 ) {
-
     var isExpandedCalendarDropDown by remember { mutableStateOf(false) }
 
     TopAppBar(
@@ -181,26 +177,28 @@ fun PlanningTopAppBar(
                     contentDescription = "Column view",
                     tint = if (columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(PageDesignSettings.largeIconSize)
+                        .clip(RoundedCornerShape(PageDesignSettings.mediumIconClip))
                         .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
-                        .padding(2.dp)
+                        .padding(PageDesignSettings.extraSmallPaddingValue)
                         .clickable {
                             onViewSelected(true)
                         }
                 )
+
                 Spacer(
-                    modifier = Modifier.width(16.dp)
+                    modifier = Modifier.width(PageDesignSettings.extraLargePaddingValue)
                 )
+
                 Icon(
                     painter = painterResource(id = R.drawable.grid_view),
                     contentDescription = "Grid view",
                     tint = if (!columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(PageDesignSettings.largeIconSize)
+                        .clip(RoundedCornerShape(PageDesignSettings.mediumIconClip))
                         .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
-                        .padding(2.dp)
+                        .padding(PageDesignSettings.extraSmallPaddingValue)
                         .clickable {
                             onViewSelected(false)
                         }
@@ -221,9 +219,9 @@ fun PlanningTopAppBar(
                     },
                     modifier = Modifier
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .width(200.dp),
+                        .width(PageDesignSettings.largeComponentSize),
                     textStyle = TextStyle(
-                        fontSize = 16.sp
+                        fontSize = PageDesignSettings.mediumText
                     ),
                     colors = ExposedDropdownMenuDefaults.textFieldColors(
                         focusedContainerColor = Color.Transparent,
@@ -241,7 +239,7 @@ fun PlanningTopAppBar(
                     expanded = isExpandedCalendarDropDown,
                     onDismissRequest = { isExpandedCalendarDropDown = false },
                     containerColor = MaterialTheme.colorScheme.background,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                    border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary),
                 ) {
                     calendarsEntities.forEach { calendarEntity ->
                         DropdownMenuItem(
@@ -267,7 +265,7 @@ fun PlanningTopAppBar(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Menu",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(PageDesignSettings.largeIconSize)
                 )
             }
         }
@@ -331,24 +329,19 @@ fun CalendarContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(
-                top = 16.dp,
-                start = 16.dp,
-                bottom = 16.dp,
-                end = 16.dp
-            )
+            .padding(PageDesignSettings.extraLargePaddingValue)
     ) {
         item {
             Column {
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue)
                 ) {
                     Text(
                         text = selectedDate.year.toString(),
                         style = TextStyle(
-                            fontSize = 48.sp,
+                            fontSize = PageDesignSettings.largeTitle,
                             color = MaterialTheme.colorScheme.primary
                         )
                     )
@@ -360,8 +353,8 @@ fun CalendarContent(
                             contentDescription = "Up",
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .size(24.dp)
+                                .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
+                                .size(PageDesignSettings.smallIconSize)
                                 .clickable { homeViewModel.incrementYear() }
                         )
 
@@ -370,8 +363,8 @@ fun CalendarContent(
                             contentDescription = "Down",
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .size(24.dp)
+                                .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
+                                .size(PageDesignSettings.smallIconSize)
                                 .clickable { homeViewModel.decrementYear() }
                         )
                     }
@@ -387,14 +380,10 @@ fun CalendarContent(
                 Text(
                     text = months[selectedDate.monthValue - 1],
                     style = TextStyle(
-                        fontSize = 48.sp,
+                        fontSize = PageDesignSettings.largeTitle,
                         color = MaterialTheme.colorScheme.primary
                     ),
-                    modifier = Modifier
-                        .padding(
-                            top = 16.dp,
-                            bottom = 16.dp
-                        )
+                    modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue)
                 )
 
                 DaysOnlyCalendar(
@@ -411,14 +400,10 @@ fun CalendarContent(
                     Text(
                         text = "Timeline",
                         style = TextStyle(
-                            fontSize = 48.sp,
+                            fontSize = PageDesignSettings.largeTitle,
                             color = MaterialTheme.colorScheme.primary
                         ),
-                        modifier = Modifier
-                            .padding(
-                                top = 16.dp,
-                                bottom = 16.dp
-                            )
+                        modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue)
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -432,7 +417,7 @@ fun CalendarContent(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add new Commitment",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(48.dp)
+                            modifier = Modifier.size(PageDesignSettings.largeIconSize)
                         )
                     }
 
@@ -476,33 +461,34 @@ fun MonthGrid(
     selectedMonth: Int,
     onMonthSelected: (Int) -> Unit
 ) {
+    val numberOfColumns = 6
+    val numberOfRows = 2
+    val numberLettersAbbrev = 3
+
     Column {
         months
-            .chunked(6)
-            .take(2)
+            .chunked(numberOfColumns)
+            .take(numberOfRows)
             .forEachIndexed { rowIndex, row ->
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     row.forEachIndexed { columnIndex, month ->
-                        val index = rowIndex * 6 + columnIndex
+                        val index = rowIndex * numberOfColumns + columnIndex
 
                         Text(
-                            text = month.take(3),
+                            text = month.take(numberLettersAbbrev),
                             modifier = Modifier
-                                .padding(8.dp)
+                                .padding(PageDesignSettings.extraLargePaddingValue)
                                 .clickable { onMonthSelected(index + 1) },
                             style = TextStyle(
-                                fontSize = 20.sp,
-                                fontWeight = if (index == selectedMonth - 1) {
-                                    FontWeight.Bold
-                                } else {
-                                    FontWeight.Normal
-                                },
+                                fontSize = PageDesignSettings.mediumText,
+                                fontWeight = if (index == selectedMonth - 1) FontWeight.W900 else FontWeight.Normal,
                                 color = MaterialTheme.colorScheme.secondary
                             )
                         )
+
                     }
                 }
             }
@@ -516,7 +502,8 @@ fun DaysOnlyCalendar(
     onDateSelected: (Int) -> Unit
 ) {
     val daysInMonth = yearMonth.lengthOfMonth()
-    val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek.value % 7
+    val numberDayOfWeek = 7
+    val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek.value % numberDayOfWeek
     val daysOfWeek = listOf("S", "M", "T", "W", "T", "F", "S")
 
     Column(
@@ -532,12 +519,12 @@ fun DaysOnlyCalendar(
                     text = it,
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
-                        fontSize = 20.sp,
+                        fontSize = PageDesignSettings.mediumText,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     ),
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(PageDesignSettings.largeIconSize)
                         .background(Color.Transparent)
                         .wrapContentSize(Alignment.Center),
                     textAlign = TextAlign.Center
@@ -546,18 +533,18 @@ fun DaysOnlyCalendar(
         }
 
         val totalCells = firstDayOfWeek + daysInMonth
-        val numberOfRows = (totalCells / 7) + if (totalCells % 7 > 0) 1 else 0
+        val numberOfRows = (totalCells / numberDayOfWeek) + if (totalCells % numberDayOfWeek > 0) 1 else 0
 
         repeat(numberOfRows) { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                repeat(7) { column ->
-                    val cellIndex = row * 7 + column
+                repeat(numberDayOfWeek) { column ->
+                    val cellIndex = row * numberDayOfWeek + column
 
                     if (cellIndex < firstDayOfWeek || cellIndex >= firstDayOfWeek + daysInMonth) {
-                        Box(modifier = Modifier.size(40.dp))
+                        Box(modifier = Modifier.size(PageDesignSettings.largeIconSize))
                     } else {
                         val day =  cellIndex - firstDayOfWeek + 1
 
@@ -566,11 +553,11 @@ fun DaysOnlyCalendar(
                             style = TextStyle(
                                 color = if (day == selectedDay) MaterialTheme.colorScheme.onSecondary else
                                     MaterialTheme.colorScheme.secondary,
-                                fontSize = 16.sp,
+                                fontSize = PageDesignSettings.mediumText,
                                 textAlign = TextAlign.Center
                             ),
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(PageDesignSettings.largeIconSize)
                                 .clickable { onDateSelected(day) }
                                 .background(
                                     if (day == selectedDay) MaterialTheme.colorScheme.onBackground else Color.Transparent,
@@ -593,6 +580,7 @@ fun LazyListScope.timelineGrid(
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
+    val numberOfColumns = 4
     val timelineItems = List(48) { -1 }.toMutableList()
     val finalIndexCommitments: MutableList<Int> = emptyList<Int>().toMutableList()
     commitments.forEachIndexed { index, commitment ->
@@ -611,12 +599,12 @@ fun LazyListScope.timelineGrid(
     item {
         timelineItems
             .withIndex()
-            .chunked(4)
+            .chunked(numberOfColumns)
             .forEach { indexsRow ->
                 BoxWithConstraints(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val cellWidth = maxWidth / 4
+                    val cellWidth = maxWidth / numberOfColumns
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         indexsRow.forEach { indexedHour ->
@@ -638,15 +626,15 @@ fun LazyListScope.timelineGrid(
                             } else {
                                 // Start a new block if this is the first column in the row (index % 4 == 0)
                                 // or if the current commitment is different from the previous one.
-                                if ((index % 4 == 0) || timelineItems[index - 1] != indexCommitment) {
+                                if ((index % numberOfColumns == 0) || timelineItems[index - 1] != indexCommitment) {
                                     val commitmentEndIndex = finalIndexCommitments[indexCommitment]
-                                    val colspan = if (commitmentEndIndex - index + 1 > 4) 4 - (index % 4) else commitmentEndIndex - index
+                                    val colspan = if (commitmentEndIndex - index + 1 > numberOfColumns) numberOfColumns - (index % numberOfColumns) else commitmentEndIndex - index
                                     TimelineGridItem(
                                         startTime = indexToTimeString(index),
                                         commitmentEntity = commitments[indexCommitment],
                                         cellWidth = cellWidth,
                                         colspan = colspan,
-                                        continuesInNextCell = if (index + colspan <= 47) timelineItems[index + colspan] == indexCommitment else false,
+                                        continuesInNextCell = if (index + colspan <= timelineItems.size - 1) timelineItems[index + colspan] == indexCommitment else false,
                                         continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
                                         onViewCommitment = onViewCommitment,
                                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
@@ -686,10 +674,10 @@ fun TimelineGridItem(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    top = 8.dp,
-                    bottom = 8.dp,
-                    end = if (continuesInNextCell) 0.dp else 8.dp,
-                    start = if (continuesFromPreviousCell) 0.dp else 8.dp
+                    top = PageDesignSettings.mediumPaddingValue,
+                    bottom = PageDesignSettings.mediumPaddingValue,
+                    end = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.mediumPaddingValue,
+                    start = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.mediumPaddingValue
                 )
                 .background(
                     brush = Brush.linearGradient(
@@ -702,15 +690,15 @@ fun TimelineGridItem(
                         end = Offset.Infinite
                     ),
                     shape = RoundedCornerShape(
-                        topEnd = if (continuesInNextCell) 0.dp else 12.dp,
-                        bottomEnd = if (continuesInNextCell) 0.dp else 12.dp,
-                        topStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
-                        bottomStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
+                        topEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
+                        bottomEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
+                        topStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
+                        bottomStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
                     )
                 )
                 .border(
                     BorderStroke(
-                        .5.dp,
+                        PageDesignSettings.borderWidth / 2,
                         Brush.linearGradient(
                             listOf(
                                 MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
@@ -722,10 +710,10 @@ fun TimelineGridItem(
                         )
                     ),
                     shape = RoundedCornerShape(
-                        topEnd = if (continuesInNextCell) 0.dp else 12.dp,
-                        bottomEnd = if (continuesInNextCell) 0.dp else 12.dp,
-                        topStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
-                        bottomStart = if (continuesFromPreviousCell) 0.dp else 12.dp,
+                        topEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
+                        bottomEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
+                        topStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
+                        bottomStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
                     )
                 )
         ) {
@@ -747,7 +735,7 @@ fun TimelineGridItem(
 
                 Text(
                     text = titleOfCell,
-                    fontSize = 16.sp,
+                    fontSize = PageDesignSettings.mediumText,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -761,8 +749,7 @@ fun TimelineGridItem(
 
                     Box(
                         modifier = Modifier
-                            .height(24.dp)
-                            .width(24.dp)
+                            .size(PageDesignSettings.smallIconSize)
                             .clip(CircleShape)
                             .background(statusColor)
                     )
@@ -777,7 +764,7 @@ fun TimelineGridItem(
                         painterResource(R.drawable.outline_more_horiz_24),
                         contentDescription = null,
                         modifier = Modifier
-                            .padding(end = 8.dp)
+                            .padding(end = PageDesignSettings.mediumPaddingValue)
                             .clickable { menuExpanded = true },
                         tint = MaterialTheme.colorScheme.secondary.copy(.6f)
                     )
@@ -857,9 +844,10 @@ fun LazyListScope.timelineColumn(
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
     var commitmentsLastIndex = 0
+    val timeLineItems = 48
 
     if (commitments.isEmpty()) {
-        items(48) { index ->
+        items(timeLineItems) { index ->
             TimelineRow(
                 startTime = indexToTimeString(index),
                 commitment = null,
@@ -869,7 +857,7 @@ fun LazyListScope.timelineColumn(
             )
         }
     } else {
-        val timesList = List(48) { it }
+        val timesList = List(timeLineItems) { it }
         commitments.forEach { commitment ->
             val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
             val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -903,8 +891,8 @@ fun LazyListScope.timelineColumn(
             }
         }
 
-        if (commitmentsLastIndex < 48) {
-            items(timesList.subList(commitmentsLastIndex, 48)) { index ->
+        if (commitmentsLastIndex < timeLineItems) {
+            items(timesList.subList(commitmentsLastIndex, timeLineItems)) { index ->
                 TimelineRow(
                     startTime = indexToTimeString(index),
                     commitment = null,
@@ -928,29 +916,33 @@ fun TimelineRow(
 ) {
     Row(
         modifier = Modifier
-            .padding(end = 16.dp, start = 16.dp, bottom = 16.dp)
+            .padding(
+                end = PageDesignSettings.extraLargePaddingValue,
+                start = PageDesignSettings.extraLargePaddingValue,
+                bottom = PageDesignSettings.extraLargePaddingValue
+            )
             .height(IntrinsicSize.Min)
-            .heightIn(min = 100.dp)
+            .heightIn(min = PageDesignSettings.mediumComponentSize)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(60.dp)
+            modifier = Modifier.width(PageDesignSettings.smallComponentSize)
         ) {
             Text(
                 text = startTime,
-                fontSize = 16.sp,
+                fontSize = PageDesignSettings.mediumText,
                 color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
             )
 
             Box(
                 modifier = Modifier
-                    .width(2.dp)
+                    .width(PageDesignSettings.extraSmallPaddingValue)
                     .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.secondary.copy(alpha = .6f))
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
 
         if (commitment != null) {
             CommitmentCard(
@@ -985,13 +977,13 @@ fun CommitmentCard(
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
+        shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+        elevation = CardDefaults.cardElevation(PageDesignSettings.mediumIconClip / 2),
         modifier = Modifier
             .fillMaxWidth()
             .border(
                 BorderStroke(
-                    1.dp,
+                    PageDesignSettings.borderWidth,
                     Brush.linearGradient(
                         listOf(
                             Color.Transparent,
@@ -1002,41 +994,41 @@ fun CommitmentCard(
                         end = Offset.Infinite
                     )
                 ),
-                shape = RoundedCornerShape(18.dp)
+                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip)
             )
     ) {
         Row(
-            modifier = Modifier.padding(end = 12.dp),
+            modifier = Modifier.padding(end = PageDesignSettings.largePaddingValue),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(12.dp)
+                    .width(PageDesignSettings.extraSmallIconSize)
                     .clip(CircleShape)
                     .background(statusColor)
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = PageDesignSettings.extraLargePaddingValue)
             ) {
 
                 Text(
                     text = commitmentEntity.title,
-                    fontSize = 18.sp,
+                    fontSize = PageDesignSettings.mediumText,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(PageDesignSettings.smallPaddingValue))
 
                 Text(
                     text = "$startTimeString — $endTimeString",
-                    fontSize = 16.sp,
+                    fontSize = PageDesignSettings.mediumText,
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
                 )
             }
@@ -1135,20 +1127,20 @@ fun CommitmentViewDialog(
                 Column {
                     Row (
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(10.dp)
+                                .size(PageDesignSettings.extraSmallIconSize)
                                 .clip(CircleShape)
                                 .background(statusColor)
                         )
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
 
                         Text(
                             text = commitmentEntity.title,
-                            fontSize = 20.sp,
+                            fontSize = PageDesignSettings.largeText,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondary
                         )
@@ -1164,13 +1156,13 @@ fun CommitmentViewDialog(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                             modifier = Modifier
-                                .size(24.dp)
-                                .padding(end = 8.dp)
+                                .size(PageDesignSettings.smallIconSize)
+                                .padding(end = PageDesignSettings.mediumPaddingValue)
                         )
 
                         Text(
                             text = String.format(Locale.US, "%04d-%02d-%02d", commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
-                            fontSize = 16.sp,
+                            fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
                         )
                     }
@@ -1183,13 +1175,13 @@ fun CommitmentViewDialog(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                             modifier = Modifier
-                                .size(24.dp)
-                                .padding(end = 8.dp)
+                                .size(PageDesignSettings.smallIconSize)
+                                .padding(end = PageDesignSettings.mediumPaddingValue)
                         )
 
                         Text(
                             text = "$startTimeString — $endTimeString",
-                            fontSize = 16.sp,
+                            fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
                         )
                     }
@@ -1202,18 +1194,18 @@ fun CommitmentViewDialog(
                             .fillMaxWidth()
                             .background(
                                 MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip)
                             )
-                            .padding(8.dp)
+                            .padding(PageDesignSettings.mediumPaddingValue)
                     ) {
                         Text(
                             text = commitmentEntity.description ?: "",
-                            fontSize = 12.sp,
+                            fontSize = PageDesignSettings.smallText,
                             color = MaterialTheme.colorScheme.onSecondary,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
 
                     HorizontalDivider()
                 }
@@ -1230,7 +1222,7 @@ fun CommitmentViewDialog(
                 ) {
                     Text(
                         text = "Dismiss",
-                        fontSize = 18.sp,
+                        fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary
                     )

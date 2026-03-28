@@ -24,8 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.unit.dp
 import com.matheus.planningapp.BuildConfig
+import com.matheus.planningapp.ui.theme.PageDesignSettings
 
 @Composable
 fun NavigationDrawerSheet(
@@ -34,6 +34,7 @@ fun NavigationDrawerSheet(
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToRecurrenceScreen: () -> Unit
 ) {
+    /* TODO: Create component to menu buttons */
     ModalDrawerSheet {
         Column(
             modifier = Modifier.background(
@@ -54,15 +55,15 @@ fun NavigationDrawerSheet(
                     color = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier.padding(
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 32.dp,
-                    start = 16.dp
+                    top = PageDesignSettings.extraLargePaddingValue,
+                    end = PageDesignSettings.extraLargePaddingValue,
+                    bottom = PageDesignSettings.extraLargePaddingValue * 2,
+                    start = PageDesignSettings.extraLargePaddingValue
                 )
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue)
             )
 
             NavigationDrawerItem(
@@ -70,17 +71,17 @@ fun NavigationDrawerSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(PageDesignSettings.extraLargePaddingValue),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Home,
                             contentDescription = "Timeline",
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
                             text = "Home",
@@ -92,7 +93,10 @@ fun NavigationDrawerSheet(
                 },
                 onClick = onNavigateToHomeScreen,
                 selected = false,
-                modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                modifier = Modifier.padding(
+                    vertical = PageDesignSettings.smallPaddingValue,
+                    horizontal = PageDesignSettings.extraLargePaddingValue
+                )
             )
 
             NavigationDrawerItem(
@@ -100,17 +104,17 @@ fun NavigationDrawerSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(PageDesignSettings.extraLargePaddingValue),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = "Calendars",
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
                             text = "Calendars",
@@ -122,7 +126,10 @@ fun NavigationDrawerSheet(
                 },
                 onClick = onNavigateToCalendarScreen,
                 selected = false,
-                modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                modifier = Modifier.padding(
+                    vertical = PageDesignSettings.smallPaddingValue,
+                    horizontal = PageDesignSettings.extraLargePaddingValue
+                )
             )
 
             NavigationDrawerItem(
@@ -130,17 +137,17 @@ fun NavigationDrawerSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(PageDesignSettings.extraLargePaddingValue),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Recurrences",
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
                             text = "Recurrences",
@@ -152,7 +159,10 @@ fun NavigationDrawerSheet(
                 },
                 onClick = onNavigateToRecurrenceScreen,
                 selected = false,
-                modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                modifier = Modifier.padding(
+                    vertical = PageDesignSettings.smallPaddingValue,
+                    horizontal = PageDesignSettings.extraLargePaddingValue
+                )
             )
 
             NavigationDrawerItem(
@@ -160,17 +170,17 @@ fun NavigationDrawerSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(PageDesignSettings.extraLargePaddingValue),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
                             text = "Settings",
@@ -182,7 +192,10 @@ fun NavigationDrawerSheet(
                 },
                 onClick = onNavigateToSettingsScreen,
                 selected = false,
-                modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                modifier = Modifier.padding(
+                    vertical = PageDesignSettings.smallPaddingValue,
+                    horizontal = PageDesignSettings.extraLargePaddingValue
+                )
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -194,7 +207,7 @@ fun NavigationDrawerSheet(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.secondary
                 ),
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
             )
         }
     }

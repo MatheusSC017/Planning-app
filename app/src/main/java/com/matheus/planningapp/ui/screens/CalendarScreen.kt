@@ -42,14 +42,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
 import kotlinx.coroutines.launch
@@ -92,7 +91,7 @@ fun CalendarScreen(
                     Text(
                         text = "Calendars",
                         style = TextStyle(
-                            fontSize = 36.sp,
+                            fontSize = PageDesignSettings.mediumTitle,
                             color = MaterialTheme.colorScheme.primary
                         )
                     )
@@ -105,7 +104,7 @@ fun CalendarScreen(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(64.dp)
+                            modifier = Modifier.size(PageDesignSettings.largeIconSize)
                         )
                     }
                 }
@@ -162,7 +161,7 @@ fun CalendarsMenuContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(PageDesignSettings.extraLargePaddingValue)
     ) {
 
         Column {
@@ -173,24 +172,24 @@ fun CalendarsMenuContent(
                     Text(
                         text = "Calendar name",
                         style = TextStyle(
-                            fontSize = 16.sp,
+                            fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.primary,
                         )
                     )
                 },
                 textStyle = TextStyle(
-                    fontSize = 16.sp,
+                    fontSize = PageDesignSettings.mediumText,
                     color = MaterialTheme.colorScheme.secondary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(bottom = 8.dp),
+                    .height(PageDesignSettings.smallComponentSize)
+                    .padding(bottom = PageDesignSettings.mediumPaddingValue),
                 singleLine = true
             )
 
             Row(
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier.padding(bottom = PageDesignSettings.mediumPaddingValue),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
@@ -200,7 +199,7 @@ fun CalendarsMenuContent(
                 Text(
                     text = "Set as default",
                     style = TextStyle(
-                        fontSize = 16.sp,
+                        fontSize = PageDesignSettings.mediumText,
                         color = MaterialTheme.colorScheme.primary
                     )
                 )
@@ -257,7 +256,7 @@ fun CalendarsMenuContent(
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
+                modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue)
             )
         }
 
@@ -278,21 +277,21 @@ fun CalendarsMenuContent(
                         Text(
                             text = calendar.name,
                             style = TextStyle(
-                                fontSize = 16.sp,
+                                fontSize = PageDesignSettings.mediumText,
                                 color = MaterialTheme.colorScheme.primary
                             ),
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
                         )
 
                         Row(
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
                         ) {
                             if (calendar.isDefault) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = "Default",
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(12.dp)
+                                    modifier = Modifier.padding(PageDesignSettings.largePaddingValue)
                                 )
                             } else {
                                 IconButton(
@@ -320,7 +319,7 @@ fun CalendarsMenuContent(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = "Edit",
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = 16.dp)
+                                    modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue)
                                 )
                             }
                             IconButton(
@@ -333,7 +332,7 @@ fun CalendarsMenuContent(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Delete",
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = 16.dp)
+                                    modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue)
                                 )
                             }
                         }

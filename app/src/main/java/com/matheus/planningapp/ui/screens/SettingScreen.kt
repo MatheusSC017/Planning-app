@@ -41,9 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.viewmodel.setting.SettingUiState
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
@@ -73,7 +72,7 @@ fun SettingScreen(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(64.dp)
+                            modifier = Modifier.size(PageDesignSettings.largeIconSize)
                         )
                     }
                 }
@@ -139,20 +138,15 @@ fun SettingsForm(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(
-                top = 16.dp,
-                start = 16.dp,
-                bottom = 16.dp,
-                end = 16.dp
-            )
+            .padding(PageDesignSettings.extraLargePaddingValue)
     ) {
         Text(
             text = "Viewing mode",
             style = TextStyle(
-                fontSize = 24.sp,
+                fontSize = PageDesignSettings.smallTitle,
                 color = MaterialTheme.colorScheme.secondary
             ),
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(PageDesignSettings.mediumPaddingValue)
         )
 
         ExposedDropdownMenuBox(
@@ -170,7 +164,7 @@ fun SettingsForm(
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth(),
                 textStyle = TextStyle(
-                    fontSize = 16.sp
+                    fontSize = PageDesignSettings.mediumText
                 ),
                 colors = ExposedDropdownMenuDefaults.textFieldColors(
                     focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
@@ -188,7 +182,7 @@ fun SettingsForm(
                 expanded = isExpandedViewDropdown,
                 onDismissRequest = { isExpandedViewDropdown = false },
                 containerColor = MaterialTheme.colorScheme.background,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary)
             ) {
                 ViewEnum.entries.forEach { viewOption ->
                     DropdownMenuItem(
@@ -207,15 +201,15 @@ fun SettingsForm(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
 
         Text(
             text = "Notification configuration",
             style = TextStyle(
-                fontSize = 24.sp,
+                fontSize = PageDesignSettings.smallTitle,
                 color = MaterialTheme.colorScheme.secondary
             ),
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(PageDesignSettings.mediumPaddingValue)
         )
 
         ExposedDropdownMenuBox(
@@ -233,7 +227,7 @@ fun SettingsForm(
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth(),
                 textStyle = TextStyle(
-                    fontSize = 16.sp
+                    fontSize = PageDesignSettings.mediumText
                 ),
                 colors = ExposedDropdownMenuDefaults.textFieldColors(
                     focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
@@ -251,7 +245,7 @@ fun SettingsForm(
                 expanded = isExpandedNotificationDropdown,
                 onDismissRequest = { isExpandedNotificationDropdown = false },
                 containerColor = MaterialTheme.colorScheme.background,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary)
             ) {
                 NotificationEnum.entries.forEach { notificationOption ->
                     DropdownMenuItem(
@@ -275,7 +269,7 @@ fun SettingsForm(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(PageDesignSettings.extraLargePaddingValue),
             horizontalArrangement = Arrangement.End
         ) {
             Button(
@@ -290,7 +284,7 @@ fun SettingsForm(
                 Text(
                     text = "Save",
                     style = TextStyle(
-                        fontSize = 24.sp
+                        fontSize = PageDesignSettings.smallTitle
                     )
                 )
             }
