@@ -60,7 +60,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
+import com.matheus.planningapp.ui.theme.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.StringsRepository
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import kotlinx.datetime.LocalDateTime
@@ -192,7 +194,7 @@ fun RecurrenceTopAppBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu",
+                    contentDescription = LocalStrings.current.menuButton,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(PageDesignSettings.largeIconSize)
                 )
@@ -251,19 +253,20 @@ fun RecurrenceCard(
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteRecurrence: (recurrenceId: Long) -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
 
     val commitmentStartDateTime: LocalDateTime = recurrence.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
     val commitmentEndDateTime: LocalDateTime = recurrence.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+    val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
-    var recurrenceText = "Frequency: ${recurrence.frequency.label}"
+    var recurrenceText = "${strings.recurrenceFrequencyField}: ${recurrence.frequency.label}"
     when (recurrence.frequency) {
-        FrequencyEnum.CUSTOMIZED -> recurrenceText += " - Interval: ${recurrence.interval}"
-        FrequencyEnum.MONTHLY -> recurrenceText += " - Day of month: ${recurrence.dayOfMonth}"
+        FrequencyEnum.CUSTOMIZED -> recurrenceText += " - ${strings.recurrenceIntervalField}: ${recurrence.interval}"
+        FrequencyEnum.MONTHLY -> recurrenceText += " - ${strings.recurrenceDayOfMonthField}: ${recurrence.dayOfMonth}"
         FrequencyEnum.WEEKLY -> {
-            recurrenceText += " - Week days: ${
+            recurrenceText += " - ${strings.recurrenceWeekDaysField}: ${
                 recurrence.dayOfWeekList.joinToString(", ") { dayOfWeek -> dayOfWeek.label }
             }"
         }
@@ -376,7 +379,7 @@ fun RecurrenceCard(
                     modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
                 ) {
                     DropdownMenuItem(
-                        text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
+                        text = { Text(strings.viewButton, color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
                             onViewRecurrence(recurrence)
@@ -384,14 +387,14 @@ fun RecurrenceCard(
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.view),
-                                contentDescription = "View commitment",
+                                contentDescription = strings.viewButton,
                                 tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
                     )
 
                     DropdownMenuItem(
-                        text = { Text("Edit", color = MaterialTheme.colorScheme.onSecondary) },
+                        text = { Text(strings.updateButton, color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
                             onNavigateToUpdateCommitment(recurrence.commitmentId)
@@ -399,7 +402,7 @@ fun RecurrenceCard(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit commitment",
+                                contentDescription = strings.updateButton,
                                 tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
@@ -408,7 +411,7 @@ fun RecurrenceCard(
                     HorizontalDivider()
 
                     DropdownMenuItem(
-                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                        text = { Text(strings.deleteButton, color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             menuExpanded = false
                             onDeleteRecurrence(recurrence.recurrenceId)
@@ -416,7 +419,7 @@ fun RecurrenceCard(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Edit commitment",
+                                contentDescription = strings.deleteButton,
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -436,17 +439,19 @@ fun RecurrenceViewDialog(
 ) {
     if (recurrence == null) return
 
-    val commitmentStartDateTime: LocalDateTime = recurrence.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
-    val commitmentEndDateTime: LocalDateTime = recurrence.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+    val strings: StringsRepository = LocalStrings.current
 
-    var recurrenceText = "Frequency: ${recurrence.frequency.label}"
+    val commitmentStartDateTime: LocalDateTime = recurrence.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val commitmentEndDateTime: LocalDateTime = recurrence.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+
+    var recurrenceText = "${strings.recurrenceFrequencyField}: ${recurrence.frequency.label}"
     when (recurrence.frequency) {
-        FrequencyEnum.CUSTOMIZED -> recurrenceText += " - Interval: ${recurrence.interval}"
-        FrequencyEnum.MONTHLY -> recurrenceText += " - Day of month: ${recurrence.dayOfMonth}"
+        FrequencyEnum.CUSTOMIZED -> recurrenceText += " - ${strings.recurrenceIntervalField}: ${recurrence.interval}"
+        FrequencyEnum.MONTHLY -> recurrenceText += " - ${strings.recurrenceDayOfMonthField}: ${recurrence.dayOfMonth}"
         FrequencyEnum.WEEKLY -> {
-            recurrenceText += " - Week days: ${
+            recurrenceText += " - ${strings.recurrenceWeekDaysField}: ${
                 recurrence.dayOfWeekList.joinToString(", ") { dayOfWeek -> dayOfWeek.label }
             }"
         }
@@ -540,7 +545,7 @@ fun RecurrenceViewDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Dismiss",
+                        text = strings.dismissButton,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary

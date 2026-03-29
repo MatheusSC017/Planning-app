@@ -25,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import com.matheus.planningapp.BuildConfig
+import com.matheus.planningapp.ui.theme.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.StringsRepository
 
 @Composable
 fun NavigationDrawerSheet(
@@ -34,6 +36,8 @@ fun NavigationDrawerSheet(
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToRecurrenceScreen: () -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     /* TODO: Create component to menu buttons */
     ModalDrawerSheet {
         Column(
@@ -50,7 +54,7 @@ fun NavigationDrawerSheet(
             )
         ) {
             Text(
-                text = "Planning your life",
+                text = strings.projectName,
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = MaterialTheme.colorScheme.primary
                 ),
@@ -76,7 +80,7 @@ fun NavigationDrawerSheet(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Home,
-                            contentDescription = "Timeline",
+                            contentDescription = strings.homeMenuButton,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
@@ -84,7 +88,7 @@ fun NavigationDrawerSheet(
                         Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
-                            text = "Home",
+                            text = strings.homeMenuButton,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -109,7 +113,7 @@ fun NavigationDrawerSheet(
                     ) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
-                            contentDescription = "Calendars",
+                            contentDescription = strings.calendarsMenuButton,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
@@ -117,7 +121,7 @@ fun NavigationDrawerSheet(
                         Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
-                            text = "Calendars",
+                            text = strings.calendarsMenuButton,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -142,7 +146,7 @@ fun NavigationDrawerSheet(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Recurrences",
+                            contentDescription = strings.recurrencesMenuButton,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
@@ -150,7 +154,7 @@ fun NavigationDrawerSheet(
                         Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
-                            text = "Recurrences",
+                            text = strings.recurrencesMenuButton,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -175,7 +179,7 @@ fun NavigationDrawerSheet(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "Settings",
+                            contentDescription = strings.settingsMenuButton,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
@@ -183,7 +187,7 @@ fun NavigationDrawerSheet(
                         Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                         Text(
-                            text = "Settings",
+                            text = strings.settingsMenuButton,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = MaterialTheme.colorScheme.secondary
                             )

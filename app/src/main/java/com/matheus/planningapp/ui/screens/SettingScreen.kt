@@ -42,7 +42,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.theme.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.StringsRepository
 import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.viewmodel.setting.SettingUiState
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
@@ -54,12 +56,14 @@ import org.koin.androidx.compose.koinViewModel
 fun SettingScreen(
     onMenuClick: () -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Settings",
+                        text = strings.settingsMenuButton,
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -70,7 +74,7 @@ fun SettingScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
+                            contentDescription = strings.menuButton,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(PageDesignSettings.largeIconSize)
                         )
@@ -104,6 +108,8 @@ fun SettingsForm(
     modifier: Modifier,
     settignsViewModel: SettingViewModel = koinViewModel()
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     var isExpandedViewDropdown: Boolean by remember { mutableStateOf(false) }
     var selectedViewOption: ViewEnum by rememberSaveable { mutableStateOf(ViewEnum.COLUMN) }
 
@@ -122,8 +128,8 @@ fun SettingsForm(
     ConfirmationDialog(
         item = listOf(selectedViewOption, selectedNotificationOption),
         showDialog = showDialog,
-        title = "Confirm the settings",
-        message = "Are you sure you want to save the settings",
+        title = strings.dialogUpdateSettingTitle,
+        message = strings.dialogUpdateSettingMessage,
         onDismissRequest = { showDialog = false },
         onConfirm = {
             val settingUiState = SettingUiState(
@@ -141,7 +147,7 @@ fun SettingsForm(
             .padding(PageDesignSettings.extraLargePaddingValue)
     ) {
         Text(
-            text = "Viewing mode",
+            text = strings.settingViewModeField,
             style = TextStyle(
                 fontSize = PageDesignSettings.smallTitle,
                 color = MaterialTheme.colorScheme.secondary
@@ -204,7 +210,7 @@ fun SettingsForm(
         Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
 
         Text(
-            text = "Notification configuration",
+            text = strings.settingNotificationField,
             style = TextStyle(
                 fontSize = PageDesignSettings.smallTitle,
                 color = MaterialTheme.colorScheme.secondary
@@ -282,7 +288,7 @@ fun SettingsForm(
                 }
             ) {
                 Text(
-                    text = "Save",
+                    text = strings.confirmButton,
                     style = TextStyle(
                         fontSize = PageDesignSettings.smallTitle
                     )

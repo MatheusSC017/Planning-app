@@ -78,7 +78,9 @@ import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.theme.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.StringsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
@@ -166,6 +168,7 @@ fun PlanningTopAppBar(
     onMenuClick: () -> Unit
 ) {
     var isExpandedCalendarDropDown by remember { mutableStateOf(false) }
+    val strings: StringsRepository = LocalStrings.current
 
     TopAppBar(
         modifier = modifier,
@@ -174,7 +177,7 @@ fun PlanningTopAppBar(
             Row {
                 Icon(
                     painter = painterResource(id = R.drawable.columns_view),
-                    contentDescription = "Column view",
+                    contentDescription = strings.columnView,
                     tint = if (columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(PageDesignSettings.largeIconSize)
@@ -192,7 +195,7 @@ fun PlanningTopAppBar(
 
                 Icon(
                     painter = painterResource(id = R.drawable.grid_view),
-                    contentDescription = "Grid view",
+                    contentDescription = strings.gridView,
                     tint = if (!columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(PageDesignSettings.largeIconSize)
@@ -263,7 +266,7 @@ fun PlanningTopAppBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu",
+                    contentDescription = strings.menuButton,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(PageDesignSettings.largeIconSize)
                 )
@@ -283,19 +286,12 @@ fun CalendarContent(
     uiState: HomeUiState,
     taskNotificationScheduler: TaskNotificationScheduler = koinInject()
 ) {
+    val strings: StringsRepository = LocalStrings.current
     val selectedDate = uiState.selectedDate
-    val months = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    )
 
     val zone = remember { ZoneId.systemDefault() }
-    val startOfDay = remember(selectedDate) {
-        selectedDate.atStartOfDay(zone).toInstant().toKotlinInstant()
-    }
-    val endOfDay = remember(selectedDate) {
-        selectedDate.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant()
-    }
+    val startOfDay = remember(selectedDate) { selectedDate.atStartOfDay(zone).toInstant().toKotlinInstant() }
+    val endOfDay = remember(selectedDate) { selectedDate.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant() }
     val commitments by homeViewModel
         .getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0)
         .collectAsState(initial = emptyList())
@@ -313,8 +309,8 @@ fun CalendarContent(
     ConfirmationDialog(
         item = selectedCommitment,
         showDialog = showDeleteDialog,
-        title = "Delete commitment",
-        message = "Are you sure you want to delete this commitment?",
+        title = strings.dialogDeleteCommitmentTitle,
+        message = strings.dialogDeleteCommitmentMessage,
         onConfirm = { commitmentEntity: CommitmentEntity ->
             homeViewModel.deleteCommitment(commitmentEntity)
             if (uiState.notificationOption != NotificationEnum.NO_SEND) {
@@ -350,7 +346,7 @@ fun CalendarContent(
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "Up",
+                            contentDescription = strings.increaseButton,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
@@ -360,7 +356,7 @@ fun CalendarContent(
 
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Down",
+                            contentDescription = strings.decreaseButton,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
@@ -372,13 +368,12 @@ fun CalendarContent(
                 }
 
                 MonthGrid(
-                    months = months,
                     selectedMonth = selectedDate.monthValue,
                     onMonthSelected = { homeViewModel.onSelectedDate(month = it) }
                 )
 
                 Text(
-                    text = months[selectedDate.monthValue - 1],
+                    text = strings.monthNames[selectedDate.monthValue - 1],
                     style = TextStyle(
                         fontSize = PageDesignSettings.largeTitle,
                         color = MaterialTheme.colorScheme.primary
@@ -398,7 +393,7 @@ fun CalendarContent(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Timeline",
+                        text = strings.timeline,
                         style = TextStyle(
                             fontSize = PageDesignSettings.largeTitle,
                             color = MaterialTheme.colorScheme.primary
@@ -415,7 +410,7 @@ fun CalendarContent(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add new Commitment",
+                            contentDescription = strings.insertButton,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(PageDesignSettings.largeIconSize)
                         )
@@ -427,6 +422,7 @@ fun CalendarContent(
 
         if (columnViewSelected) {
             timelineColumn(
+                strings,
                 commitments,
                 onViewCommitment = { commitment ->
                     selectedCommitment = commitment
@@ -457,7 +453,6 @@ fun CalendarContent(
 
 @Composable
 fun MonthGrid(
-    months: List<String>,
     selectedMonth: Int,
     onMonthSelected: (Int) -> Unit
 ) {
@@ -466,7 +461,7 @@ fun MonthGrid(
     val numberLettersAbbrev = 3
 
     Column {
-        months
+        LocalStrings.current.monthNames
             .chunked(numberOfColumns)
             .take(numberOfRows)
             .forEachIndexed { rowIndex, row ->
@@ -504,7 +499,6 @@ fun DaysOnlyCalendar(
     val daysInMonth = yearMonth.lengthOfMonth()
     val numberDayOfWeek = 7
     val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek.value % numberDayOfWeek
-    val daysOfWeek = listOf("S", "M", "T", "W", "T", "F", "S")
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -514,9 +508,9 @@ fun DaysOnlyCalendar(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            daysOfWeek.forEach {
+            LocalStrings.current.weekDaysAbbrev.forEach {
                 Text(
-                    text = it,
+                    text = it.toString(),
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
                         fontSize = PageDesignSettings.mediumText,
@@ -661,6 +655,7 @@ fun TimelineGridItem(
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
 
     Column (
@@ -727,7 +722,7 @@ fun TimelineGridItem(
                     val commitmentEndDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                     titleOfCell += String.format(
                         Locale.US,
-                        " ~ %02d:%02d",
+                        " ~ ${strings.hourFormat}",
                         commitmentEndDateTime.hour,
                         commitmentEndDateTime.minute
                     )
@@ -777,7 +772,7 @@ fun TimelineGridItem(
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    "View",
+                                    strings.viewButton,
                                     color = MaterialTheme.colorScheme.onSecondary
                                 )
                             },
@@ -788,7 +783,7 @@ fun TimelineGridItem(
                             leadingIcon = {
                                 Icon(
                                     painter = painterResource(R.drawable.view),
-                                    contentDescription = "View commitment",
+                                    contentDescription = strings.viewButton,
                                     tint = MaterialTheme.colorScheme.onSecondary
                                 )
                             }
@@ -797,7 +792,7 @@ fun TimelineGridItem(
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    "Edit",
+                                    strings.updateButton,
                                     color = MaterialTheme.colorScheme.onSecondary
                                 )
                             },
@@ -808,7 +803,7 @@ fun TimelineGridItem(
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit commitment",
+                                    contentDescription = strings.updateButton,
                                     tint = MaterialTheme.colorScheme.onSecondary
                                 )
                             }
@@ -817,7 +812,7 @@ fun TimelineGridItem(
                         HorizontalDivider()
 
                         DropdownMenuItem(
-                            text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                            text = { Text(strings.deleteButton, color = MaterialTheme.colorScheme.error) },
                             onClick = {
                                 menuExpanded = false
                                 onDeleteCommitment(commitmentEntity)
@@ -825,7 +820,7 @@ fun TimelineGridItem(
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Edit commitment",
+                                    contentDescription = strings.deleteButton,
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -838,6 +833,7 @@ fun TimelineGridItem(
 }
 
 fun LazyListScope.timelineColumn(
+    strings: StringsRepository,
     commitments: List<CommitmentEntity>,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
@@ -862,7 +858,7 @@ fun LazyListScope.timelineColumn(
         sortedCommitments.forEach { commitment ->
             val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
             val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-            val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+            val commitmentStartTime: String = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
             val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
 
             if (commitmentsLastIndex < commitmentStartIndex) {
@@ -963,12 +959,13 @@ fun CommitmentCard(
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
 
     val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
     val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+    val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
     val statusColor = when(commitmentEntity.priorityEnum) {
         PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
@@ -1051,7 +1048,7 @@ fun CommitmentCard(
                     modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
                 ) {
                     DropdownMenuItem(
-                        text = { Text("View", color = MaterialTheme.colorScheme.onSecondary) },
+                        text = { Text(strings.viewButton, color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
                             onViewCommitment(commitmentEntity)
@@ -1059,14 +1056,14 @@ fun CommitmentCard(
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.view),
-                                contentDescription = "View commitment",
+                                contentDescription = strings.viewButton,
                                 tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
                     )
 
                     DropdownMenuItem(
-                        text = { Text("Edit", color = MaterialTheme.colorScheme.onSecondary) },
+                        text = { Text(strings.updateButton, color = MaterialTheme.colorScheme.onSecondary) },
                         onClick = {
                             menuExpanded = false
                             onNavigateToUpdateCommitment(commitmentEntity.id)
@@ -1074,7 +1071,7 @@ fun CommitmentCard(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit commitment",
+                                contentDescription = strings.updateButton,
                                 tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
@@ -1083,7 +1080,7 @@ fun CommitmentCard(
                     HorizontalDivider()
 
                     DropdownMenuItem(
-                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                        text = { Text(strings.deleteButton, color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             menuExpanded = false
                             onDeleteCommitment(commitmentEntity)
@@ -1091,7 +1088,7 @@ fun CommitmentCard(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Edit commitment",
+                                contentDescription = strings.deleteButton,
                                 tint = MaterialTheme.colorScheme.error)
                         }
                     )
@@ -1110,6 +1107,8 @@ fun CommitmentViewDialog(
 ) {
     if (commitmentEntity == null) return
 
+    val strings: StringsRepository = LocalStrings.current
+
     val statusColor = when(commitmentEntity.priorityEnum) {
         PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
         PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
@@ -1117,9 +1116,9 @@ fun CommitmentViewDialog(
     }
 
     val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val startTimeString = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
     val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val endTimeString = String.format(Locale.US, "%02d:%02d", commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+    val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
     if (showDialog) {
         AlertDialog(
@@ -1162,7 +1161,7 @@ fun CommitmentViewDialog(
                         )
 
                         Text(
-                            text = String.format(Locale.US, "%04d-%02d-%02d", commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
+                            text = String.format(Locale.US, strings.dateFormat, commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
                             fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
                         )
@@ -1222,7 +1221,7 @@ fun CommitmentViewDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Dismiss",
+                        text = strings.dismissButton,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary

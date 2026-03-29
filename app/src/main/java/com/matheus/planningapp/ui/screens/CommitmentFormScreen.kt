@@ -58,7 +58,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.matheus.planningapp.ui.theme.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.StringsRepository
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
@@ -84,6 +86,8 @@ fun CommitmentScreen(
     onBackPressed: () -> Unit,
     commitmentFormMode: CommitmentFormMode
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     val commitmentFormViewModel: CommitmentFormViewModel = koinViewModel(
         parameters = { parametersOf(commitmentFormMode) }
     )
@@ -108,7 +112,7 @@ fun CommitmentScreen(
                     DatabaseUiEvent.Saved -> {
                         onBackPressed()
                         scope.launch {
-                            snackBarHostState.showSnackbar("Saved")
+                            snackBarHostState.showSnackbar(strings.savedMessage)
                         }
                     }
                 }
@@ -123,7 +127,7 @@ fun CommitmentScreen(
                 title = {
                     if (!commitmentUiState.isLoading) {
                         Text(
-                            text = "%04d-%02d-%02d".format(
+                            text = strings.dateFormat.format(
                                 localDate.year,
                                 localDate.monthNumber,
                                 localDate.dayOfMonth
@@ -141,7 +145,7 @@ fun CommitmentScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = strings.backMenuButton,
                             modifier = Modifier.size(PageDesignSettings.mediumIconSize)
                         )
                     }
@@ -207,6 +211,7 @@ fun CommitmentForm(
     commitmentUiState: CommitmentFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
+    val strings: StringsRepository = LocalStrings.current
     val recurrenceUiState by commitmentFormViewModel.recurrenceUiState.collectAsState()
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
 
@@ -223,7 +228,7 @@ fun CommitmentForm(
                 onValueChange = { commitmentFormViewModel.onTitleChange(it) },
                 label = {
                     Text(
-                        text = "Title",
+                        text = strings.commitmentTitleField,
                         style = TextStyle(
                             fontSize = PageDesignSettings.smallTitle,
                             color = MaterialTheme.colorScheme.primary
@@ -248,7 +253,7 @@ fun CommitmentForm(
                 onValueChange = { commitmentFormViewModel.onDescriptionChange(it) },
                 label = {
                     Text(
-                        text = "Description",
+                        text = strings.commitmentDescriptionField,
                         style = TextStyle(
                             fontSize = PageDesignSettings.smallTitle,
                             color = MaterialTheme.colorScheme.primary
@@ -268,7 +273,7 @@ fun CommitmentForm(
 
         item {
             Text(
-                text = "Start time",
+                text = strings.commitmentStartField,
                 style = TextStyle(
                     fontSize = PageDesignSettings.smallTitle,
                     color = MaterialTheme.colorScheme.primary
@@ -283,7 +288,7 @@ fun CommitmentForm(
 
         item {
             Text(
-                text = "End time",
+                text = strings.commitmentEndField,
                 style = TextStyle(
                     fontSize = PageDesignSettings.smallTitle,
                     color = MaterialTheme.colorScheme.primary
@@ -299,7 +304,7 @@ fun CommitmentForm(
 
         item {
             Text(
-                text = "Priority",
+                text = strings.commitmentPriorityField,
                 style = TextStyle(
                     fontSize = PageDesignSettings.smallTitle,
                     color = MaterialTheme.colorScheme.primary
@@ -375,7 +380,7 @@ fun CommitmentForm(
                 )
 
                 Text(
-                    text = "Is this a recurring task?",
+                    text = strings.recurrenceIsRecurrenceActiveField,
                     style = TextStyle(
                         fontSize = PageDesignSettings.smallTitle,
                         color = MaterialTheme.colorScheme.primary
@@ -414,7 +419,7 @@ fun CommitmentForm(
                     }
                 ) {
                     Text(
-                        text = "Save",
+                        text = strings.confirmButton,
                         style = TextStyle(
                             fontSize = PageDesignSettings.smallTitle
                         )
@@ -432,12 +437,12 @@ fun RecurrenceForm (
     recurrenceUiState: RecurrenceFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     val firstDayOfMonth = 1
     val lastDayOfMonth = 28
-
     val firstValueInterval = 1
     val lastValueInterval = 7
-
     var isExpandedFrequencyDropdown: Boolean by remember { mutableStateOf(false) }
 
     Column(
@@ -445,7 +450,7 @@ fun RecurrenceForm (
         verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraLargePaddingValue)
     ) {
         Text(
-            text = "Frequency",
+            text = strings.recurrenceFrequencyField,
             style = TextStyle(
                 fontSize = PageDesignSettings.smallTitle,
                 color = MaterialTheme.colorScheme.primary
@@ -506,7 +511,7 @@ fun RecurrenceForm (
 
         if (recurrenceUiState.frequencyEnum == FrequencyEnum.WEEKLY) {
             Text(
-                text = "Days of Week",
+                text = strings.recurrenceWeekDaysField,
                 style = TextStyle(
                     fontSize = PageDesignSettings.smallTitle,
                     color = MaterialTheme.colorScheme.primary
@@ -523,7 +528,7 @@ fun RecurrenceForm (
 
         if (recurrenceUiState.frequencyEnum == FrequencyEnum.MONTHLY) {
             Text(
-                text = "Day of Month",
+                text = strings.recurrenceDayOfMonthField,
                 style = TextStyle(
                     fontSize = PageDesignSettings.smallTitle,
                     color = MaterialTheme.colorScheme.primary
@@ -542,7 +547,7 @@ fun RecurrenceForm (
 
         if (recurrenceUiState.frequencyEnum == FrequencyEnum.CUSTOMIZED) {
             Text(
-                text = "Interval",
+                text = strings.recurrenceIntervalField,
                 style = TextStyle(
                     fontSize = PageDesignSettings.smallTitle,
                     color = MaterialTheme.colorScheme.primary
@@ -615,6 +620,7 @@ fun IntegerField(
     minValue: Int,
     maxValue: Int
 ) {
+    val strings: StringsRepository = LocalStrings.current
     val delayInMilliseconds = 100L
 
     var increaseButtonPressed by remember { mutableStateOf(false) }
@@ -645,7 +651,7 @@ fun IntegerField(
             readOnly = true,
             label = {
                 Text(
-                    text = "Value",
+                    text = strings.recurrenceValueField,
                     style = TextStyle(
                         fontSize = PageDesignSettings.smallText,
                         color = MaterialTheme.colorScheme.primary
@@ -673,7 +679,7 @@ fun IntegerField(
                     true
                 }
             ) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Increase")
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = strings.increaseButton)
             }
 
             IconButton(
@@ -686,7 +692,7 @@ fun IntegerField(
                     true
                 }
             ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Decrease")
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = strings.decreaseButton)
             }
         }
     }
@@ -699,6 +705,7 @@ fun TimeStepperField(
     isEndTime: Boolean = false,
     onTimeChange: (Instant) -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
     val delayInMilliseconds = 50L
     val timeStepMinutes = 30.minutes
     val minutesPerHour = 60
@@ -743,7 +750,7 @@ fun TimeStepperField(
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = "%02d:%02d".format(
+            value = strings.hourFormat.format(
                 if (localDateTime.dayOfMonth == currentDayOfMonth) localDateTime.hour else hoursPerDay,
                 localDateTime.minute),
             onValueChange = {},
@@ -769,7 +776,7 @@ fun TimeStepperField(
                     true
                 }
             ) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Increase")
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = strings.increaseButton)
             }
 
             IconButton(
@@ -782,7 +789,7 @@ fun TimeStepperField(
                     true
                 }
             ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Decrease")
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = strings.decreaseButton)
             }
         }
     }

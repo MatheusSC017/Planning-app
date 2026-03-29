@@ -48,7 +48,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.theme.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
 import kotlinx.coroutines.launch
@@ -61,6 +63,8 @@ fun CalendarScreen(
     calendarMenuViewModel: CalendarMenuViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -76,7 +80,7 @@ fun CalendarScreen(
                     }
 
                     DatabaseUiEvent.Saved -> {
-                        snackBarHostState.showSnackbar("Saved")
+                        snackBarHostState.showSnackbar(strings.savedMessage)
                     }
                 }
             }
@@ -89,7 +93,7 @@ fun CalendarScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Calendars",
+                        text = strings.calendarsMenuButton,
                         style = TextStyle(
                             fontSize = PageDesignSettings.mediumTitle,
                             color = MaterialTheme.colorScheme.primary
@@ -102,7 +106,7 @@ fun CalendarScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
+                            contentDescription = strings.menuButton,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(PageDesignSettings.largeIconSize)
                         )
@@ -136,6 +140,8 @@ fun CalendarsMenuContent(
     modifier: Modifier,
     calendarMenuViewModel: CalendarMenuViewModel
 ) {
+    val strings: StringsRepository = LocalStrings.current
+
     var selectedCalendarToDelete by remember { mutableStateOf<CalendarEntity?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -148,8 +154,8 @@ fun CalendarsMenuContent(
     ConfirmationDialog(
         item = selectedCalendarToDelete,
         showDialog = showDialog,
-        title = "Delete calendar",
-        message = "Are you sure you want to delete this calendar?",
+        title = strings.dialogDeleteCalendarTitle,
+        message = strings.dialogDeleteCalendarMessage,
         onConfirm = { calendar: CalendarEntity ->
             calendarMenuViewModel.deleteCalendar(calendar)
         },
@@ -170,7 +176,7 @@ fun CalendarsMenuContent(
                 onValueChange = { calendarName = it },
                 label = {
                     Text(
-                        text = "Calendar name",
+                        text = strings.calendarNameField,
                         style = TextStyle(
                             fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.primary,
@@ -197,7 +203,7 @@ fun CalendarsMenuContent(
                     onCheckedChange = { calendarIsDefault = it }
                 )
                 Text(
-                    text = "Set as default",
+                    text = strings.calendarIsDefaultField,
                     style = TextStyle(
                         fontSize = PageDesignSettings.mediumText,
                         color = MaterialTheme.colorScheme.primary
@@ -235,7 +241,7 @@ fun CalendarsMenuContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Save",
+                        contentDescription = strings.confirmButton,
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -249,7 +255,7 @@ fun CalendarsMenuContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Cancel",
+                        contentDescription = strings.cancelButton,
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -289,7 +295,7 @@ fun CalendarsMenuContent(
                             if (calendar.isDefault) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
-                                    contentDescription = "Default",
+                                    contentDescription = strings.calendarIsDefaultField,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(PageDesignSettings.largePaddingValue)
                                 )
@@ -303,7 +309,7 @@ fun CalendarsMenuContent(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.FavoriteBorder,
-                                        contentDescription = "Set as default",
+                                        contentDescription = strings.calendarIsDefaultField,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -317,7 +323,7 @@ fun CalendarsMenuContent(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit",
+                                    contentDescription = strings.updateButton,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue)
                                 )
@@ -330,7 +336,7 @@ fun CalendarsMenuContent(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Delete",
+                                    contentDescription = strings.deleteButton,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue)
                                 )
