@@ -858,7 +858,8 @@ fun LazyListScope.timelineColumn(
         }
     } else {
         val timesList = List(timeLineItems) { it }
-        commitments.forEach { commitment ->
+        val sortedCommitments = commitments.sortedBy { it.startDateTime }
+        sortedCommitments.forEach { commitment ->
             val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
             val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
             val commitmentStartTime: String = String.format(Locale.US, "%02d:%02d", commitmentStartDateTime.hour, commitmentStartDateTime.minute)

@@ -75,7 +75,6 @@ class HomeViewModel(
     }
 
     fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Long): Flow<List<CommitmentEntity>> {
-        /* TODO:Fix bug combining two list and ordering them */
         val startDateTime: LocalDateTime = dayStart.toLocalDateTime(TimeZone.currentSystemDefault())
         return combine(
             commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar),
