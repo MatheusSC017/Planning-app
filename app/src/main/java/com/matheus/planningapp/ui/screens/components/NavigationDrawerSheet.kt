@@ -25,9 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import com.matheus.planningapp.BuildConfig
-import com.matheus.planningapp.ui.theme.LocalStrings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
-import com.matheus.planningapp.ui.theme.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 
 @Composable
 fun NavigationDrawerSheet(

@@ -78,9 +78,9 @@ import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.ui.theme.LocalStrings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
-import com.matheus.planningapp.ui.theme.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel

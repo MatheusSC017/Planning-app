@@ -58,9 +58,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.matheus.planningapp.ui.theme.LocalStrings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
-import com.matheus.planningapp.ui.theme.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.util.enums.PriorityEnum

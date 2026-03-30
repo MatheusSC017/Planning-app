@@ -4,8 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import com.matheus.planningapp.ui.theme.LocalStrings
-import com.matheus.planningapp.ui.theme.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 
 @Composable
 fun <T> ConfirmationDialog(
