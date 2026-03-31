@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.matheus.planningapp.BuildConfig
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
@@ -38,7 +39,6 @@ fun NavigationDrawerSheet(
 ) {
     val strings: StringsRepository = LocalStrings.current
 
-    /* TODO: Create component to menu buttons */
     ModalDrawerSheet {
         Column(
             modifier = Modifier.background(
@@ -70,136 +70,28 @@ fun NavigationDrawerSheet(
                 modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue)
             )
 
-            NavigationDrawerItem(
-                label = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PageDesignSettings.extraLargePaddingValue),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = strings.homeMenuButton,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                        )
-
-                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
-
-                        Text(
-                            text = strings.homeMenuButton,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    }
-                },
-                onClick = onNavigateToHomeScreen,
-                selected = false,
-                modifier = Modifier.padding(
-                    vertical = PageDesignSettings.smallPaddingValue,
-                    horizontal = PageDesignSettings.extraLargePaddingValue
-                )
+            MenuNavigationDrawerItem(
+                title = strings.homeMenuButton,
+                icon = Icons.Default.Home,
+                onNavigate = onNavigateToHomeScreen
             )
 
-            NavigationDrawerItem(
-                label = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PageDesignSettings.extraLargePaddingValue),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = strings.calendarsMenuButton,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                        )
-
-                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
-
-                        Text(
-                            text = strings.calendarsMenuButton,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    }
-                },
-                onClick = onNavigateToCalendarScreen,
-                selected = false,
-                modifier = Modifier.padding(
-                    vertical = PageDesignSettings.smallPaddingValue,
-                    horizontal = PageDesignSettings.extraLargePaddingValue
-                )
+            MenuNavigationDrawerItem(
+                title = strings.calendarsMenuButton,
+                icon = Icons.Default.DateRange,
+                onNavigate = onNavigateToCalendarScreen
             )
 
-            NavigationDrawerItem(
-                label = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PageDesignSettings.extraLargePaddingValue),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = strings.recurrencesMenuButton,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                        )
-
-                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
-
-                        Text(
-                            text = strings.recurrencesMenuButton,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    }
-                },
-                onClick = onNavigateToRecurrenceScreen,
-                selected = false,
-                modifier = Modifier.padding(
-                    vertical = PageDesignSettings.smallPaddingValue,
-                    horizontal = PageDesignSettings.extraLargePaddingValue
-                )
+            MenuNavigationDrawerItem(
+                title = strings.recurrencesMenuButton,
+                icon = Icons.Default.Refresh,
+                onNavigate = onNavigateToRecurrenceScreen
             )
 
-            NavigationDrawerItem(
-                label = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PageDesignSettings.extraLargePaddingValue),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = strings.settingsMenuButton,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                        )
-
-                        Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
-
-                        Text(
-                            text = strings.settingsMenuButton,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    }
-                },
-                onClick = onNavigateToSettingsScreen,
-                selected = false,
-                modifier = Modifier.padding(
-                    vertical = PageDesignSettings.smallPaddingValue,
-                    horizontal = PageDesignSettings.extraLargePaddingValue
-                )
+            MenuNavigationDrawerItem(
+                title = strings.settingsMenuButton,
+                icon = Icons.Default.Info,
+                onNavigate = onNavigateToSettingsScreen
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -215,4 +107,44 @@ fun NavigationDrawerSheet(
             )
         }
     }
+}
+
+@Composable
+fun MenuNavigationDrawerItem(
+    title: String,
+    icon: ImageVector,
+    onNavigate: () -> Unit
+) {
+    NavigationDrawerItem(
+        label = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PageDesignSettings.extraLargePaddingValue),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(PageDesignSettings.mediumIconSize)
+                )
+
+                Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                )
+            }
+        },
+        onClick = onNavigate,
+        selected = false,
+        modifier = Modifier.padding(
+            vertical = PageDesignSettings.smallPaddingValue,
+            horizontal = PageDesignSettings.extraLargePaddingValue
+        )
+    )
 }
