@@ -324,7 +324,10 @@ fun RecurrenceCard(
                     modifier = Modifier
                         .size(PageDesignSettings.mediumIconSize)
                         .border(
-                            BorderStroke(PageDesignSettings.borderWidth / 2, MaterialTheme.colorScheme.primary.copy(alpha = .5f)),
+                            BorderStroke(
+                                PageDesignSettings.borderWidth / 2,
+                                MaterialTheme.colorScheme.primary.copy(alpha = .5f)
+                            ),
                             CircleShape
                         )
                         .clip(CircleShape)
