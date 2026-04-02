@@ -16,7 +16,7 @@ class CalendarRepositoryImplTest {
 
     @Before
     fun setUp() {
-        calendarDao = mockk()
+        calendarDao = mockk<CalendarDao>()
         repository = CalendarRepositoryImpl(calendarDao)
     }
 
