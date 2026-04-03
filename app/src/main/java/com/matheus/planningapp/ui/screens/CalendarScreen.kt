@@ -52,7 +52,7 @@ import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
-import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
+import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.androidx.compose.koinViewModel
@@ -60,7 +60,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
-    calendarMenuViewModel: CalendarMenuViewModel = koinViewModel(),
+    calendarViewModel: CalendarViewModel = koinViewModel(),
     onMenuClick: () -> Unit
 ) {
     val strings: StringsRepository = LocalStrings.current
@@ -71,7 +71,7 @@ fun CalendarScreen(
 
     LaunchedEffect(Unit) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            calendarMenuViewModel.events.collect { event ->
+            calendarViewModel.events.collect { event ->
                 when (event) {
                     is DatabaseUiEvent.ShowError -> {
                         scope.launch {
@@ -129,7 +129,7 @@ fun CalendarScreen(
                             end = Offset.Infinite
                         )
                     ),
-                calendarMenuViewModel = calendarMenuViewModel
+                calendarViewModel = calendarViewModel
             )
         }
     )
@@ -138,14 +138,14 @@ fun CalendarScreen(
 @Composable
 fun CalendarsMenuContent(
     modifier: Modifier,
-    calendarMenuViewModel: CalendarMenuViewModel
+    calendarViewModel: CalendarViewModel
 ) {
     val strings: StringsRepository = LocalStrings.current
 
     var selectedCalendarToDelete by remember { mutableStateOf<CalendarEntity?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
-    val calendarEntities by calendarMenuViewModel.calendars.collectAsStateWithLifecycle()
+    val calendarEntities by calendarViewModel.calendars.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var calendarName by remember { mutableStateOf("") }
@@ -157,7 +157,7 @@ fun CalendarsMenuContent(
         title = strings.dialogDeleteCalendarTitle,
         message = strings.dialogDeleteCalendarMessage,
         onConfirm = { calendar: CalendarEntity ->
-            calendarMenuViewModel.deleteCalendar(calendar)
+            calendarViewModel.deleteCalendar(calendar)
         },
         onDismissRequest = {
             showDialog = false
@@ -225,9 +225,9 @@ fun CalendarsMenuContent(
                                 isDefault = calendarIsDefault,
                                 updatedAt = Clock.System.now()
                             )
-                            calendarMenuViewModel.updateCalendar(updatedCalendar)
+                            calendarViewModel.updateCalendar(updatedCalendar)
                         } else {
-                            calendarMenuViewModel.insertCalendar(
+                            calendarViewModel.insertCalendar(
                                 CalendarEntity(
                                     name = calendarName,
                                     isDefault = calendarIsDefault
@@ -304,7 +304,7 @@ fun CalendarsMenuContent(
                                     onClick = {
                                         calendar.isDefault = true
                                         calendar.updatedAt = Clock.System.now()
-                                        calendarMenuViewModel.updateCalendar(calendar)
+                                        calendarViewModel.updateCalendar(calendar)
                                     }
                                 ) {
                                     Icon(

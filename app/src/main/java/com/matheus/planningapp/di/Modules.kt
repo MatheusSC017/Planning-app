@@ -11,7 +11,7 @@ import com.matheus.planningapp.data.recurrence.RecurrenceRepositoryImpl
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
-import com.matheus.planningapp.viewmodel.calendar.CalendarMenuViewModel
+import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
@@ -42,7 +42,7 @@ val appModules = module {
     single<TaskNotificationScheduler> { TaskNotificationScheduler(get(), get()) }
 
     viewModel { HomeViewModel(get(), get(), get()) }
-    viewModel { CalendarMenuViewModel(get()) }
+    viewModel { CalendarViewModel(get()) }
     viewModel { (commitmentFormMode: CommitmentFormMode) ->
         CommitmentFormViewModel(
             commitmentFormMode = commitmentFormMode,

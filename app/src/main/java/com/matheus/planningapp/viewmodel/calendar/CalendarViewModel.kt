@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class CalendarMenuViewModel(
+class CalendarViewModel(
     private val calendarRepository: CalendarRepository
 ): ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
