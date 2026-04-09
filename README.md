@@ -1,6 +1,6 @@
 # Planning App
 
-A simple planning and task management application designed to help users organize tasks, manage schedules, and improve productivity.
+Planning App is a task and schedule management application designed to help users organize daily activities efficiently. It supports time-based scheduling and recurring tasks, focusing on scalability and clean data handling.
 
 ## Features
 
@@ -8,11 +8,31 @@ A simple planning and task management application designed to help users organiz
 
 - Organize tasks by priority
 
+- Define the recurrence of tasks.
+
 - Simple and intuitive user interface
 
 - Task visualization for better productivity
 
 - Priority-based notification settings
+
+- Translation based on smartphone settings for Portuguese, Spanish, and English.
+
+# Screenshots
+
+![home_ui.png](images_readme/home_ui.png)
+![commitment_form_ui.png](images_readme/commitment_form_ui.png)
+![calendars_ui.png](images_readme/calendars_ui.png)
+![recurrences_ui.png](images_readme/recurrences_ui.png)
+![settings_ui.png](images_readme/settings_ui.png)
+
+# Tech Stack
+
+Language: Kotlin
+
+Platform: Android
+
+Database: SQLite 
 
 ## Project Structure
 
@@ -23,6 +43,7 @@ Planningapp
 │   ├── data
 |   |   ├── calendar
 |   |   ├── commitment
+|   |   ├── recurrence
 |   |   ├── local.converters
 |   |   └── CalendarDatabase
 │   ├── datastore
