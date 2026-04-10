@@ -18,21 +18,36 @@ Planning App is a task and schedule management application designed to help user
 
 - Translation based on smartphone settings for Portuguese, Spanish, and English.
 
-# Screenshots
+## Screenshots
 
+### Home
 ![home_ui.png](images_readme/home_ui.png)
+
+### Commitment Form
 ![commitment_form_ui.png](images_readme/commitment_form_ui.png)
+
+### Calendars
 ![calendars_ui.png](images_readme/calendars_ui.png)
+
+### Recurrences
 ![recurrences_ui.png](images_readme/recurrences_ui.png)
+
+### Settings
 ![settings_ui.png](images_readme/settings_ui.png)
 
-# Tech Stack
+## Technologies Used
 
 Language: Kotlin
 
 Platform: Android
 
-Database: SQLite 
+Libraries: Jetpack Compose, Room, 
+
+Database: SQLite
+
+Build: Gradle
+
+Version Control System: Git
 
 ## Project Structure
 
@@ -79,17 +94,9 @@ Planningapp
 
 - PlanningAppApplication.kt: Root of the project responsible for creating the koin module instance and the data storage channel.
 
-## Technologies Used
+## Recurrence Logic
 
-- Kotlin
-
-- Jetpack Compose
-
-- Android SDK
-
-- Gradle
-
-- Git
+Recurring tasks are handled dynamically. Instead of storing repeated entries, the system generates occurrences based on recurrence rules when displaying tasks. This improves performance and avoids data duplication.
 
 ## License
 
