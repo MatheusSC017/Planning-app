@@ -26,8 +26,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.matheus.planningapp.BuildConfig
-import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 
 @Composable
@@ -35,63 +35,66 @@ fun NavigationDrawerSheet(
     onNavigateToHomeScreen: () -> Unit,
     onNavigateToCalendarScreen: () -> Unit,
     onNavigateToSettingsScreen: () -> Unit,
-    onNavigateToRecurrenceScreen: () -> Unit
+    onNavigateToRecurrenceScreen: () -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
     ModalDrawerSheet {
         Column(
-            modifier = Modifier.background(
-                Brush.linearGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                        MaterialTheme.colorScheme.background,
+            modifier =
+                Modifier.background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                            MaterialTheme.colorScheme.background,
+                        ),
+                        start = Offset.Zero,
+                        end = Offset.Infinite,
                     ),
-                    start = Offset.Zero,
-                    end = Offset.Infinite
-                )
-            )
+                ),
         ) {
             Text(
                 text = strings.projectName,
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier.padding(
-                    top = PageDesignSettings.extraLargePaddingValue,
-                    end = PageDesignSettings.extraLargePaddingValue,
-                    bottom = PageDesignSettings.extraLargePaddingValue * 2,
-                    start = PageDesignSettings.extraLargePaddingValue
-                )
+                style =
+                    MaterialTheme.typography.headlineLarge.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
+                modifier =
+                    Modifier.padding(
+                        top = PageDesignSettings.extraLargePaddingValue,
+                        end = PageDesignSettings.extraLargePaddingValue,
+                        bottom = PageDesignSettings.extraLargePaddingValue * 2,
+                        start = PageDesignSettings.extraLargePaddingValue,
+                    ),
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue)
+                modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue),
             )
 
             MenuNavigationDrawerItem(
                 title = strings.homeMenuButton,
                 icon = Icons.Default.Home,
-                onNavigate = onNavigateToHomeScreen
+                onNavigate = onNavigateToHomeScreen,
             )
 
             MenuNavigationDrawerItem(
                 title = strings.calendarsMenuButton,
                 icon = Icons.Default.DateRange,
-                onNavigate = onNavigateToCalendarScreen
+                onNavigate = onNavigateToCalendarScreen,
             )
 
             MenuNavigationDrawerItem(
                 title = strings.recurrencesMenuButton,
                 icon = Icons.Default.Refresh,
-                onNavigate = onNavigateToRecurrenceScreen
+                onNavigate = onNavigateToRecurrenceScreen,
             )
 
             MenuNavigationDrawerItem(
                 title = strings.settingsMenuButton,
                 icon = Icons.Default.Info,
-                onNavigate = onNavigateToSettingsScreen
+                onNavigate = onNavigateToSettingsScreen,
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -100,10 +103,11 @@ fun NavigationDrawerSheet(
 
             Text(
                 text = "Version ${BuildConfig.VERSION_NAME}",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
+                style =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.secondary,
+                    ),
+                modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue),
             )
         }
     }
@@ -113,38 +117,41 @@ fun NavigationDrawerSheet(
 fun MenuNavigationDrawerItem(
     title: String,
     icon: ImageVector,
-    onNavigate: () -> Unit
+    onNavigate: () -> Unit,
 ) {
     NavigationDrawerItem(
         label = {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(PageDesignSettings.extraLargePaddingValue),
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(PageDesignSettings.extraLargePaddingValue),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
                     tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(PageDesignSettings.mediumIconSize)
+                    modifier = Modifier.size(PageDesignSettings.mediumIconSize),
                 )
 
                 Spacer(modifier = Modifier.width(PageDesignSettings.mediumPaddingValue))
 
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                    style =
+                        MaterialTheme.typography.headlineMedium.copy(
+                            color = MaterialTheme.colorScheme.secondary,
+                        ),
                 )
             }
         },
         onClick = onNavigate,
         selected = false,
-        modifier = Modifier.padding(
-            vertical = PageDesignSettings.smallPaddingValue,
-            horizontal = PageDesignSettings.extraLargePaddingValue
-        )
+        modifier =
+            Modifier.padding(
+                vertical = PageDesignSettings.smallPaddingValue,
+                horizontal = PageDesignSettings.extraLargePaddingValue,
+            ),
     )
 }

@@ -25,39 +25,44 @@ import java.time.YearMonth
 class HomeViewModel(
     private val calendarRepository: CalendarRepository,
     private val commitmentRepository: CommitmentRepository,
-    settingsRepository: SettingsRepository
-): ViewModel() {
+    settingsRepository: SettingsRepository,
+) : ViewModel() {
     init {
         viewModelScope.launch {
             calendarRepository.ensureDefaultCalendarExists()
         }
     }
 
-    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    private val selectedDate = MutableStateFlow(LocalDate.now())
 
-    val uiState: StateFlow<HomeUiState> = combine(
-        _selectedDate,
-        calendarRepository.getCalendars(),
-        settingsRepository.viewModeFlow,
-        settingsRepository.notificationOptionFlow
-    ) { selectedDate, calendars, viewModeFlow, notificationOption ->
-        HomeUiState(
-            selectedDate = selectedDate,
-            calendars = calendars,
-            viewMode = viewModeFlow,
-            notificationOption = notificationOption
+    val uiState: StateFlow<HomeUiState> =
+        combine(
+            selectedDate,
+            calendarRepository.getCalendars(),
+            settingsRepository.viewModeFlow,
+            settingsRepository.notificationOptionFlow,
+        ) { selectedDate, calendars, viewModeFlow, notificationOption ->
+            HomeUiState(
+                selectedDate = selectedDate,
+                calendars = calendars,
+                viewMode = viewModeFlow,
+                notificationOption = notificationOption,
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = HomeUiState(),
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeUiState()
-    )
 
-    fun onSelectedDate(year: Int? = null, month: Int? = null, day: Int? = null) {
-        _selectedDate.update {
-            val newYear: Int = year?: it.year
-            val newMonth: Int = month?: it.monthValue
-            var newDay: Int = day?: it.dayOfMonth
+    fun onSelectedDate(
+        year: Int? = null,
+        month: Int? = null,
+        day: Int? = null,
+    ) {
+        selectedDate.update {
+            val newYear: Int = year ?: it.year
+            val newMonth: Int = month ?: it.monthValue
+            var newDay: Int = day ?: it.dayOfMonth
 
             val newYearMonth = YearMonth.of(newYear, newMonth)
             newDay = newDay.coerceIn(1, newYearMonth.lengthOfMonth())
@@ -67,14 +72,18 @@ class HomeViewModel(
     }
 
     fun incrementYear() {
-        onSelectedDate(year = _selectedDate.value.year + 1)
+        onSelectedDate(year = selectedDate.value.year + 1)
     }
 
     fun decrementYear() {
-        onSelectedDate(year = _selectedDate.value.year - 1)
+        onSelectedDate(year = selectedDate.value.year - 1)
     }
 
-    fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Long): Flow<List<CommitmentEntity>> {
+    fun getCommitmentsForDay(
+        dayStart: Instant,
+        dayEnd: Instant,
+        calendar: Long,
+    ): Flow<List<CommitmentEntity>> {
         val startDateTime: LocalDateTime = dayStart.toLocalDateTime(TimeZone.currentSystemDefault())
         return combine(
             commitmentRepository.getCommitmentsForDay(dayStart, dayEnd, calendar),
@@ -82,10 +91,9 @@ class HomeViewModel(
                 calendar = calendar,
                 today = dayStart,
                 dayOfWeek = DayOfWeekEnum.valueOf(startDateTime.dayOfWeek.name),
-                dayOfMonth = startDateTime.dayOfMonth
-            )
-        ) {
-            commitments, recurrenceCommitments ->
+                dayOfMonth = startDateTime.dayOfMonth,
+            ),
+        ) { commitments, recurrenceCommitments ->
             commitments + recurrenceCommitments
         }
     }
@@ -95,5 +103,4 @@ class HomeViewModel(
             commitmentRepository.deleteCommitment(commitmentEntity)
         }
     }
-
 }

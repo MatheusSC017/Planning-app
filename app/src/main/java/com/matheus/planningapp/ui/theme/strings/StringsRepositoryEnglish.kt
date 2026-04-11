@@ -1,6 +1,6 @@
 package com.matheus.planningapp.ui.theme.strings
 
-class StringsRepositoryEnglish: StringsRepository {
+class StringsRepositoryEnglish : StringsRepository {
     // Project information
     override val projectName = "Planning your life"
     override val timeline = "Timeline"
@@ -61,10 +61,21 @@ class StringsRepositoryEnglish: StringsRepository {
     override val settingNotificationField = "Notification configuration"
 
     // Datetime information
-    override val monthNames = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    )
+    override val monthNames =
+        listOf(
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        )
     override val weekDaysAbbrev = listOf('S', 'M', 'T', 'W', 'T', 'F', 'S')
     override val dateFormat = "%04d-%02d-%02d"
     override val hourFormat = "%02d:%02d"

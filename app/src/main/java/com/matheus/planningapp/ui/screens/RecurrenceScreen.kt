@@ -60,8 +60,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
-import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
@@ -76,7 +76,7 @@ import java.util.Locale
 fun RecurrenceScreen(
     recurrenceViewModel: RecurrenceViewModel = koinViewModel(),
     onMenuClick: () -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
 ) {
     val uiState by recurrenceViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -98,29 +98,30 @@ fun RecurrenceScreen(
                 calendarsEntities = uiState.calendars,
                 selectedCalendar = selectedCalendar,
                 onCalendarSelected = { selectedCalendar = it },
-                onMenuClick = onMenuClick
+                onMenuClick = onMenuClick,
             )
         },
         content = { paddingValues ->
             RecurrenceList(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background,
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                MaterialTheme.colorScheme.background,
+                modifier =
+                    Modifier
+                        .padding(paddingValues)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.background,
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                    MaterialTheme.colorScheme.background,
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite,
                             ),
-                            start = Offset.Zero,
-                            end = Offset.Infinite
-                        )
-                    ),
+                        ),
                 recurrenceViewModel = recurrenceViewModel,
                 recurrences = recurrences,
-                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment
+                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
             )
-        }
+        },
     )
 }
 
@@ -130,7 +131,7 @@ fun RecurrenceTopAppBar(
     calendarsEntities: List<CalendarEntity>,
     selectedCalendar: CalendarEntity?,
     onCalendarSelected: (CalendarEntity) -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
 ) {
     var isExpandedCalendarDropDown by remember { mutableStateOf(false) }
 
@@ -139,7 +140,7 @@ fun RecurrenceTopAppBar(
         actions = {
             ExposedDropdownMenuBox(
                 expanded = isExpandedCalendarDropDown,
-                onExpandedChange = { isExpandedCalendarDropDown = !isExpandedCalendarDropDown }
+                onExpandedChange = { isExpandedCalendarDropDown = !isExpandedCalendarDropDown },
             ) {
                 TextField(
                     value = selectedCalendar?.name ?: "",
@@ -148,22 +149,25 @@ fun RecurrenceTopAppBar(
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(isExpandedCalendarDropDown)
                     },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .width(PageDesignSettings.largeComponentSize),
-                    textStyle = TextStyle(
-                        fontSize = PageDesignSettings.mediumText
-                    ),
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        focusedTextColor = MaterialTheme.colorScheme.secondary,
-                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                        disabledTextColor = MaterialTheme.colorScheme.secondary
-                    )
+                    modifier =
+                        Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            .width(PageDesignSettings.largeComponentSize),
+                    textStyle =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                        ),
+                    colors =
+                        ExposedDropdownMenuDefaults.textFieldColors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            focusedTextColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                            disabledTextColor = MaterialTheme.colorScheme.secondary,
+                        ),
                 )
 
                 ExposedDropdownMenu(
@@ -177,29 +181,29 @@ fun RecurrenceTopAppBar(
                             text = {
                                 Text(
                                     text = calendarEntity.name,
-                                    color = MaterialTheme.colorScheme.secondary
+                                    color = MaterialTheme.colorScheme.secondary,
                                 )
                             },
                             onClick = {
                                 onCalendarSelected(calendarEntity)
                                 isExpandedCalendarDropDown = false
-                            }
+                            },
                         )
                     }
                 }
             }
 
             IconButton(
-                onClick = onMenuClick
+                onClick = onMenuClick,
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
                     contentDescription = LocalStrings.current.menuButton,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(PageDesignSettings.largeIconSize)
+                    modifier = Modifier.size(PageDesignSettings.largeIconSize),
                 )
             }
-        }
+        },
     )
 }
 
@@ -208,7 +212,7 @@ fun RecurrenceList(
     modifier: Modifier,
     recurrenceViewModel: RecurrenceViewModel,
     recurrences: List<CommitmentRecurrenceDataClass>,
-    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
 ) {
     var selectedRecurrence by remember { mutableStateOf<CommitmentRecurrenceDataClass?>(null) }
     var showRecurrenceViewDialog by remember { mutableStateOf(false) }
@@ -216,16 +220,17 @@ fun RecurrenceList(
     RecurrenceViewDialog(
         recurrence = selectedRecurrence,
         showDialog = showRecurrenceViewDialog,
-        onDismissRequest = { showRecurrenceViewDialog = false }
+        onDismissRequest = { showRecurrenceViewDialog = false },
     )
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(PageDesignSettings.extraLargePaddingValue)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(PageDesignSettings.extraLargePaddingValue),
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             recurrences.forEach { recurrence ->
                 item {
@@ -238,7 +243,7 @@ fun RecurrenceList(
                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                         onDeleteRecurrence = { recurrenceId ->
                             recurrenceViewModel.deleteRecurrence(recurrenceId)
-                        }
+                        },
                     )
                 }
             }
@@ -251,7 +256,7 @@ fun RecurrenceCard(
     recurrence: CommitmentRecurrenceDataClass,
     onViewRecurrence: (CommitmentRecurrenceDataClass) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteRecurrence: (recurrenceId: Long) -> Unit
+    onDeleteRecurrence: (recurrenceId: Long) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -274,79 +279,79 @@ fun RecurrenceCard(
     }
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = Color.Transparent,
+            ),
         shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
         elevation = CardDefaults.cardElevation(PageDesignSettings.zeroPaddingValue),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(PageDesignSettings.zeroPaddingValue, PageDesignSettings.mediumPaddingValue)
-            .background(
-                Brush.horizontalGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
-                    )
-                ),
-                shape = RoundedCornerShape(PageDesignSettings.largeIconClip)
-            )
-            .border(
-                BorderStroke(
-                    PageDesignSettings.borderWidth,
-                    Brush.linearGradient(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(PageDesignSettings.zeroPaddingValue, PageDesignSettings.mediumPaddingValue)
+                .background(
+                    Brush.horizontalGradient(
                         listOf(
                             MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
                         ),
-                        start = Offset.Zero,
-                        end = Offset.Infinite
-                    )
+                    ),
+                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                ).border(
+                    BorderStroke(
+                        PageDesignSettings.borderWidth,
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                            ),
+                            start = Offset.Zero,
+                            end = Offset.Infinite,
+                        ),
+                    ),
+                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
                 ),
-                shape = RoundedCornerShape(PageDesignSettings.largeIconClip)
-            )
     ) {
         Row(
             modifier = Modifier.padding(PageDesignSettings.largePaddingValue),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
         ) {
-
             Box(
-                modifier = Modifier
-                    .padding(end = PageDesignSettings.mediumPaddingValue)
-                    .align(Alignment.CenterVertically)
+                modifier =
+                    Modifier
+                        .padding(end = PageDesignSettings.mediumPaddingValue)
+                        .align(Alignment.CenterVertically),
             ) {
                 Icon(
                     Icons.Default.Refresh,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(PageDesignSettings.mediumIconSize)
-                        .border(
-                            BorderStroke(
-                                PageDesignSettings.borderWidth / 2,
-                                MaterialTheme.colorScheme.primary.copy(alpha = .5f)
-                            ),
-                            CircleShape
-                        )
-                        .clip(CircleShape)
-                        .padding(PageDesignSettings.extraSmallPaddingValue)
-
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.mediumIconSize)
+                            .border(
+                                BorderStroke(
+                                    PageDesignSettings.borderWidth / 2,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = .5f),
+                                ),
+                                CircleShape,
+                            ).clip(CircleShape)
+                            .padding(PageDesignSettings.extraSmallPaddingValue),
                 )
             }
 
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = PageDesignSettings.mediumPaddingValue)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(vertical = PageDesignSettings.mediumPaddingValue),
             ) {
-
                 Text(
                     text = recurrence.title,
                     fontSize = PageDesignSettings.largeText,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
 
                 Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
@@ -355,7 +360,7 @@ fun RecurrenceCard(
                     text = "$startTimeString — $endTimeString",
                     fontSize = PageDesignSettings.largeText,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
 
                 Spacer(modifier = Modifier.height(PageDesignSettings.smallPaddingValue))
@@ -363,7 +368,7 @@ fun RecurrenceCard(
                 Text(
                     text = recurrenceText,
                     fontSize = PageDesignSettings.smallText,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
 
@@ -372,14 +377,14 @@ fun RecurrenceCard(
                     Icon(
                         painterResource(R.drawable.outline_more_horiz_24),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary.copy(.6f)
+                        tint = MaterialTheme.colorScheme.secondary.copy(.6f),
                     )
                 }
 
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onBackground),
                 ) {
                     DropdownMenuItem(
                         text = { Text(strings.viewButton, color = MaterialTheme.colorScheme.onSecondary) },
@@ -391,9 +396,9 @@ fun RecurrenceCard(
                             Icon(
                                 painter = painterResource(R.drawable.view),
                                 contentDescription = strings.viewButton,
-                                tint = MaterialTheme.colorScheme.onSecondary
+                                tint = MaterialTheme.colorScheme.onSecondary,
                             )
-                        }
+                        },
                     )
 
                     DropdownMenuItem(
@@ -406,9 +411,9 @@ fun RecurrenceCard(
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = strings.updateButton,
-                                tint = MaterialTheme.colorScheme.onSecondary
+                                tint = MaterialTheme.colorScheme.onSecondary,
                             )
-                        }
+                        },
                     )
 
                     HorizontalDivider()
@@ -423,9 +428,9 @@ fun RecurrenceCard(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = strings.deleteButton,
-                                tint = MaterialTheme.colorScheme.error
+                                tint = MaterialTheme.colorScheme.error,
                             )
-                        }
+                        },
                     )
                 }
             }
@@ -438,7 +443,7 @@ fun RecurrenceCard(
 fun RecurrenceViewDialog(
     recurrence: CommitmentRecurrenceDataClass?,
     showDialog: Boolean,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     if (recurrence == null) return
 
@@ -470,46 +475,48 @@ fun RecurrenceViewDialog(
                         text = recurrence.title,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.onSecondary,
                     )
 
                     HorizontalDivider()
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
-                            modifier = Modifier
-                                .size(PageDesignSettings.smallIconSize)
-                                .padding(end = PageDesignSettings.smallIconClip)
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.smallIconClip),
                         )
 
                         Text(
                             text = recurrenceText,
                             fontSize = PageDesignSettings.mediumText,
-                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                         )
                     }
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
-                            modifier = Modifier
-                                .size(PageDesignSettings.smallIconSize)
-                                .padding(end = PageDesignSettings.smallIconSize)
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.smallIconSize),
                         )
 
                         Text(
                             text = "$startTimeString — $endTimeString",
                             fontSize = PageDesignSettings.mediumText,
-                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                         )
                     }
                 }
@@ -517,13 +524,13 @@ fun RecurrenceViewDialog(
             text = {
                 Column {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip)
-                            )
-                            .padding(PageDesignSettings.mediumPaddingValue)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.secondary,
+                                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                                ).padding(PageDesignSettings.mediumPaddingValue),
                     ) {
                         Text(
                             text = recurrence.description ?: "",
@@ -541,21 +548,22 @@ fun RecurrenceViewDialog(
             dismissButton = {
                 Button(
                     onClick = onDismissRequest,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = strings.dismissButton,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             },
-            containerColor = MaterialTheme.colorScheme.onBackground
+            containerColor = MaterialTheme.colorScheme.onBackground,
         )
     }
 }

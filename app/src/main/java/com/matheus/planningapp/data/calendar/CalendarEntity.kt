@@ -6,16 +6,15 @@ import androidx.room.PrimaryKey
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
-
 @Entity(
     tableName = "Calendar",
-    indices = [Index(value = ["name"], unique = true)]
+    indices = [Index(value = ["name"], unique = true)],
 )
-data class CalendarEntity (
+data class CalendarEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     var name: String,
     var isDefault: Boolean,
     val createdAt: Instant = Clock.System.now(),
-    var updatedAt: Instant = Clock.System.now()
+    var updatedAt: Instant = Clock.System.now(),
 )

@@ -1,7 +1,7 @@
 package com.matheus.planningapp.viewmodel.commitment
 
-import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.NotificationEnum
+import com.matheus.planningapp.util.enums.PriorityEnum
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -14,5 +14,5 @@ data class CommitmentFormUiState(
     val endInstant: Instant = Clock.System.now(),
     val priorityEnum: PriorityEnum = PriorityEnum.LOW,
     val notificationOption: NotificationEnum = NotificationEnum.NO_SEND,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
 )

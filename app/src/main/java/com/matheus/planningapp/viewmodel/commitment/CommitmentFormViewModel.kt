@@ -1,19 +1,18 @@
 package com.matheus.planningapp.viewmodel.commitment
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
 import com.matheus.planningapp.data.recurrence.RecurrenceRepository
-import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
-import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.util.enums.NotificationEnum
+import com.matheus.planningapp.util.enums.PriorityEnum
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,31 +31,33 @@ class CommitmentFormViewModel(
     private val commitmentRepository: CommitmentRepository,
     settingsRepository: SettingsRepository,
     private val recurrenceRepository: RecurrenceRepository,
-    private val taskNotificationScheduler: TaskNotificationScheduler
-): ViewModel() {
+    private val taskNotificationScheduler: TaskNotificationScheduler,
+) : ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
 
     private val _commitmentUiState: MutableStateFlow<CommitmentFormUiState> = MutableStateFlow(CommitmentFormUiState())
-    val commitmentUiState: StateFlow<CommitmentFormUiState> = combine(
-        _commitmentUiState,
-        settingsRepository.notificationOptionFlow
-    ) { currentUiState, notificationOption ->
-        currentUiState.copy(
-            notificationOption = notificationOption
+    val commitmentUiState: StateFlow<CommitmentFormUiState> =
+        combine(
+            _commitmentUiState,
+            settingsRepository.notificationOptionFlow,
+        ) { currentUiState, notificationOption ->
+            currentUiState.copy(
+                notificationOption = notificationOption,
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = CommitmentFormUiState(),
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = CommitmentFormUiState()
-    )
 
     private val _recurrenceUiState: MutableStateFlow<RecurrenceFormUiState> = MutableStateFlow(RecurrenceFormUiState())
-    val recurrenceUiState: StateFlow<RecurrenceFormUiState> = _recurrenceUiState.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = RecurrenceFormUiState()
-    )
+    val recurrenceUiState: StateFlow<RecurrenceFormUiState> =
+        _recurrenceUiState.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = RecurrenceFormUiState(),
+        )
 
     fun onTitleChange(title: String) {
         _commitmentUiState.update {
@@ -115,7 +116,7 @@ class CommitmentFormViewModel(
     fun onRecurrenceFormActiveChange(isRecurrenceActive: Boolean) {
         _recurrenceUiState.update {
             it.copy(
-                isRecurrenceActive = isRecurrenceActive
+                isRecurrenceActive = isRecurrenceActive,
             )
         }
     }
@@ -164,7 +165,7 @@ class CommitmentFormViewModel(
                                 frequencyEnum = recurrenceEntity.frequency,
                                 interval = recurrenceEntity.interval,
                                 daysOfWeekList = recurrenceEntity.dayOfWeekList,
-                                dayOfMonth = recurrenceEntity.dayOfMonth
+                                dayOfMonth = recurrenceEntity.dayOfMonth,
                             )
                         }
                     }
@@ -174,20 +175,21 @@ class CommitmentFormViewModel(
     }
 
     fun insertCommitment() {
-        val commitmentEntity = CommitmentEntity(
-            calendar = commitmentUiState.value.calendarId,
-            title = commitmentUiState.value.title,
-            description = commitmentUiState.value.description,
-            startDateTime = commitmentUiState.value.startInstant,
-            endDateTime =  commitmentUiState.value.endInstant,
-            priorityEnum = commitmentUiState.value.priorityEnum
-        )
+        val commitmentEntity =
+            CommitmentEntity(
+                calendar = commitmentUiState.value.calendarId,
+                title = commitmentUiState.value.title,
+                description = commitmentUiState.value.description,
+                startDateTime = commitmentUiState.value.startInstant,
+                endDateTime = commitmentUiState.value.endInstant,
+                priorityEnum = commitmentUiState.value.priorityEnum,
+            )
 
         viewModelScope.launch {
             // Check if start time is lesser than end time
             if (!verifyStartAndEndTime(commitmentEntity.startDateTime, commitmentEntity.endDateTime)) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Start time must be lesser than End time")
+                    DatabaseUiEvent.ShowError("Start time must be lesser than End time"),
                 )
                 return@launch
             }
@@ -195,20 +197,22 @@ class CommitmentFormViewModel(
             // Check if title is not empty
             if (commitmentEntity.title.isEmpty()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Title cannot be empty")
+                    DatabaseUiEvent.ShowError("Title cannot be empty"),
                 )
                 return@launch
             }
 
             // Check if there is a conflict with other commitments
-            val conflictsNumbers: Int = commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                commitmentEntity.startDateTime,
-                commitmentEntity.endDateTime,
-                commitmentEntity.calendar)
+            val conflictsNumbers: Int =
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    commitmentEntity.startDateTime,
+                    commitmentEntity.endDateTime,
+                    commitmentEntity.calendar,
+                )
 
-            if(conflictsNumbers > 0) {
+            if (conflictsNumbers > 0) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("There is a conflict with other commitments")
+                    DatabaseUiEvent.ShowError("There is a conflict with other commitments"),
                 )
                 return@launch
             }
@@ -216,9 +220,10 @@ class CommitmentFormViewModel(
             val commitmentId = commitmentRepository.insertCommitment(commitmentEntity)
 
             if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
-                (commitmentEntity.startDateTime > Clock.System.now())) {
+                (commitmentEntity.startDateTime > Clock.System.now())
+            ) {
                 taskNotificationScheduler.scheduleTaskNotification(
-                    commitmentEntity.copy(id = commitmentId)
+                    commitmentEntity.copy(id = commitmentId),
                 )
             }
 
@@ -239,18 +244,19 @@ class CommitmentFormViewModel(
                 return@launch
             }
 
-            val newCommitmentEntity = oldCommitmentEntity.copy(
-                title = commitmentUiState.value.title,
-                description = commitmentUiState.value.description,
-                startDateTime = commitmentUiState.value.startInstant,
-                endDateTime =  commitmentUiState.value.endInstant,
-                priorityEnum = commitmentUiState.value.priorityEnum
-            )
+            val newCommitmentEntity =
+                oldCommitmentEntity.copy(
+                    title = commitmentUiState.value.title,
+                    description = commitmentUiState.value.description,
+                    startDateTime = commitmentUiState.value.startInstant,
+                    endDateTime = commitmentUiState.value.endInstant,
+                    priorityEnum = commitmentUiState.value.priorityEnum,
+                )
 
             // Check if start time is lesser than end time
             if (!verifyStartAndEndTime(newCommitmentEntity.startDateTime, newCommitmentEntity.endDateTime)) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Start time must be lesser than End time")
+                    DatabaseUiEvent.ShowError("Start time must be lesser than End time"),
                 )
                 return@launch
             }
@@ -258,21 +264,23 @@ class CommitmentFormViewModel(
             // Check if title is not empty
             if (newCommitmentEntity.title.isEmpty()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Title cannot be empty")
+                    DatabaseUiEvent.ShowError("Title cannot be empty"),
                 )
                 return@launch
             }
 
             // Check if there is a conflict with other commitments
-            val conflictsNumbers: Int = commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                newCommitmentEntity.startDateTime,
-                newCommitmentEntity.endDateTime,
-                newCommitmentEntity.calendar,
-                newCommitmentEntity.id)
+            val conflictsNumbers: Int =
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    newCommitmentEntity.startDateTime,
+                    newCommitmentEntity.endDateTime,
+                    newCommitmentEntity.calendar,
+                    newCommitmentEntity.id,
+                )
 
-            if(conflictsNumbers > 0) {
+            if (conflictsNumbers > 0) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("There is a conflict with other commitments")
+                    DatabaseUiEvent.ShowError("There is a conflict with other commitments"),
                 )
                 return@launch
             }
@@ -282,45 +290,54 @@ class CommitmentFormViewModel(
             _events.emit(DatabaseUiEvent.Saved)
 
             if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
-                (newCommitmentEntity.startDateTime > Clock.System.now())) {
+                (newCommitmentEntity.startDateTime > Clock.System.now())
+            ) {
                 taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
                 taskNotificationScheduler.scheduleTaskNotification(newCommitmentEntity)
             }
 
             val recurrenceEntity = recurrenceRepository.getRecurrenceByCommitment(commitmentUiState.value.id!!)
             if (_recurrenceUiState.value.isRecurrenceActive) {
-                val newRecurrenceEntity = RecurrenceEntity(
-                    id = recurrenceEntity?.id ?: 0,
-                    commitment = _commitmentUiState.value.id!!,
-                    frequency = _recurrenceUiState.value.frequencyEnum,
-                    interval = _recurrenceUiState.value.interval,
-                    dayOfWeekList = _recurrenceUiState.value.daysOfWeekList,
-                    dayOfMonth = _recurrenceUiState.value.dayOfMonth
-                )
+                val newRecurrenceEntity =
+                    RecurrenceEntity(
+                        id = recurrenceEntity?.id ?: 0,
+                        commitment = _commitmentUiState.value.id!!,
+                        frequency = _recurrenceUiState.value.frequencyEnum,
+                        interval = _recurrenceUiState.value.interval,
+                        dayOfWeekList = _recurrenceUiState.value.daysOfWeekList,
+                        dayOfMonth = _recurrenceUiState.value.dayOfMonth,
+                    )
 
-                if (recurrenceEntity == null) recurrenceRepository.insert(newRecurrenceEntity) else recurrenceRepository.update(newRecurrenceEntity)
+                if (recurrenceEntity ==
+                    null
+                ) {
+                    recurrenceRepository.insert(newRecurrenceEntity)
+                } else {
+                    recurrenceRepository.update(newRecurrenceEntity)
+                }
             } else {
                 if (recurrenceEntity != null) recurrenceRepository.delete(recurrenceEntity)
             }
         }
     }
 
-    private fun verifyStartAndEndTime(startDateTime: Instant, endDateTime: Instant): Boolean {
-        return startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
-    }
+    private fun verifyStartAndEndTime(
+        startDateTime: Instant,
+        endDateTime: Instant,
+    ): Boolean = startDateTime.toEpochMilliseconds() < endDateTime.toEpochMilliseconds()
 
     fun insertRecurrence(commitmentId: Long) {
         viewModelScope.launch {
-            val recurrenceEntity = RecurrenceEntity(
-                commitment = commitmentId,
-                frequency = _recurrenceUiState.value.frequencyEnum,
-                interval = _recurrenceUiState.value.interval,
-                dayOfWeekList = _recurrenceUiState.value.daysOfWeekList,
-                dayOfMonth = _recurrenceUiState.value.dayOfMonth
-            )
+            val recurrenceEntity =
+                RecurrenceEntity(
+                    commitment = commitmentId,
+                    frequency = _recurrenceUiState.value.frequencyEnum,
+                    interval = _recurrenceUiState.value.interval,
+                    dayOfWeekList = _recurrenceUiState.value.daysOfWeekList,
+                    dayOfMonth = _recurrenceUiState.value.dayOfMonth,
+                )
 
             recurrenceRepository.insert(recurrenceEntity)
         }
     }
-
 }

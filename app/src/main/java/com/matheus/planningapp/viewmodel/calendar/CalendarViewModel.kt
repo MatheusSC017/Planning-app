@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class CalendarViewModel(
-    private val calendarRepository: CalendarRepository
-): ViewModel() {
+    private val calendarRepository: CalendarRepository,
+) : ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
 
@@ -24,7 +24,7 @@ class CalendarViewModel(
             // Check if calendar name is empty
             if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Calendar name cannot be empty")
+                    DatabaseUiEvent.ShowError("Calendar name cannot be empty"),
                 )
                 return@launch
             }
@@ -40,7 +40,7 @@ class CalendarViewModel(
             } catch (e: SQLiteConstraintException) {
                 e.printStackTrace()
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Calendar name must be unique")
+                    DatabaseUiEvent.ShowError("Calendar name must be unique"),
                 )
                 return@launch
             }
@@ -52,7 +52,7 @@ class CalendarViewModel(
             // Check if calendar name is empty
             if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Calendar name cannot be empty")
+                    DatabaseUiEvent.ShowError("Calendar name cannot be empty"),
                 )
                 return@launch
             }
@@ -66,7 +66,7 @@ class CalendarViewModel(
             // Check if the current calendar is the default; if it is, a different calendar must be set first.
             if (currentCalendarEntity?.isDefault == true && !calendarEntity.isDefault) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("The default calendar cannot be changed.")
+                    DatabaseUiEvent.ShowError("The default calendar cannot be changed."),
                 )
                 return@launch
             }
@@ -79,7 +79,7 @@ class CalendarViewModel(
         viewModelScope.launch {
             if (calendarEntity.isDefault) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("The default calendar cannot be deleted.")
+                    DatabaseUiEvent.ShowError("The default calendar cannot be deleted."),
                 )
                 return@launch
             }
@@ -90,12 +90,12 @@ class CalendarViewModel(
         }
     }
 
-    val calendars: StateFlow<List<CalendarEntity>> = calendarRepository
-        .getCalendars()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
-
+    val calendars: StateFlow<List<CalendarEntity>> =
+        calendarRepository
+            .getCalendars()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList(),
+            )
 }

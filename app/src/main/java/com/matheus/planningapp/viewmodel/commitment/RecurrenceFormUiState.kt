@@ -9,5 +9,5 @@ data class RecurrenceFormUiState(
     val frequencyEnum: FrequencyEnum = FrequencyEnum.DAILY,
     val interval: Int = 1,
     val daysOfWeekList: List<DayOfWeekEnum> = emptyList(),
-    val dayOfMonth: Int = 1
+    val dayOfMonth: Int = 1,
 )

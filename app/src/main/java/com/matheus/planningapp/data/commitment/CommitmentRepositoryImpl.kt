@@ -7,21 +7,18 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
+class CommitmentRepositoryImpl(
+    private val commitmentDao: CommitmentDao,
+) : CommitmentRepository {
+    override suspend fun getCommitment(commitmentId: Long): CommitmentEntity? = commitmentDao.getCommitment(commitmentId)
 
-class CommitmentRepositoryImpl (
-    private val commitmentDao: CommitmentDao
-): CommitmentRepository {
-    override suspend fun getCommitment(commitmentId: Long): CommitmentEntity? {
-        return commitmentDao.getCommitment(commitmentId)
-    }
+    override fun getCommitmentsForDay(
+        dayStart: Instant,
+        dayEnd: Instant,
+        calendar: Long,
+    ): Flow<List<CommitmentEntity>> = commitmentDao.getCommitmentsForDay(dayStart, dayEnd, calendar)
 
-    override fun getCommitmentsForDay(dayStart: Instant, dayEnd: Instant, calendar: Long): Flow<List<CommitmentEntity>> {
-        return commitmentDao.getCommitmentsForDay(dayStart, dayEnd, calendar)
-    }
-
-    override suspend fun insertCommitment(commitmentEntity: CommitmentEntity): Long {
-        return commitmentDao.insert(commitmentEntity)
-    }
+    override suspend fun insertCommitment(commitmentEntity: CommitmentEntity): Long = commitmentDao.insert(commitmentEntity)
 
     override suspend fun updateCommitment(commitmentEntity: CommitmentEntity) {
         commitmentDao.update(commitmentEntity)
@@ -35,7 +32,7 @@ class CommitmentRepositoryImpl (
         startDateTime: Instant,
         endDateTime: Instant,
         calendarId: Long,
-        commitmentId: Long?
+        commitmentId: Long?,
     ): Int {
         val localDateTime: LocalDateTime = startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
         return commitmentDao.checkSchedulingConflictsBetweenCommitments(
@@ -44,15 +41,16 @@ class CommitmentRepositoryImpl (
             calendarId,
             commitmentId,
             DayOfWeekEnum.valueOf(localDateTime.dayOfWeek.name),
-            localDateTime.dayOfMonth
+            localDateTime.dayOfMonth,
         )
     }
 
-    override suspend fun getFutureCommitments(): List<CommitmentEntity> {
-        return commitmentDao.getFutureCommitments()
-    }
+    override suspend fun getFutureCommitments(): List<CommitmentEntity> = commitmentDao.getFutureCommitments()
 
-    override fun getCommitmentByRecurrence(calendar: Long, today: Instant, dayOfWeek: DayOfWeekEnum, dayOfMonth: Int): Flow<List<CommitmentEntity>> {
-        return commitmentDao.getCommitmentByRecurrence(calendar, today, dayOfWeek, dayOfMonth)
-    }
+    override fun getCommitmentByRecurrence(
+        calendar: Long,
+        today: Instant,
+        dayOfWeek: DayOfWeekEnum,
+        dayOfMonth: Int,
+    ): Flow<List<CommitmentEntity>> = commitmentDao.getCommitmentByRecurrence(calendar, today, dayOfWeek, dayOfMonth)
 }

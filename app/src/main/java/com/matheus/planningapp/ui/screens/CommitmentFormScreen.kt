@@ -58,13 +58,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
-import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
@@ -84,13 +84,14 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 fun CommitmentScreen(
     onBackPressed: () -> Unit,
-    commitmentFormMode: CommitmentFormMode
+    commitmentFormMode: CommitmentFormMode,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
-    val commitmentFormViewModel: CommitmentFormViewModel = koinViewModel(
-        parameters = { parametersOf(commitmentFormMode) }
-    )
+    val commitmentFormViewModel: CommitmentFormViewModel =
+        koinViewModel(
+            parameters = { parametersOf(commitmentFormMode) },
+        )
     val commitmentUiState by commitmentFormViewModel.commitmentUiState.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -120,36 +121,38 @@ fun CommitmentScreen(
         }
     }
 
-    Scaffold (
+    Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TopAppBar(
                 title = {
                     if (!commitmentUiState.isLoading) {
                         Text(
-                            text = strings.dateFormat.format(
-                                localDate.year,
-                                localDate.monthNumber,
-                                localDate.dayOfMonth
-                            ),
-                            style = TextStyle(
-                                fontSize = PageDesignSettings.mediumTitle,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            text =
+                                strings.dateFormat.format(
+                                    localDate.year,
+                                    localDate.monthNumber,
+                                    localDate.dayOfMonth,
+                                ),
+                            style =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.mediumTitle,
+                                    color = MaterialTheme.colorScheme.primary,
+                                ),
                         )
                     }
                 },
                 actions = {
-                    IconButton (
-                        onClick = onBackPressed
+                    IconButton(
+                        onClick = onBackPressed,
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = strings.backMenuButton,
-                            modifier = Modifier.size(PageDesignSettings.mediumIconSize)
+                            modifier = Modifier.size(PageDesignSettings.mediumIconSize),
                         )
                     }
-                }
+                },
             )
         },
         content = { paddingValues ->
@@ -157,70 +160,71 @@ fun CommitmentScreen(
             when {
                 commitmentUiState.isLoading -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(
-                                        MaterialTheme.colorScheme.background,
-                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                        MaterialTheme.colorScheme.background,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.background,
+                                            MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                            MaterialTheme.colorScheme.background,
+                                        ),
+                                        start = Offset.Zero,
+                                        end = Offset.Infinite,
                                     ),
-                                    start = Offset.Zero,
-                                    end = Offset.Infinite
-                                )
-                            )
+                                ),
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
+                            modifier = Modifier.align(Alignment.Center),
                         )
                     }
                 }
 
                 else -> {
                     CommitmentForm(
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(
-                                        MaterialTheme.colorScheme.background,
-                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                        MaterialTheme.colorScheme.background,
+                        modifier =
+                            Modifier
+                                .padding(paddingValues)
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.background,
+                                            MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                            MaterialTheme.colorScheme.background,
+                                        ),
+                                        start = Offset.Zero,
+                                        end = Offset.Infinite,
                                     ),
-                                    start = Offset.Zero,
-                                    end = Offset.Infinite
-                                )
-                            ),
+                                ),
                         commitmentUiState = commitmentUiState,
-                        commitmentFormViewModel = commitmentFormViewModel
+                        commitmentFormViewModel = commitmentFormViewModel,
                     )
                 }
             }
-
-        }
+        },
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommitmentForm(
     modifier: Modifier,
     commitmentUiState: CommitmentFormUiState,
-    commitmentFormViewModel: CommitmentFormViewModel
+    commitmentFormViewModel: CommitmentFormViewModel,
 ) {
     val strings: StringsRepository = LocalStrings.current
     val recurrenceUiState by commitmentFormViewModel.recurrenceUiState.collectAsState()
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
 
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(PageDesignSettings.extraLargePaddingValue),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(PageDesignSettings.extraLargePaddingValue),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraLargePaddingValue)
+        verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraLargePaddingValue),
     ) {
         item {
             TextField(
@@ -229,22 +233,24 @@ fun CommitmentForm(
                 label = {
                     Text(
                         text = strings.commitmentTitleField,
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.smallTitle,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.smallTitle,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
                     )
                 },
-                textStyle = TextStyle(
-                    fontSize = PageDesignSettings.mediumText,
-                    color = MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(PageDesignSettings.smallComponentSize),
-                singleLine = true
+                textStyle =
+                    TextStyle(
+                        fontSize = PageDesignSettings.mediumText,
+                        color = MaterialTheme.colorScheme.secondary,
+                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(PageDesignSettings.smallComponentSize),
+                singleLine = true,
             )
-
         }
 
         item {
@@ -254,68 +260,74 @@ fun CommitmentForm(
                 label = {
                     Text(
                         text = strings.commitmentDescriptionField,
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.smallTitle,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.smallTitle,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
                     )
                 },
-                textStyle = TextStyle(
-                    fontSize = PageDesignSettings.mediumText,
-                    color = MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(PageDesignSettings.mediumComponentSize),
-                singleLine = false
+                textStyle =
+                    TextStyle(
+                        fontSize = PageDesignSettings.mediumText,
+                        color = MaterialTheme.colorScheme.secondary,
+                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(PageDesignSettings.mediumComponentSize),
+                singleLine = false,
             )
         }
 
         item {
             Text(
                 text = strings.commitmentStartField,
-                style = TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
             )
 
             TimeStepperField(
                 time = commitmentUiState.startInstant,
-                onTimeChange = { commitmentFormViewModel.onStartInstantChange(it) }
+                onTimeChange = { commitmentFormViewModel.onStartInstantChange(it) },
             )
         }
 
         item {
             Text(
                 text = strings.commitmentEndField,
-                style = TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
             )
 
             TimeStepperField(
                 time = commitmentUiState.endInstant,
                 isEndTime = true,
-                onTimeChange = { commitmentFormViewModel.onEndInstantChange(it) }
+                onTimeChange = { commitmentFormViewModel.onEndInstantChange(it) },
             )
         }
 
         item {
             Text(
                 text = strings.commitmentPriorityField,
-                style = TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
             )
 
             Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
 
             ExposedDropdownMenuBox(
                 expanded = expandedPriorityDropDown,
-                onExpandedChange = { expandedPriorityDropDown = !expandedPriorityDropDown }
+                onExpandedChange = { expandedPriorityDropDown = !expandedPriorityDropDown },
             ) {
                 TextField(
                     value = commitmentUiState.priorityEnum.name,
@@ -324,22 +336,25 @@ fun CommitmentForm(
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expandedPriorityDropDown)
                     },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth(),
-                    textStyle = TextStyle(
-                        fontSize = PageDesignSettings.mediumText
-                    ),
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(
-                        focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                        disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                        focusedTextColor = MaterialTheme.colorScheme.secondary,
-                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                        disabledTextColor = MaterialTheme.colorScheme.secondary
-                    )
+                    modifier =
+                        Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            .fillMaxWidth(),
+                    textStyle =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                        ),
+                    colors =
+                        ExposedDropdownMenuDefaults.textFieldColors(
+                            focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                            disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                            focusedTextColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                            disabledTextColor = MaterialTheme.colorScheme.secondary,
+                        ),
                 )
 
                 ExposedDropdownMenu(
@@ -353,13 +368,13 @@ fun CommitmentForm(
                             text = {
                                 Text(
                                     text = priority.name,
-                                    color = MaterialTheme.colorScheme.secondary
+                                    color = MaterialTheme.colorScheme.secondary,
                                 )
                             },
                             onClick = {
                                 commitmentFormViewModel.onPriorityChange(priority)
                                 expandedPriorityDropDown = false
-                            }
+                            },
                         )
                     }
                 }
@@ -367,24 +382,25 @@ fun CommitmentForm(
         }
 
         item {
-            Row (
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumPaddingValue)
+                horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumPaddingValue),
             ) {
                 Switch(
                     checked = recurrenceUiState.isRecurrenceActive,
                     onCheckedChange = {
                         commitmentFormViewModel.onRecurrenceFormActiveChange(!recurrenceUiState.isRecurrenceActive)
-                    }
+                    },
                 )
 
                 Text(
                     text = strings.recurrenceIsRecurrenceActiveField,
-                    style = TextStyle(
-                        fontSize = PageDesignSettings.smallTitle,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.smallTitle,
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
                 )
             }
         }
@@ -393,7 +409,7 @@ fun CommitmentForm(
             if (recurrenceUiState.isRecurrenceActive) {
                 RecurrenceForm(
                     recurrenceUiState = recurrenceUiState,
-                    commitmentFormViewModel = commitmentFormViewModel
+                    commitmentFormViewModel = commitmentFormViewModel,
                 )
             }
         }
@@ -401,28 +417,28 @@ fun CommitmentForm(
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
             ) {
                 Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.onBackground,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onBackground,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     onClick = {
                         if (commitmentUiState.id == null) {
                             commitmentFormViewModel.insertCommitment()
-
                         } else {
                             commitmentFormViewModel.updateCommitment()
                         }
-
-                    }
+                    },
                 ) {
                     Text(
                         text = strings.confirmButton,
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.smallTitle
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.smallTitle,
+                            ),
                     )
                 }
             }
@@ -430,12 +446,11 @@ fun CommitmentForm(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecurrenceForm (
+fun RecurrenceForm(
     recurrenceUiState: RecurrenceFormUiState,
-    commitmentFormViewModel: CommitmentFormViewModel
+    commitmentFormViewModel: CommitmentFormViewModel,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
@@ -447,19 +462,20 @@ fun RecurrenceForm (
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraLargePaddingValue)
+        verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraLargePaddingValue),
     ) {
         Text(
             text = strings.recurrenceFrequencyField,
-            style = TextStyle(
-                fontSize = PageDesignSettings.smallTitle,
-                color = MaterialTheme.colorScheme.primary
-            )
+            style =
+                TextStyle(
+                    fontSize = PageDesignSettings.smallTitle,
+                    color = MaterialTheme.colorScheme.primary,
+                ),
         )
 
         ExposedDropdownMenuBox(
             expanded = isExpandedFrequencyDropdown,
-            onExpandedChange = { isExpandedFrequencyDropdown = !isExpandedFrequencyDropdown }
+            onExpandedChange = { isExpandedFrequencyDropdown = !isExpandedFrequencyDropdown },
         ) {
             TextField(
                 value = recurrenceUiState.frequencyEnum.label,
@@ -468,42 +484,45 @@ fun RecurrenceForm (
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(isExpandedFrequencyDropdown)
                 },
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                textStyle = TextStyle(
-                    fontSize = PageDesignSettings.largeText
-                ),
-                colors = ExposedDropdownMenuDefaults.textFieldColors(
-                    focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedTextColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                    disabledTextColor = MaterialTheme.colorScheme.secondary
-                )
+                modifier =
+                    Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                textStyle =
+                    TextStyle(
+                        fontSize = PageDesignSettings.largeText,
+                    ),
+                colors =
+                    ExposedDropdownMenuDefaults.textFieldColors(
+                        focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        focusedTextColor = MaterialTheme.colorScheme.secondary,
+                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary,
+                    ),
             )
 
             ExposedDropdownMenu(
                 expanded = isExpandedFrequencyDropdown,
                 onDismissRequest = { isExpandedFrequencyDropdown = false },
                 containerColor = MaterialTheme.colorScheme.background,
-                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary),
             ) {
                 FrequencyEnum.entries.forEach { frequencyEnum ->
                     DropdownMenuItem(
                         text = {
                             Text(
                                 text = frequencyEnum.label,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                         },
                         onClick = {
                             commitmentFormViewModel.onFrequencyChange(frequencyEnum)
                             isExpandedFrequencyDropdown = false
-                        }
+                        },
                     )
                 }
             }
@@ -512,27 +531,29 @@ fun RecurrenceForm (
         if (recurrenceUiState.frequencyEnum == FrequencyEnum.WEEKLY) {
             Text(
                 text = strings.recurrenceWeekDaysField,
-                style = TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
             )
 
             DaysOfWeek(
                 daysOfWeekList = recurrenceUiState.daysOfWeekList,
                 onSelection = { dayOfWeekList ->
                     commitmentFormViewModel.onDaysOfWeekChange(dayOfWeekList)
-                }
+                },
             )
         }
 
         if (recurrenceUiState.frequencyEnum == FrequencyEnum.MONTHLY) {
             Text(
                 text = strings.recurrenceDayOfMonthField,
-                style = TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
             )
 
             IntegerField(
@@ -541,17 +562,18 @@ fun RecurrenceForm (
                     commitmentFormViewModel.onDayOfMonthChange(newDayOfMonth)
                 },
                 minValue = firstDayOfMonth,
-                maxValue = lastDayOfMonth
+                maxValue = lastDayOfMonth,
             )
         }
 
         if (recurrenceUiState.frequencyEnum == FrequencyEnum.CUSTOMIZED) {
             Text(
                 text = strings.recurrenceIntervalField,
-                style = TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
             )
 
             IntegerField(
@@ -560,21 +582,20 @@ fun RecurrenceForm (
                     commitmentFormViewModel.onIntervalChange(newInterval)
                 },
                 minValue = firstValueInterval,
-                maxValue = lastValueInterval
+                maxValue = lastValueInterval,
             )
         }
     }
 }
 
-
 @Composable
 fun DaysOfWeek(
     daysOfWeekList: List<DayOfWeekEnum>,
-    onSelection: (List<DayOfWeekEnum>) -> Unit
+    onSelection: (List<DayOfWeekEnum>) -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.smallPaddingValue)
+        horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.smallPaddingValue),
     ) {
         DayOfWeekEnum.entries.forEach { dayOfWeekEnum ->
             val isSelected = daysOfWeekList.contains(dayOfWeekEnum)
@@ -582,43 +603,49 @@ fun DaysOfWeek(
             Button(
                 onClick = {
                     val newSelectedDaysOfWeek = daysOfWeekList.toMutableList()
-                    if (isSelected) newSelectedDaysOfWeek.remove(dayOfWeekEnum)
-                    else newSelectedDaysOfWeek.add(dayOfWeekEnum)
+                    if (isSelected) {
+                        newSelectedDaysOfWeek.remove(dayOfWeekEnum)
+                    } else {
+                        newSelectedDaysOfWeek.add(dayOfWeekEnum)
+                    }
                     onSelection(newSelectedDaysOfWeek)
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .aspectRatio(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor =
-                        if (isSelected)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor =
-                        if (isSelected)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.secondary
-                )
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .aspectRatio(1f),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            },
+                        contentColor =
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.secondary
+                            },
+                    ),
             ) {
                 Text(
                     text = dayOfWeekEnum.name.take(1),
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
         }
     }
 }
 
-
 @Composable
 fun IntegerField(
     selectedValue: Int,
     onIntegerValueChange: (Int) -> Unit,
     minValue: Int,
-    maxValue: Int
+    maxValue: Int,
 ) {
     val strings: StringsRepository = LocalStrings.current
     val delayInMilliseconds = 100L
@@ -634,7 +661,6 @@ fun IntegerField(
     }
 
     LaunchedEffect(decreaseButtonPressed, selectedValue) {
-
         while (decreaseButtonPressed) {
             delay(delayInMilliseconds)
             if (selectedValue > minValue) onIntegerValueChange(selectedValue - 1)
@@ -652,45 +678,52 @@ fun IntegerField(
             label = {
                 Text(
                     text = strings.recurrenceValueField,
-                    style = TextStyle(
-                        fontSize = PageDesignSettings.smallText,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.smallText,
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
                 )
             },
-            textStyle = TextStyle(
-                fontSize = PageDesignSettings.mediumText,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier
-                .weight(1f)
-                .height(PageDesignSettings.smallComponentSize),
-            singleLine = true
+            textStyle =
+                TextStyle(
+                    fontSize = PageDesignSettings.mediumText,
+                    color = MaterialTheme.colorScheme.secondary,
+                ),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .height(PageDesignSettings.smallComponentSize),
+            singleLine = true,
         )
 
         Column {
             IconButton(
                 onClick = {},
-                modifier = Modifier.pointerInteropFilter {
-                    increaseButtonPressed = when (it.action) {
-                        MotionEvent.ACTION_DOWN -> true
-                        else -> false
-                    }
-                    true
-                }
+                modifier =
+                    Modifier.pointerInteropFilter {
+                        increaseButtonPressed =
+                            when (it.action) {
+                                MotionEvent.ACTION_DOWN -> true
+                                else -> false
+                            }
+                        true
+                    },
             ) {
                 Icon(Icons.Default.KeyboardArrowUp, contentDescription = strings.increaseButton)
             }
 
             IconButton(
                 onClick = {},
-                modifier = Modifier.pointerInteropFilter {
-                    decreaseButtonPressed = when (it.action) {
-                        MotionEvent.ACTION_DOWN -> true
-                        else -> false
-                    }
-                    true
-                }
+                modifier =
+                    Modifier.pointerInteropFilter {
+                        decreaseButtonPressed =
+                            when (it.action) {
+                                MotionEvent.ACTION_DOWN -> true
+                                else -> false
+                            }
+                        true
+                    },
             ) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = strings.decreaseButton)
             }
@@ -698,12 +731,11 @@ fun IntegerField(
     }
 }
 
-
 @Composable
 fun TimeStepperField(
     time: Instant,
     isEndTime: Boolean = false,
-    onTimeChange: (Instant) -> Unit
+    onTimeChange: (Instant) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
     val delayInMilliseconds = 50L
@@ -725,8 +757,9 @@ fun TimeStepperField(
 
         while (increaseButtonPressed) {
             delay(delayInMilliseconds)
-            if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0))
-                || (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)) {
+            if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0)) ||
+                (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)
+            ) {
                 onTimeChange(selectedTime + timeStepMinutes)
                 selectedTime += timeStepMinutes
             }
@@ -738,7 +771,9 @@ fun TimeStepperField(
 
         while (decreaseButtonPressed) {
             delay(delayInMilliseconds)
-            if (((localDateTime.hour * minutesPerHour) + localDateTime.minute > minuteLimit) || (localDateTime.dayOfMonth > currentDayOfMonth)) {
+            if (((localDateTime.hour * minutesPerHour) + localDateTime.minute > minuteLimit) ||
+                (localDateTime.dayOfMonth > currentDayOfMonth)
+            ) {
                 onTimeChange(selectedTime - timeStepMinutes)
                 selectedTime -= timeStepMinutes
             }
@@ -747,47 +782,55 @@ fun TimeStepperField(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         OutlinedTextField(
-            value = strings.hourFormat.format(
-                if (localDateTime.dayOfMonth == currentDayOfMonth) localDateTime.hour else hoursPerDay,
-                localDateTime.minute),
+            value =
+                strings.hourFormat.format(
+                    if (localDateTime.dayOfMonth == currentDayOfMonth) localDateTime.hour else hoursPerDay,
+                    localDateTime.minute,
+                ),
             onValueChange = {},
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                ),
             singleLine = true,
-            textStyle = TextStyle(
-                fontSize = PageDesignSettings.largeText,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier.weight(1f)
+            textStyle =
+                TextStyle(
+                    fontSize = PageDesignSettings.largeText,
+                    color = MaterialTheme.colorScheme.secondary,
+                ),
+            modifier = Modifier.weight(1f),
         )
 
         Column {
             IconButton(
                 onClick = {},
-                modifier = Modifier.pointerInteropFilter {
-                    increaseButtonPressed = when (it.action) {
-                        MotionEvent.ACTION_DOWN -> true
-                        else -> false
-                    }
-                    true
-                }
+                modifier =
+                    Modifier.pointerInteropFilter {
+                        increaseButtonPressed =
+                            when (it.action) {
+                                MotionEvent.ACTION_DOWN -> true
+                                else -> false
+                            }
+                        true
+                    },
             ) {
                 Icon(Icons.Default.KeyboardArrowUp, contentDescription = strings.increaseButton)
             }
 
             IconButton(
                 onClick = {},
-                modifier = Modifier.pointerInteropFilter {
-                    decreaseButtonPressed = when (it.action) {
-                        MotionEvent.ACTION_DOWN -> true
-                        else -> false
-                    }
-                    true
-                }
+                modifier =
+                    Modifier.pointerInteropFilter {
+                        decreaseButtonPressed =
+                            when (it.action) {
+                                MotionEvent.ACTION_DOWN -> true
+                                else -> false
+                            }
+                        true
+                    },
             ) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = strings.decreaseButton)
             }

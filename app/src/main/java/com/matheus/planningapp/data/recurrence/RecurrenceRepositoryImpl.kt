@@ -2,10 +2,9 @@ package com.matheus.planningapp.data.recurrence
 
 import kotlinx.coroutines.flow.Flow
 
-class RecurrenceRepositoryImpl (
-    private val recurrenceDao: RecurrenceDao
-): RecurrenceRepository {
-
+class RecurrenceRepositoryImpl(
+    private val recurrenceDao: RecurrenceDao,
+) : RecurrenceRepository {
     override suspend fun insert(recurrenceEntity: RecurrenceEntity) {
         recurrenceDao.insert(recurrenceEntity)
     }
@@ -18,15 +17,11 @@ class RecurrenceRepositoryImpl (
         recurrenceDao.delete(recurrenceEntity)
     }
 
-    override suspend fun getRecurrenceById(recurrenceId: Long): RecurrenceEntity? {
-        return recurrenceDao.getRecurrenceById(recurrenceId)
-    }
+    override suspend fun getRecurrenceById(recurrenceId: Long): RecurrenceEntity? = recurrenceDao.getRecurrenceById(recurrenceId)
 
-    override fun getRecurrenceByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> {
-        return recurrenceDao.getRecurrenceByCalendar(calendarId)
-    }
+    override fun getRecurrenceByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> =
+        recurrenceDao.getRecurrenceByCalendar(calendarId)
 
-    override suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity? {
-        return recurrenceDao.getRecurrenceByCommitment(commitmentId)
-    }
+    override suspend fun getRecurrenceByCommitment(commitmentId: Long): RecurrenceEntity? =
+        recurrenceDao.getRecurrenceByCommitment(commitmentId)
 }

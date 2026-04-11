@@ -17,15 +17,18 @@ import com.matheus.planningapp.data.recurrence.RecurrenceEntity
 @Database(
     entities = [CalendarEntity::class, CommitmentEntity::class, RecurrenceEntity::class],
     version = 11,
-    exportSchema = false
+    exportSchema = false,
 )
 @TypeConverters(
     DateTimeConverters::class,
     PriorityConverters::class,
     FrequencyConverters::class,
-    DayOfWeekFrequency::class)
-abstract class CalendarDatabase: RoomDatabase() {
+    DayOfWeekFrequency::class,
+)
+abstract class CalendarDatabase : RoomDatabase() {
     abstract fun calendarDao(): CalendarDao
+
     abstract fun commitmentDao(): CommitmentDao
+
     abstract fun recurrenceDao(): RecurrenceDao
 }

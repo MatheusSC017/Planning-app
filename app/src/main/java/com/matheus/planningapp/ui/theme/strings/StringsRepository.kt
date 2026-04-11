@@ -1,7 +1,5 @@
 package com.matheus.planningapp.ui.theme.strings
 
-import androidx.compose.runtime.staticCompositionLocalOf
-
 interface StringsRepository {
     // Project information
     val projectName: String
@@ -68,5 +66,3 @@ interface StringsRepository {
     val dateFormat: String
     val hourFormat: String
 }
-
-

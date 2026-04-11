@@ -9,7 +9,6 @@ import com.matheus.planningapp.util.enums.PriorityEnum
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
-
 @Entity(
     tableName = "Commitment",
     foreignKeys = [
@@ -17,16 +16,16 @@ import kotlinx.datetime.Instant
             entity = CalendarEntity::class,
             parentColumns = ["id"],
             childColumns = ["calendar"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
     indices = [
         Index("calendar"),
         Index("startDateTime"),
-        Index("endDateTime")
-    ]
+        Index("endDateTime"),
+    ],
 )
-data class CommitmentEntity (
+data class CommitmentEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val calendar: Long,
@@ -36,5 +35,5 @@ data class CommitmentEntity (
     val endDateTime: Instant,
     val priorityEnum: PriorityEnum,
     val createdAt: Instant = Clock.System.now(),
-    val updatedAt: Instant = Clock.System.now()
+    val updatedAt: Instant = Clock.System.now(),
 )

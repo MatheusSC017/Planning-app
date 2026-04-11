@@ -13,19 +13,23 @@ object NotificationExtras {
     const val EXTRA_MESSAGE = "You have a task scheduled for now."
 }
 
-
-class NotificationReceiver: BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+class NotificationReceiver : BroadcastReceiver() {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val commitmentId: Int = intent.getIntExtra("id", NotificationExtras.EXTRA_ID)
         val title: String = intent.getStringExtra("title") ?: NotificationExtras.EXTRA_TITLE
         val message: String = intent.getStringExtra("message") ?: NotificationExtras.EXTRA_MESSAGE
 
-        val builder = NotificationCompat.Builder(context, NotificationConfig.CHANNEL_ID)
-            .setSmallIcon(R.drawable.outline_notifications_24)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
+        val builder =
+            NotificationCompat
+                .Builder(context, NotificationConfig.CHANNEL_ID)
+                .setSmallIcon(R.drawable.outline_notifications_24)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
 
         val manager = NotificationManagerCompat.from(context)
 

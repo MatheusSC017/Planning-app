@@ -48,8 +48,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
@@ -61,7 +61,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CalendarScreen(
     calendarViewModel: CalendarViewModel = koinViewModel(),
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
@@ -94,51 +94,53 @@ fun CalendarScreen(
                 title = {
                     Text(
                         text = strings.calendarsMenuButton,
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.mediumTitle,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.mediumTitle,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
                     )
                 },
                 actions = {
                     IconButton(
-                        onClick = onMenuClick
+                        onClick = onMenuClick,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = strings.menuButton,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(PageDesignSettings.largeIconSize)
+                            modifier = Modifier.size(PageDesignSettings.largeIconSize),
                         )
                     }
-                }
+                },
             )
         },
         content = { paddingValues ->
             CalendarsMenuContent(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background,
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                MaterialTheme.colorScheme.background,
+                modifier =
+                    Modifier
+                        .padding(paddingValues)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.background,
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                    MaterialTheme.colorScheme.background,
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite,
                             ),
-                            start = Offset.Zero,
-                            end = Offset.Infinite
-                        )
-                    ),
-                calendarViewModel = calendarViewModel
+                        ),
+                calendarViewModel = calendarViewModel,
             )
-        }
+        },
     )
 }
 
 @Composable
 fun CalendarsMenuContent(
     modifier: Modifier,
-    calendarViewModel: CalendarViewModel
+    calendarViewModel: CalendarViewModel,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
@@ -161,15 +163,15 @@ fun CalendarsMenuContent(
         },
         onDismissRequest = {
             showDialog = false
-        }
+        },
     )
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(PageDesignSettings.extraLargePaddingValue)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(PageDesignSettings.extraLargePaddingValue),
     ) {
-
         Column {
             TextField(
                 value = calendarName,
@@ -177,72 +179,77 @@ fun CalendarsMenuContent(
                 label = {
                     Text(
                         text = strings.calendarNameField,
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.mediumText,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.mediumText,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
                     )
                 },
-                textStyle = TextStyle(
-                    fontSize = PageDesignSettings.mediumText,
-                    color = MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(PageDesignSettings.smallComponentSize)
-                    .padding(bottom = PageDesignSettings.mediumPaddingValue),
-                singleLine = true
+                textStyle =
+                    TextStyle(
+                        fontSize = PageDesignSettings.mediumText,
+                        color = MaterialTheme.colorScheme.secondary,
+                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(PageDesignSettings.smallComponentSize)
+                        .padding(bottom = PageDesignSettings.mediumPaddingValue),
+                singleLine = true,
             )
 
             Row(
                 modifier = Modifier.padding(bottom = PageDesignSettings.mediumPaddingValue),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
                     checked = calendarIsDefault,
-                    onCheckedChange = { calendarIsDefault = it }
+                    onCheckedChange = { calendarIsDefault = it },
                 )
                 Text(
                     text = strings.calendarIsDefaultField,
-                    style = TextStyle(
-                        fontSize = PageDesignSettings.mediumText,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
                 )
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
             ) {
                 IconButton(
                     onClick = {
                         val calendar = selectedCalendar
 
                         if (calendar != null) {
-                            val updatedCalendar = calendar.copy(
-                                name = calendarName,
-                                isDefault = calendarIsDefault,
-                                updatedAt = Clock.System.now()
-                            )
+                            val updatedCalendar =
+                                calendar.copy(
+                                    name = calendarName,
+                                    isDefault = calendarIsDefault,
+                                    updatedAt = Clock.System.now(),
+                                )
                             calendarViewModel.updateCalendar(updatedCalendar)
                         } else {
                             calendarViewModel.insertCalendar(
                                 CalendarEntity(
                                     name = calendarName,
-                                    isDefault = calendarIsDefault
-                                )
+                                    isDefault = calendarIsDefault,
+                                ),
                             )
                         }
                         selectedCalendar = null
                         calendarName = ""
                         calendarIsDefault = false
-                    }
+                    },
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = strings.confirmButton,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -251,53 +258,56 @@ fun CalendarsMenuContent(
                         selectedCalendar = null
                         calendarName = ""
                         calendarIsDefault = false
-                    }
+                    },
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = strings.cancelButton,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue)
+                modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue),
             )
         }
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
         ) {
             calendarEntities.forEach { calendar ->
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.onPrimary),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.onPrimary),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = calendar.name,
-                            style = TextStyle(
-                                fontSize = PageDesignSettings.mediumText,
-                                color = MaterialTheme.colorScheme.primary
-                            ),
-                            modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
+                            style =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.mediumText,
+                                    color = MaterialTheme.colorScheme.primary,
+                                ),
+                            modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue),
                         )
 
                         Row(
-                            modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
+                            modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue),
                         ) {
                             if (calendar.isDefault) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = strings.calendarIsDefaultField,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(PageDesignSettings.largePaddingValue)
+                                    modifier = Modifier.padding(PageDesignSettings.largePaddingValue),
                                 )
                             } else {
                                 IconButton(
@@ -305,12 +315,12 @@ fun CalendarsMenuContent(
                                         calendar.isDefault = true
                                         calendar.updatedAt = Clock.System.now()
                                         calendarViewModel.updateCalendar(calendar)
-                                    }
+                                    },
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.FavoriteBorder,
                                         contentDescription = strings.calendarIsDefaultField,
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.primary,
                                     )
                                 }
                             }
@@ -319,26 +329,26 @@ fun CalendarsMenuContent(
                                     selectedCalendar = calendar
                                     calendarName = calendar.name
                                     calendarIsDefault = calendar.isDefault
-                                }
+                                },
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = strings.updateButton,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue)
+                                    modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue),
                                 )
                             }
                             IconButton(
                                 onClick = {
                                     selectedCalendarToDelete = calendar
                                     showDialog = true
-                                }
+                                },
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = strings.deleteButton,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue)
+                                    modifier = Modifier.padding(start = PageDesignSettings.extraLargePaddingValue),
                                 )
                             }
                         }

@@ -25,18 +25,21 @@ interface CommitmentDao {
     @Query("SELECT * FROM commitment WHERE id = :commitmentId")
     suspend fun getCommitment(commitmentId: Long): CommitmentEntity?
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM commitment
         WHERE startDateTime >= :dayStart AND startDateTime < :dayEnd AND calendar = :calendar
         ORDER BY startDateTime
-    """)
+    """,
+    )
     fun getCommitmentsForDay(
         dayStart: Instant,
         dayEnd: Instant,
-        calendar: Long
+        calendar: Long,
     ): Flow<List<CommitmentEntity>>
 
-    @Query("""
+    @Query(
+        """
         SELECT COUNT(c.id) FROM commitment c
         LEFT JOIN Recurrence r ON c.id = r.commitment
         WHERE (:commitmentId IS NULL OR c.id != :commitmentId) AND 
@@ -65,23 +68,27 @@ interface CommitmentDao {
                 time(c.endDateTime / 1000, 'unixepoch') > time(:startDateTime / 1000, 'unixepoch')
             )
         )
-    """)
+    """,
+    )
     suspend fun checkSchedulingConflictsBetweenCommitments(
         startDateTime: Instant,
         endDateTime: Instant,
         calendarId: Long,
         commitmentId: Long? = null,
         dayOfWeek: DayOfWeekEnum,
-        dayOfMonth: Int
+        dayOfMonth: Int,
     ): Int
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM commitment
         WHERE startDateTime > :currentDateTime
-    """)
+    """,
+    )
     suspend fun getFutureCommitments(currentDateTime: Instant = Clock.System.now()): List<CommitmentEntity>
 
-    @Query("""
+    @Query(
+        """
         SELECT c.* FROM Commitment c 
         JOIN Recurrence r ON c.id = r.commitment 
         WHERE 
@@ -99,11 +106,12 @@ interface CommitmentDao {
                 ) AS INTEGER) % r.interval = 0
             )
         )
-    """)
+    """,
+    )
     fun getCommitmentByRecurrence(
         calendarId: Long,
         today: Instant,
         dayOfWeek: DayOfWeekEnum,
-        dayOfMonth: Int
+        dayOfMonth: Int,
     ): Flow<List<CommitmentEntity>>
 }

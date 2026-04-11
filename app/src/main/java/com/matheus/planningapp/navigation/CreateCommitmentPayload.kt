@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateCommitmentPayload(
     val calendarId: Long,
-    val datetimeInstant: Instant
+    val datetimeInstant: Instant,
 )

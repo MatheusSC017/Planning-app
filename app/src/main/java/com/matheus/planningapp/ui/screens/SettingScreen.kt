@@ -42,20 +42,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.enums.NotificationEnum
+import com.matheus.planningapp.util.enums.ViewEnum
 import com.matheus.planningapp.viewmodel.setting.SettingUiState
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
-import com.matheus.planningapp.util.enums.ViewEnum
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingScreen(
-    onMenuClick: () -> Unit
-) {
+fun SettingScreen(onMenuClick: () -> Unit) {
     val strings: StringsRepository = LocalStrings.current
 
     Scaffold(
@@ -65,40 +63,41 @@ fun SettingScreen(
                     Text(
                         text = strings.settingsMenuButton,
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 },
                 actions = {
                     IconButton(
-                        onClick = onMenuClick
+                        onClick = onMenuClick,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = strings.menuButton,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(PageDesignSettings.largeIconSize)
+                            modifier = Modifier.size(PageDesignSettings.largeIconSize),
                         )
                     }
-                }
+                },
             )
         },
         content = { paddingValues ->
             SettingsForm(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background,
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                MaterialTheme.colorScheme.background,
+                modifier =
+                    Modifier
+                        .padding(paddingValues)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.background,
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                    MaterialTheme.colorScheme.background,
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite,
                             ),
-                            start = Offset.Zero,
-                            end = Offset.Infinite
-                        )
-                    )
+                        ),
             )
-        }
+        },
     )
 }
 
@@ -106,7 +105,7 @@ fun SettingScreen(
 @Composable
 fun SettingsForm(
     modifier: Modifier,
-    settignsViewModel: SettingViewModel = koinViewModel()
+    settignsViewModel: SettingViewModel = koinViewModel(),
 ) {
     val strings: StringsRepository = LocalStrings.current
 
@@ -132,32 +131,35 @@ fun SettingsForm(
         message = strings.dialogUpdateSettingMessage,
         onDismissRequest = { showDialog = false },
         onConfirm = {
-            val settingUiState = SettingUiState(
-                viewMode = selectedViewOption,
-                notificationOption = selectedNotificationOption
-            )
+            val settingUiState =
+                SettingUiState(
+                    viewMode = selectedViewOption,
+                    notificationOption = selectedNotificationOption,
+                )
             settignsViewModel.updateSettings(settingUiState, notificationPermissionLauncher)
             showDialog = false
-        }
+        },
     )
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(PageDesignSettings.extraLargePaddingValue)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(PageDesignSettings.extraLargePaddingValue),
     ) {
         Text(
             text = strings.settingViewModeField,
-            style = TextStyle(
-                fontSize = PageDesignSettings.smallTitle,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier.padding(PageDesignSettings.mediumPaddingValue)
+            style =
+                TextStyle(
+                    fontSize = PageDesignSettings.smallTitle,
+                    color = MaterialTheme.colorScheme.secondary,
+                ),
+            modifier = Modifier.padding(PageDesignSettings.mediumPaddingValue),
         )
 
         ExposedDropdownMenuBox(
             expanded = isExpandedViewDropdown,
-            onExpandedChange = { isExpandedViewDropdown = !isExpandedViewDropdown }
+            onExpandedChange = { isExpandedViewDropdown = !isExpandedViewDropdown },
         ) {
             TextField(
                 value = selectedViewOption.label,
@@ -166,42 +168,45 @@ fun SettingsForm(
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(isExpandedViewDropdown)
                 },
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                textStyle = TextStyle(
-                    fontSize = PageDesignSettings.mediumText
-                ),
-                colors = ExposedDropdownMenuDefaults.textFieldColors(
-                    focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedTextColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                    disabledTextColor = MaterialTheme.colorScheme.secondary
-                )
+                modifier =
+                    Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                textStyle =
+                    TextStyle(
+                        fontSize = PageDesignSettings.mediumText,
+                    ),
+                colors =
+                    ExposedDropdownMenuDefaults.textFieldColors(
+                        focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        focusedTextColor = MaterialTheme.colorScheme.secondary,
+                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary,
+                    ),
             )
 
             ExposedDropdownMenu(
                 expanded = isExpandedViewDropdown,
                 onDismissRequest = { isExpandedViewDropdown = false },
                 containerColor = MaterialTheme.colorScheme.background,
-                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary),
             ) {
                 ViewEnum.entries.forEach { viewOption ->
                     DropdownMenuItem(
                         text = {
                             Text(
                                 text = viewOption.label,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                         },
                         onClick = {
                             selectedViewOption = viewOption
                             isExpandedViewDropdown = false
-                        }
+                        },
                     )
                 }
             }
@@ -211,16 +216,17 @@ fun SettingsForm(
 
         Text(
             text = strings.settingNotificationField,
-            style = TextStyle(
-                fontSize = PageDesignSettings.smallTitle,
-                color = MaterialTheme.colorScheme.secondary
-            ),
-            modifier = Modifier.padding(PageDesignSettings.mediumPaddingValue)
+            style =
+                TextStyle(
+                    fontSize = PageDesignSettings.smallTitle,
+                    color = MaterialTheme.colorScheme.secondary,
+                ),
+            modifier = Modifier.padding(PageDesignSettings.mediumPaddingValue),
         )
 
         ExposedDropdownMenuBox(
             expanded = isExpandedNotificationDropdown,
-            onExpandedChange = { isExpandedNotificationDropdown = !isExpandedNotificationDropdown }
+            onExpandedChange = { isExpandedNotificationDropdown = !isExpandedNotificationDropdown },
         ) {
             TextField(
                 value = selectedNotificationOption.label,
@@ -229,42 +235,45 @@ fun SettingsForm(
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(isExpandedNotificationDropdown)
                 },
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                textStyle = TextStyle(
-                    fontSize = PageDesignSettings.mediumText
-                ),
-                colors = ExposedDropdownMenuDefaults.textFieldColors(
-                    focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
-                    focusedTextColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                    disabledTextColor = MaterialTheme.colorScheme.secondary
-                )
+                modifier =
+                    Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                textStyle =
+                    TextStyle(
+                        fontSize = PageDesignSettings.mediumText,
+                    ),
+                colors =
+                    ExposedDropdownMenuDefaults.textFieldColors(
+                        focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                        focusedTextColor = MaterialTheme.colorScheme.secondary,
+                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary,
+                    ),
             )
 
             ExposedDropdownMenu(
                 expanded = isExpandedNotificationDropdown,
                 onDismissRequest = { isExpandedNotificationDropdown = false },
                 containerColor = MaterialTheme.colorScheme.background,
-                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary),
             ) {
                 NotificationEnum.entries.forEach { notificationOption ->
                     DropdownMenuItem(
                         text = {
                             Text(
                                 text = notificationOption.label,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                         },
                         onClick = {
                             selectedNotificationOption = notificationOption
                             isExpandedNotificationDropdown = false
-                        }
+                        },
                     )
                 }
             }
@@ -273,25 +282,28 @@ fun SettingsForm(
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(PageDesignSettings.extraLargePaddingValue),
-            horizontalArrangement = Arrangement.End
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(PageDesignSettings.extraLargePaddingValue),
+            horizontalArrangement = Arrangement.End,
         ) {
             Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onBackground,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onBackground,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 onClick = {
                     showDialog = true
-                }
+                },
             ) {
                 Text(
                     text = strings.confirmButton,
-                    style = TextStyle(
-                        fontSize = PageDesignSettings.smallTitle
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.smallTitle,
+                        ),
                 )
             }
         }

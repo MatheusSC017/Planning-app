@@ -3,11 +3,9 @@ package com.matheus.planningapp.data.calendar
 import kotlinx.coroutines.flow.Flow
 
 class CalendarRepositoryImpl(
-    private val calendarDao: CalendarDao
-): CalendarRepository {
-    override suspend fun insertCalendar(calendarEntity: CalendarEntity): Long {
-        return calendarDao.insert(calendarEntity)
-    }
+    private val calendarDao: CalendarDao,
+) : CalendarRepository {
+    override suspend fun insertCalendar(calendarEntity: CalendarEntity): Long = calendarDao.insert(calendarEntity)
 
     override suspend fun updateCalendar(calendarEntity: CalendarEntity) {
         calendarDao.updateWithDateTime(calendarEntity)
@@ -17,21 +15,17 @@ class CalendarRepositoryImpl(
         calendarDao.delete(calendarEntity)
     }
 
-    override fun getCalendars(): Flow<List<CalendarEntity>> {
-        return calendarDao.getCalendars()
-    }
+    override fun getCalendars(): Flow<List<CalendarEntity>> = calendarDao.getCalendars()
 
-    override suspend fun getCalendarById(calendarId: Long): CalendarEntity? {
-        return calendarDao.getCalendarById(calendarId)
-    }
+    override suspend fun getCalendarById(calendarId: Long): CalendarEntity? = calendarDao.getCalendarById(calendarId)
 
     override suspend fun ensureDefaultCalendarExists() {
         if (calendarDao.countCalendars() == 0) {
             calendarDao.insert(
                 CalendarEntity(
                     name = "Default",
-                    isDefault = true
-                )
+                    isDefault = true,
+                ),
             )
         }
     }
@@ -39,5 +33,4 @@ class CalendarRepositoryImpl(
     override suspend fun setAllDefaultAsFalse() {
         calendarDao.setAllDefaultAsFalse()
     }
-
 }

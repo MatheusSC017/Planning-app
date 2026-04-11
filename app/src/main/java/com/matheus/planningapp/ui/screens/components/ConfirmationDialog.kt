@@ -14,7 +14,7 @@ fun <T> ConfirmationDialog(
     title: String,
     message: String,
     onConfirm: (T) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     if (item == null) return
 
@@ -33,7 +33,7 @@ fun <T> ConfirmationDialog(
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) { Text(strings.deleteButton) }
-            }
+            },
         )
     }
 }

@@ -24,24 +24,27 @@ class SettingViewModel(
     private val context: Context,
     private val commitmentRepository: CommitmentRepository,
     private val settingsRepository: SettingsRepository,
-    private val taskNotificationScheduler: TaskNotificationScheduler
-): ViewModel() {
-
-    val uiState: StateFlow<SettingUiState> = combine(
-        settingsRepository.viewModeFlow,
-        settingsRepository.notificationOptionFlow
-    ) { viewMode, notificationOption ->
-        SettingUiState(
-            viewMode = viewMode,
-            notificationOption = notificationOption
+    private val taskNotificationScheduler: TaskNotificationScheduler,
+) : ViewModel() {
+    val uiState: StateFlow<SettingUiState> =
+        combine(
+            settingsRepository.viewModeFlow,
+            settingsRepository.notificationOptionFlow,
+        ) { viewMode, notificationOption ->
+            SettingUiState(
+                viewMode = viewMode,
+                notificationOption = notificationOption,
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingUiState(),
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SettingUiState()
-    )
 
-    fun updateSettings(settingUiState: SettingUiState, notificationPermissionLauncher: ActivityResultLauncher<String>) {
+    fun updateSettings(
+        settingUiState: SettingUiState,
+        notificationPermissionLauncher: ActivityResultLauncher<String>,
+    ) {
         viewModelScope.launch {
             val currentNotificationOption: NotificationEnum = uiState.value.notificationOption
 
@@ -59,9 +62,7 @@ class SettingViewModel(
         }
     }
 
-    private fun requestNotificationPermission(
-        notificationPermissionLauncher: ActivityResultLauncher<String>
-    ) {
+    private fun requestNotificationPermission(notificationPermissionLauncher: ActivityResultLauncher<String>) {
         if (!context.hasNotificationPermission()) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             return

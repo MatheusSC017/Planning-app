@@ -74,18 +74,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.commitment.CommitmentEntity
-import com.matheus.planningapp.util.enums.PriorityEnum
-import com.matheus.planningapp.util.indexToTimeString
-import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
-import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.util.enums.NotificationEnum
+import com.matheus.planningapp.util.enums.PriorityEnum
+import com.matheus.planningapp.util.enums.ViewEnum
+import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
+import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
-import com.matheus.planningapp.util.enums.NotificationEnum
-import com.matheus.planningapp.util.enums.ViewEnum
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -98,21 +98,20 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen (
+fun HomeScreen(
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Long) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel = koinViewModel(),
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
     var columnViewSelected by remember(uiState.viewMode) { mutableStateOf(uiState.viewMode == ViewEnum.COLUMN) }
 
-    LaunchedEffect( uiState.calendars) {
+    LaunchedEffect(uiState.calendars) {
         if (selectedCalendar == null && uiState.calendars.isNotEmpty()) {
             selectedCalendar = uiState.calendars.first()
         }
@@ -122,37 +121,38 @@ fun HomeScreen (
         topBar = {
             PlanningTopAppBar(
                 modifier = Modifier,
-                calendarsEntities =  uiState.calendars,
+                calendarsEntities = uiState.calendars,
                 selectedCalendar = selectedCalendar,
-                onCalendarSelected = { selectedCalendar = it},
+                onCalendarSelected = { selectedCalendar = it },
                 columnViewSelected = columnViewSelected,
                 onViewSelected = { columnViewSelected = it },
-                onMenuClick = onMenuClick
+                onMenuClick = onMenuClick,
             )
         },
         content = { paddingValues ->
             CalendarContent(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background,
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                MaterialTheme.colorScheme.background,
+                modifier =
+                    Modifier
+                        .padding(paddingValues)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.background,
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
+                                    MaterialTheme.colorScheme.background,
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite,
                             ),
-                            start = Offset.Zero,
-                            end = Offset.Infinite
-                        )
-                    ),
+                        ),
                 selectedCalendar = selectedCalendar,
                 columnViewSelected = columnViewSelected,
                 onNavigateToAddCommitment = onNavigateToAddCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 homeViewModel = homeViewModel,
-                uiState = uiState
+                uiState = uiState,
             )
-        }
+        },
     )
 }
 
@@ -165,7 +165,7 @@ fun PlanningTopAppBar(
     columnViewSelected: Boolean,
     onViewSelected: (Boolean) -> Unit,
     onCalendarSelected: (CalendarEntity) -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
 ) {
     var isExpandedCalendarDropDown by remember { mutableStateOf(false) }
     val strings: StringsRepository = LocalStrings.current
@@ -179,39 +179,43 @@ fun PlanningTopAppBar(
                     painter = painterResource(id = R.drawable.columns_view),
                     contentDescription = strings.columnView,
                     tint = if (columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(PageDesignSettings.largeIconSize)
-                        .clip(RoundedCornerShape(PageDesignSettings.mediumIconClip))
-                        .background(if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
-                        .padding(PageDesignSettings.extraSmallPaddingValue)
-                        .clickable {
-                            onViewSelected(true)
-                        }
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.largeIconSize)
+                            .clip(RoundedCornerShape(PageDesignSettings.mediumIconClip))
+                            .background(
+                                if (columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background,
+                            ).padding(PageDesignSettings.extraSmallPaddingValue)
+                            .clickable {
+                                onViewSelected(true)
+                            },
                 )
 
                 Spacer(
-                    modifier = Modifier.width(PageDesignSettings.extraLargePaddingValue)
+                    modifier = Modifier.width(PageDesignSettings.extraLargePaddingValue),
                 )
 
                 Icon(
                     painter = painterResource(id = R.drawable.grid_view),
                     contentDescription = strings.gridView,
                     tint = if (!columnViewSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(PageDesignSettings.largeIconSize)
-                        .clip(RoundedCornerShape(PageDesignSettings.mediumIconClip))
-                        .background(if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background)
-                        .padding(PageDesignSettings.extraSmallPaddingValue)
-                        .clickable {
-                            onViewSelected(false)
-                        }
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.largeIconSize)
+                            .clip(RoundedCornerShape(PageDesignSettings.mediumIconClip))
+                            .background(
+                                if (!columnViewSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background,
+                            ).padding(PageDesignSettings.extraSmallPaddingValue)
+                            .clickable {
+                                onViewSelected(false)
+                            },
                 )
             }
         },
         actions = {
             ExposedDropdownMenuBox(
                 expanded = isExpandedCalendarDropDown,
-                onExpandedChange = { isExpandedCalendarDropDown = !isExpandedCalendarDropDown }
+                onExpandedChange = { isExpandedCalendarDropDown = !isExpandedCalendarDropDown },
             ) {
                 TextField(
                     value = selectedCalendar?.name ?: "",
@@ -220,22 +224,25 @@ fun PlanningTopAppBar(
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(isExpandedCalendarDropDown)
                     },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .width(PageDesignSettings.largeComponentSize),
-                    textStyle = TextStyle(
-                        fontSize = PageDesignSettings.mediumText
-                    ),
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        focusedTextColor = MaterialTheme.colorScheme.secondary,
-                        unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                        disabledTextColor = MaterialTheme.colorScheme.secondary
-                    )
+                    modifier =
+                        Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            .width(PageDesignSettings.largeComponentSize),
+                    textStyle =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                        ),
+                    colors =
+                        ExposedDropdownMenuDefaults.textFieldColors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            focusedTextColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                            disabledTextColor = MaterialTheme.colorScheme.secondary,
+                        ),
                 )
 
                 ExposedDropdownMenu(
@@ -249,29 +256,29 @@ fun PlanningTopAppBar(
                             text = {
                                 Text(
                                     text = calendarEntity.name,
-                                    color = MaterialTheme.colorScheme.secondary
+                                    color = MaterialTheme.colorScheme.secondary,
                                 )
                             },
                             onClick = {
                                 onCalendarSelected(calendarEntity)
                                 isExpandedCalendarDropDown = false
-                            }
+                            },
                         )
                     }
                 }
             }
 
             IconButton(
-                onClick = { onMenuClick() }
+                onClick = { onMenuClick() },
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
                     contentDescription = strings.menuButton,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(PageDesignSettings.largeIconSize)
+                    modifier = Modifier.size(PageDesignSettings.largeIconSize),
                 )
             }
-        }
+        },
     )
 }
 
@@ -284,14 +291,21 @@ fun CalendarContent(
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel,
     uiState: HomeUiState,
-    taskNotificationScheduler: TaskNotificationScheduler = koinInject()
+    taskNotificationScheduler: TaskNotificationScheduler = koinInject(),
 ) {
     val strings: StringsRepository = LocalStrings.current
     val selectedDate = uiState.selectedDate
 
     val zone = remember { ZoneId.systemDefault() }
     val startOfDay = remember(selectedDate) { selectedDate.atStartOfDay(zone).toInstant().toKotlinInstant() }
-    val endOfDay = remember(selectedDate) { selectedDate.atTime(LocalTime.MAX).atZone(zone).toInstant().toKotlinInstant() }
+    val endOfDay =
+        remember(selectedDate) {
+            selectedDate
+                .atTime(LocalTime.MAX)
+                .atZone(zone)
+                .toInstant()
+                .toKotlinInstant()
+        }
     val commitments by homeViewModel
         .getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0)
         .collectAsState(initial = emptyList())
@@ -303,7 +317,7 @@ fun CalendarContent(
     CommitmentViewDialog(
         commitmentEntity = selectedCommitment,
         showDialog = showCommitmentViewDialog,
-        onDismissRequest = { showCommitmentViewDialog = false }
+        onDismissRequest = { showCommitmentViewDialog = false },
     )
 
     ConfirmationDialog(
@@ -319,86 +333,91 @@ fun CalendarContent(
         },
         onDismissRequest = {
             showDeleteDialog = false
-        }
+        },
     )
 
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(PageDesignSettings.extraLargePaddingValue)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(PageDesignSettings.extraLargePaddingValue),
     ) {
         item {
             Column {
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue)
+                    modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue),
                 ) {
                     Text(
                         text = selectedDate.year.toString(),
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.largeTitle,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.largeTitle,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
                     )
                     Column(
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
                             contentDescription = strings.increaseButton,
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
-                                .size(PageDesignSettings.smallIconSize)
-                                .clickable { homeViewModel.incrementYear() }
+                            modifier =
+                                Modifier
+                                    .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .clickable { homeViewModel.incrementYear() },
                         )
 
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = strings.decreaseButton,
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
-                                .size(PageDesignSettings.smallIconSize)
-                                .clickable { homeViewModel.decrementYear() }
+                            modifier =
+                                Modifier
+                                    .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .clickable { homeViewModel.decrementYear() },
                         )
                     }
-
                 }
 
                 MonthGrid(
                     selectedMonth = selectedDate.monthValue,
-                    onMonthSelected = { homeViewModel.onSelectedDate(month = it) }
+                    onMonthSelected = { homeViewModel.onSelectedDate(month = it) },
                 )
 
                 Text(
                     text = strings.monthNames[selectedDate.monthValue - 1],
-                    style = TextStyle(
-                        fontSize = PageDesignSettings.largeTitle,
-                        color = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue)
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.largeTitle,
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                    modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue),
                 )
 
                 DaysOnlyCalendar(
                     yearMonth = YearMonth.of(selectedDate.year, selectedDate.monthValue),
                     selectedDay = selectedDate.dayOfMonth,
-                    onDateSelected = { homeViewModel.onSelectedDate(day = it) }
+                    onDateSelected = { homeViewModel.onSelectedDate(day = it) },
                 )
 
-                Row (
+                Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(),
                 ) {
                     Text(
                         text = strings.timeline,
-                        style = TextStyle(
-                            fontSize = PageDesignSettings.largeTitle,
-                            color = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue)
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.largeTitle,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
+                        modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue),
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -406,16 +425,15 @@ fun CalendarContent(
                     IconButton(
                         onClick = {
                             onNavigateToAddCommitment(startOfDay, selectedCalendar!!.id)
-                        }
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = strings.insertButton,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(PageDesignSettings.largeIconSize)
+                            modifier = Modifier.size(PageDesignSettings.largeIconSize),
                         )
                     }
-
                 }
             }
         }
@@ -432,7 +450,7 @@ fun CalendarContent(
                 onDeleteCommitment = { commitment ->
                     selectedCommitment = commitment
                     showDeleteDialog = true
-                }
+                },
             )
         } else {
             timelineGrid(
@@ -445,7 +463,7 @@ fun CalendarContent(
                 onDeleteCommitment = { commitment ->
                     selectedCommitment = commitment
                     showDeleteDialog = true
-                }
+                },
             )
         }
     }
@@ -454,7 +472,7 @@ fun CalendarContent(
 @Composable
 fun MonthGrid(
     selectedMonth: Int,
-    onMonthSelected: (Int) -> Unit
+    onMonthSelected: (Int) -> Unit,
 ) {
     val numberOfColumns = 6
     val numberOfRows = 2
@@ -467,23 +485,24 @@ fun MonthGrid(
             .forEachIndexed { rowIndex, row ->
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     row.forEachIndexed { columnIndex, month ->
                         val index = rowIndex * numberOfColumns + columnIndex
 
                         Text(
                             text = month.take(numberLettersAbbrev),
-                            modifier = Modifier
-                                .padding(PageDesignSettings.extraLargePaddingValue)
-                                .clickable { onMonthSelected(index + 1) },
-                            style = TextStyle(
-                                fontSize = PageDesignSettings.mediumText,
-                                fontWeight = if (index == selectedMonth - 1) FontWeight.W900 else FontWeight.Normal,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
+                            modifier =
+                                Modifier
+                                    .padding(PageDesignSettings.extraLargePaddingValue)
+                                    .clickable { onMonthSelected(index + 1) },
+                            style =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.mediumText,
+                                    fontWeight = if (index == selectedMonth - 1) FontWeight.W900 else FontWeight.Normal,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                ),
                         )
-
                     }
                 }
             }
@@ -494,34 +513,35 @@ fun MonthGrid(
 fun DaysOnlyCalendar(
     yearMonth: YearMonth,
     selectedDay: Int,
-    onDateSelected: (Int) -> Unit
+    onDateSelected: (Int) -> Unit,
 ) {
     val daysInMonth = yearMonth.lengthOfMonth()
     val numberDayOfWeek = 7
     val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek.value % numberDayOfWeek
 
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
-
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             LocalStrings.current.weekDaysAbbrev.forEach {
                 Text(
                     text = it.toString(),
-                    style = TextStyle(
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
-                        fontSize = PageDesignSettings.mediumText,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier
-                        .size(PageDesignSettings.largeIconSize)
-                        .background(Color.Transparent)
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center
+                    style =
+                        TextStyle(
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                            fontSize = PageDesignSettings.mediumText,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                        ),
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.largeIconSize)
+                            .background(Color.Transparent)
+                            .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -532,7 +552,7 @@ fun DaysOnlyCalendar(
         repeat(numberOfRows) { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 repeat(numberDayOfWeek) { column ->
                     val cellIndex = row * numberDayOfWeek + column
@@ -540,31 +560,34 @@ fun DaysOnlyCalendar(
                     if (cellIndex < firstDayOfWeek || cellIndex >= firstDayOfWeek + daysInMonth) {
                         Box(modifier = Modifier.size(PageDesignSettings.largeIconSize))
                     } else {
-                        val day =  cellIndex - firstDayOfWeek + 1
+                        val day = cellIndex - firstDayOfWeek + 1
 
                         Text(
                             text = day.toString(),
-                            style = TextStyle(
-                                color = if (day == selectedDay) MaterialTheme.colorScheme.onSecondary else
-                                    MaterialTheme.colorScheme.secondary,
-                                fontSize = PageDesignSettings.mediumText,
-                                textAlign = TextAlign.Center
-                            ),
-                            modifier = Modifier
-                                .size(PageDesignSettings.largeIconSize)
-                                .clickable { onDateSelected(day) }
-                                .background(
-                                    if (day == selectedDay) MaterialTheme.colorScheme.onBackground else Color.Transparent,
-                                    CircleShape
-                                )
-                                .wrapContentSize(Alignment.Center)
+                            style =
+                                TextStyle(
+                                    color =
+                                        if (day == selectedDay) {
+                                            MaterialTheme.colorScheme.onSecondary
+                                        } else {
+                                            MaterialTheme.colorScheme.secondary
+                                        },
+                                    fontSize = PageDesignSettings.mediumText,
+                                    textAlign = TextAlign.Center,
+                                ),
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.largeIconSize)
+                                    .clickable { onDateSelected(day) }
+                                    .background(
+                                        if (day == selectedDay) MaterialTheme.colorScheme.onBackground else Color.Transparent,
+                                        CircleShape,
+                                    ).wrapContentSize(Alignment.Center),
                         )
                     }
-
                 }
             }
         }
-
     }
 }
 
@@ -572,7 +595,7 @@ fun LazyListScope.timelineGrid(
     commitments: List<CommitmentEntity>,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
 ) {
     val numberOfColumns = 4
     val timelineItems = List(48) { -1 }.toMutableList()
@@ -581,8 +604,12 @@ fun LazyListScope.timelineGrid(
         val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
         val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
         val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
-        val commitmentEndIndex: Int = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
-        else timeToIndex(commitmentEndDateTime.time)
+        val commitmentEndIndex: Int =
+            if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) {
+                48
+            } else {
+                timeToIndex(commitmentEndDateTime.time)
+            }
         finalIndexCommitments.add(commitmentEndIndex)
 
         for (i in commitmentStartIndex until commitmentEndIndex) {
@@ -596,7 +623,7 @@ fun LazyListScope.timelineGrid(
             .chunked(numberOfColumns)
             .forEach { indexsRow ->
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     val cellWidth = maxWidth / numberOfColumns
 
@@ -615,24 +642,38 @@ fun LazyListScope.timelineGrid(
                                     continuesFromPreviousCell = false,
                                     onViewCommitment = {},
                                     onNavigateToUpdateCommitment = {},
-                                    onDeleteCommitment = {}
+                                    onDeleteCommitment = {},
                                 )
                             } else {
                                 // Start a new block if this is the first column in the row (index % 4 == 0)
                                 // or if the current commitment is different from the previous one.
                                 if ((index % numberOfColumns == 0) || timelineItems[index - 1] != indexCommitment) {
                                     val commitmentEndIndex = finalIndexCommitments[indexCommitment]
-                                    val colspan = if (commitmentEndIndex - index + 1 > numberOfColumns) numberOfColumns - (index % numberOfColumns) else commitmentEndIndex - index
+                                    val colspan =
+                                        if (commitmentEndIndex - index + 1 >
+                                            numberOfColumns
+                                        ) {
+                                            numberOfColumns - (index % numberOfColumns)
+                                        } else {
+                                            commitmentEndIndex - index
+                                        }
                                     TimelineGridItem(
                                         startTime = indexToTimeString(index),
                                         commitmentEntity = commitments[indexCommitment],
                                         cellWidth = cellWidth,
                                         colspan = colspan,
-                                        continuesInNextCell = if (index + colspan <= timelineItems.size - 1) timelineItems[index + colspan] == indexCommitment else false,
+                                        continuesInNextCell =
+                                            if (index + colspan <=
+                                                timelineItems.size - 1
+                                            ) {
+                                                timelineItems[index + colspan] == indexCommitment
+                                            } else {
+                                                false
+                                            },
                                         continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
                                         onViewCommitment = onViewCommitment,
                                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                                        onDeleteCommitment = onDeleteCommitment
+                                        onDeleteCommitment = onDeleteCommitment,
                                     )
                                 }
                             }
@@ -653,127 +694,184 @@ fun TimelineGridItem(
     continuesFromPreviousCell: Boolean,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
 
-    Column (
+    // TODO: Try reduce the number of Ifs
+    Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(cellWidth * colspan)
-            .height(cellWidth)
+        modifier =
+            Modifier
+                .width(cellWidth * colspan)
+                .height(cellWidth),
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = PageDesignSettings.mediumPaddingValue,
-                    bottom = PageDesignSettings.mediumPaddingValue,
-                    end = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.mediumPaddingValue,
-                    start = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.mediumPaddingValue
-                )
-                .background(
-                    brush = Brush.linearGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.secondaryContainer,
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-                            MaterialTheme.colorScheme.secondaryContainer,
-                        ),
-                        start = Offset.Zero,
-                        end = Offset.Infinite
-                    ),
-                    shape = RoundedCornerShape(
-                        topEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
-                        bottomEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
-                        topStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
-                        bottomStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
-                    )
-                )
-                .border(
-                    BorderStroke(
-                        PageDesignSettings.borderWidth / 2,
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-                                MaterialTheme.colorScheme.secondary,
-                                MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = PageDesignSettings.mediumPaddingValue,
+                        bottom = PageDesignSettings.mediumPaddingValue,
+                        end =
+                            if (continuesInNextCell) {
+                                PageDesignSettings.zeroPaddingValue
+                            } else {
+                                PageDesignSettings.mediumPaddingValue
+                            },
+                        start =
+                            if (continuesFromPreviousCell) {
+                                PageDesignSettings.zeroPaddingValue
+                            } else {
+                                PageDesignSettings.mediumPaddingValue
+                            },
+                    ).background(
+                        brush =
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite,
                             ),
-                            start = Offset.Zero,
-                            end = Offset.Infinite
-                        )
+                        shape =
+                            RoundedCornerShape(
+                                topEnd =
+                                    if (continuesInNextCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                                bottomEnd =
+                                    if (continuesInNextCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                                topStart =
+                                    if (continuesFromPreviousCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                                bottomStart =
+                                    if (continuesFromPreviousCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                            ),
+                    ).border(
+                        BorderStroke(
+                            PageDesignSettings.borderWidth / 2,
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                    MaterialTheme.colorScheme.secondary,
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                ),
+                                start = Offset.Zero,
+                                end = Offset.Infinite,
+                            ),
+                        ),
+                        shape =
+                            RoundedCornerShape(
+                                topEnd =
+                                    if (continuesInNextCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                                bottomEnd =
+                                    if (continuesInNextCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                                topStart =
+                                    if (continuesFromPreviousCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                                bottomStart =
+                                    if (continuesFromPreviousCell) {
+                                        PageDesignSettings.zeroPaddingValue
+                                    } else {
+                                        PageDesignSettings.largePaddingValue
+                                    },
+                            ),
                     ),
-                    shape = RoundedCornerShape(
-                        topEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
-                        bottomEnd = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
-                        topStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue,
-                        bottomStart = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
-                    )
-                )
         ) {
-
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 var titleOfCell = ""
                 if (!continuesFromPreviousCell) titleOfCell += startTime
                 if (commitmentEntity != null && !continuesInNextCell && (continuesFromPreviousCell || colspan > 1)) {
                     val commitmentEndDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                    titleOfCell += String.format(
-                        Locale.US,
-                        " ~ ${strings.hourFormat}",
-                        commitmentEndDateTime.hour,
-                        commitmentEndDateTime.minute
-                    )
+                    titleOfCell +=
+                        String.format(
+                            Locale.US,
+                            " ~ ${strings.hourFormat}",
+                            commitmentEndDateTime.hour,
+                            commitmentEndDateTime.minute,
+                        )
                 }
 
                 Text(
                     text = titleOfCell,
                     fontSize = PageDesignSettings.mediumText,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
 
                 if (commitmentEntity != null) {
-                    val statusColor = when(commitmentEntity.priorityEnum) {
-                        PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
-                        PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-                        PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
-                    }
+                    val statusColor =
+                        when (commitmentEntity.priorityEnum) {
+                            PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+                            PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+                            PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
+                        }
 
                     Box(
-                        modifier = Modifier
-                            .size(PageDesignSettings.smallIconSize)
-                            .clip(CircleShape)
-                            .background(statusColor)
+                        modifier =
+                            Modifier
+                                .size(PageDesignSettings.smallIconSize)
+                                .clip(CircleShape)
+                                .background(statusColor),
                     )
                 }
             }
 
             if (commitmentEntity != null) {
-                Box (
-                    modifier = Modifier.align(Alignment.TopEnd)
+                Box(
+                    modifier = Modifier.align(Alignment.TopEnd),
                 ) {
                     Icon(
                         painterResource(R.drawable.outline_more_horiz_24),
                         contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = PageDesignSettings.mediumPaddingValue)
-                            .clickable { menuExpanded = true },
-                        tint = MaterialTheme.colorScheme.secondary.copy(.6f)
+                        modifier =
+                            Modifier
+                                .padding(end = PageDesignSettings.mediumPaddingValue)
+                                .clickable { menuExpanded = true },
+                        tint = MaterialTheme.colorScheme.secondary.copy(.6f),
                     )
 
                     DropdownMenu(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.onBackground),
                     ) {
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     strings.viewButton,
-                                    color = MaterialTheme.colorScheme.onSecondary
+                                    color = MaterialTheme.colorScheme.onSecondary,
                                 )
                             },
                             onClick = {
@@ -784,16 +882,16 @@ fun TimelineGridItem(
                                 Icon(
                                     painter = painterResource(R.drawable.view),
                                     contentDescription = strings.viewButton,
-                                    tint = MaterialTheme.colorScheme.onSecondary
+                                    tint = MaterialTheme.colorScheme.onSecondary,
                                 )
-                            }
+                            },
                         )
 
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     strings.updateButton,
-                                    color = MaterialTheme.colorScheme.onSecondary
+                                    color = MaterialTheme.colorScheme.onSecondary,
                                 )
                             },
                             onClick = {
@@ -804,9 +902,9 @@ fun TimelineGridItem(
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = strings.updateButton,
-                                    tint = MaterialTheme.colorScheme.onSecondary
+                                    tint = MaterialTheme.colorScheme.onSecondary,
                                 )
-                            }
+                            },
                         )
 
                         HorizontalDivider()
@@ -821,9 +919,9 @@ fun TimelineGridItem(
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = strings.deleteButton,
-                                    tint = MaterialTheme.colorScheme.error
+                                    tint = MaterialTheme.colorScheme.error,
                                 )
-                            }
+                            },
                         )
                     }
                 }
@@ -837,7 +935,7 @@ fun LazyListScope.timelineColumn(
     commitments: List<CommitmentEntity>,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
 ) {
     var commitmentsLastIndex = 0
     val timeLineItems = 48
@@ -849,7 +947,7 @@ fun LazyListScope.timelineColumn(
                 commitment = null,
                 onViewCommitment = {},
                 onNavigateToUpdateCommitment = {},
-                onDeleteCommitment = {}
+                onDeleteCommitment = {},
             )
         }
     } else {
@@ -858,7 +956,13 @@ fun LazyListScope.timelineColumn(
         sortedCommitments.forEach { commitment ->
             val commitmentStartDateTime = commitment.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
             val commitmentEndDateTime = commitment.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-            val commitmentStartTime: String = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+            val commitmentStartTime: String =
+                String.format(
+                    Locale.US,
+                    strings.hourFormat,
+                    commitmentStartDateTime.hour,
+                    commitmentStartDateTime.minute,
+                )
             val commitmentStartIndex: Int = timeToIndex(commitmentStartDateTime.time)
 
             if (commitmentsLastIndex < commitmentStartIndex) {
@@ -868,14 +972,17 @@ fun LazyListScope.timelineColumn(
                         commitment = null,
                         onViewCommitment = {},
                         onNavigateToUpdateCommitment = {},
-                        onDeleteCommitment = {}
+                        onDeleteCommitment = {},
                     )
                 }
             }
 
-            commitmentsLastIndex = if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) 48
-            else timeToIndex(commitmentEndDateTime.time)
-
+            commitmentsLastIndex =
+                if (commitmentEndDateTime.dayOfMonth != commitmentStartDateTime.dayOfMonth) {
+                    48
+                } else {
+                    timeToIndex(commitmentEndDateTime.time)
+                }
 
             item {
                 TimelineRow(
@@ -883,7 +990,7 @@ fun LazyListScope.timelineColumn(
                     commitment = commitment,
                     onViewCommitment = onViewCommitment,
                     onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                    onDeleteCommitment = onDeleteCommitment
+                    onDeleteCommitment = onDeleteCommitment,
                 )
             }
         }
@@ -895,9 +1002,8 @@ fun LazyListScope.timelineColumn(
                     commitment = null,
                     onViewCommitment = {},
                     onNavigateToUpdateCommitment = {},
-                    onDeleteCommitment = {}
+                    onDeleteCommitment = {},
                 )
-
             }
         }
     }
@@ -909,33 +1015,34 @@ fun TimelineRow(
     commitment: CommitmentEntity?,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .padding(
-                end = PageDesignSettings.extraLargePaddingValue,
-                start = PageDesignSettings.extraLargePaddingValue,
-                bottom = PageDesignSettings.extraLargePaddingValue
-            )
-            .height(IntrinsicSize.Min)
-            .heightIn(min = PageDesignSettings.mediumComponentSize)
+        modifier =
+            Modifier
+                .padding(
+                    end = PageDesignSettings.extraLargePaddingValue,
+                    start = PageDesignSettings.extraLargePaddingValue,
+                    bottom = PageDesignSettings.extraLargePaddingValue,
+                ).height(IntrinsicSize.Min)
+                .heightIn(min = PageDesignSettings.mediumComponentSize),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(PageDesignSettings.smallComponentSize)
+            modifier = Modifier.width(PageDesignSettings.smallComponentSize),
         ) {
             Text(
                 text = startTime,
                 fontSize = PageDesignSettings.mediumText,
-                color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f),
             )
 
             Box(
-                modifier = Modifier
-                    .width(PageDesignSettings.extraSmallPaddingValue)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = .6f))
+                modifier =
+                    Modifier
+                        .width(PageDesignSettings.extraSmallPaddingValue)
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = .6f)),
             )
         }
 
@@ -946,7 +1053,7 @@ fun TimelineRow(
                 commitmentEntity = commitment,
                 onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                onDeleteCommitment = onDeleteCommitment
+                onDeleteCommitment = onDeleteCommitment,
             )
         }
     }
@@ -957,7 +1064,7 @@ fun CommitmentCard(
     commitmentEntity: CommitmentEntity,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -967,59 +1074,62 @@ fun CommitmentCard(
     val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
 
-    val statusColor = when(commitmentEntity.priorityEnum) {
-        PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
-        PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-        PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
-    }
+    val statusColor =
+        when (commitmentEntity.priorityEnum) {
+            PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+            PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+            PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
+        }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
         elevation = CardDefaults.cardElevation(PageDesignSettings.mediumIconClip / 2),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                BorderStroke(
-                    PageDesignSettings.borderWidth,
-                    Brush.linearGradient(
-                        listOf(
-                            Color.Transparent,
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.secondaryContainer
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(
+                    BorderStroke(
+                        PageDesignSettings.borderWidth,
+                        Brush.linearGradient(
+                            listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                            start = Offset.Zero,
+                            end = Offset.Infinite,
                         ),
-                        start = Offset.Zero,
-                        end = Offset.Infinite
-                    )
+                    ),
+                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
                 ),
-                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip)
-            )
     ) {
         Row(
             modifier = Modifier.padding(end = PageDesignSettings.largePaddingValue),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(PageDesignSettings.extraSmallIconSize)
-                    .clip(CircleShape)
-                    .background(statusColor)
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .width(PageDesignSettings.extraSmallIconSize)
+                        .clip(CircleShape)
+                        .background(statusColor),
             )
 
             Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
 
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = PageDesignSettings.extraLargePaddingValue)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(vertical = PageDesignSettings.extraLargePaddingValue),
             ) {
-
                 Text(
                     text = commitmentEntity.title,
                     fontSize = PageDesignSettings.mediumText,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
 
                 Spacer(modifier = Modifier.height(PageDesignSettings.smallPaddingValue))
@@ -1027,25 +1137,25 @@ fun CommitmentCard(
                 Text(
                     text = "$startTimeString — $endTimeString",
                     fontSize = PageDesignSettings.mediumText,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f)
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = .6f),
                 )
             }
 
             Box(
-                modifier = Modifier.align(Alignment.Top)
+                modifier = Modifier.align(Alignment.Top),
             ) {
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         painterResource(R.drawable.outline_more_horiz_24),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary.copy(.6f)
+                        tint = MaterialTheme.colorScheme.secondary.copy(.6f),
                     )
                 }
 
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onBackground),
                 ) {
                     DropdownMenuItem(
                         text = { Text(strings.viewButton, color = MaterialTheme.colorScheme.onSecondary) },
@@ -1057,9 +1167,9 @@ fun CommitmentCard(
                             Icon(
                                 painter = painterResource(R.drawable.view),
                                 contentDescription = strings.viewButton,
-                                tint = MaterialTheme.colorScheme.onSecondary
+                                tint = MaterialTheme.colorScheme.onSecondary,
                             )
-                        }
+                        },
                     )
 
                     DropdownMenuItem(
@@ -1072,9 +1182,9 @@ fun CommitmentCard(
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = strings.updateButton,
-                                tint = MaterialTheme.colorScheme.onSecondary
+                                tint = MaterialTheme.colorScheme.onSecondary,
                             )
-                        }
+                        },
                     )
 
                     HorizontalDivider()
@@ -1089,8 +1199,9 @@ fun CommitmentCard(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = strings.deleteButton,
-                                tint = MaterialTheme.colorScheme.error)
-                        }
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        },
                     )
                 }
             }
@@ -1103,17 +1214,18 @@ fun CommitmentCard(
 fun CommitmentViewDialog(
     commitmentEntity: CommitmentEntity?,
     showDialog: Boolean,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     if (commitmentEntity == null) return
 
     val strings: StringsRepository = LocalStrings.current
 
-    val statusColor = when(commitmentEntity.priorityEnum) {
-        PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
-        PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-        PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
-    }
+    val statusColor =
+        when (commitmentEntity.priorityEnum) {
+            PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+            PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+            PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
+        }
 
     val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
@@ -1125,15 +1237,16 @@ fun CommitmentViewDialog(
             onDismissRequest = onDismissRequest,
             title = {
                 Column {
-                    Row (
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue)
+                        modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue),
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(PageDesignSettings.extraSmallIconSize)
-                                .clip(CircleShape)
-                                .background(statusColor)
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.extraSmallIconSize)
+                                    .clip(CircleShape)
+                                    .background(statusColor),
                         )
 
                         Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
@@ -1142,47 +1255,56 @@ fun CommitmentViewDialog(
                             text = commitmentEntity.title,
                             fontSize = PageDesignSettings.largeText,
                             fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSecondary
+                            color = MaterialTheme.colorScheme.onSecondary,
                         )
                     }
 
                     HorizontalDivider()
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
-                            modifier = Modifier
-                                .size(PageDesignSettings.smallIconSize)
-                                .padding(end = PageDesignSettings.mediumPaddingValue)
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.mediumPaddingValue),
                         )
 
                         Text(
-                            text = String.format(Locale.US, strings.dateFormat, commitmentStartDateTime.year, commitmentStartDateTime.monthNumber, commitmentStartDateTime.dayOfMonth),
+                            text =
+                                String.format(
+                                    Locale.US,
+                                    strings.dateFormat,
+                                    commitmentStartDateTime.year,
+                                    commitmentStartDateTime.monthNumber,
+                                    commitmentStartDateTime.dayOfMonth,
+                                ),
                             fontSize = PageDesignSettings.mediumText,
-                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                         )
                     }
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
-                            modifier = Modifier
-                                .size(PageDesignSettings.smallIconSize)
-                                .padding(end = PageDesignSettings.mediumPaddingValue)
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.mediumPaddingValue),
                         )
 
                         Text(
                             text = "$startTimeString — $endTimeString",
                             fontSize = PageDesignSettings.mediumText,
-                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f)
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                         )
                     }
                 }
@@ -1190,13 +1312,13 @@ fun CommitmentViewDialog(
             text = {
                 Column {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip)
-                            )
-                            .padding(PageDesignSettings.mediumPaddingValue)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.secondary,
+                                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                                ).padding(PageDesignSettings.mediumPaddingValue),
                     ) {
                         Text(
                             text = commitmentEntity.description ?: "",
@@ -1214,21 +1336,22 @@ fun CommitmentViewDialog(
             dismissButton = {
                 Button(
                     onClick = onDismissRequest,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = strings.dismissButton,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             },
-            containerColor = MaterialTheme.colorScheme.onBackground
+            containerColor = MaterialTheme.colorScheme.onBackground,
         )
     }
 }

@@ -14,5 +14,5 @@ data class CommitmentRecurrenceDataClass(
     val frequency: FrequencyEnum = FrequencyEnum.DAILY,
     val dayOfWeekList: List<DayOfWeekEnum>,
     val dayOfMonth: Int = 1,
-    val interval: Int = 1
+    val interval: Int = 1,
 )

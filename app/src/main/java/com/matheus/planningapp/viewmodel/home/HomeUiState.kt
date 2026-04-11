@@ -9,5 +9,5 @@ data class HomeUiState(
     val selectedDate: LocalDate = LocalDate.now(),
     val calendars: List<CalendarEntity> = emptyList(),
     val viewMode: ViewEnum = ViewEnum.COLUMN,
-    val notificationOption: NotificationEnum = NotificationEnum.NO_SEND
+    val notificationOption: NotificationEnum = NotificationEnum.NO_SEND,
 )

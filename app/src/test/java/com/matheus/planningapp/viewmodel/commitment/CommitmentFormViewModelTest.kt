@@ -33,7 +33,6 @@ import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CommitmentFormViewModelTest {
-
     private lateinit var commitmentRepository: CommitmentRepository
     private lateinit var recurrenceRepository: RecurrenceRepository
     private lateinit var settingsRepository: SettingsRepository
@@ -65,862 +64,924 @@ class CommitmentFormViewModelTest {
     }
 
     private fun createViewModelInCreateMode() {
-        viewModel = CommitmentFormViewModel(
-            CommitmentFormMode.Create(calendarId, testInstant),
-            commitmentRepository,
-            settingsRepository,
-            recurrenceRepository,
-            taskNotificationScheduler
-        )
+        viewModel =
+            CommitmentFormViewModel(
+                CommitmentFormMode.Create(calendarId, testInstant),
+                commitmentRepository,
+                settingsRepository,
+                recurrenceRepository,
+                taskNotificationScheduler,
+            )
     }
 
     private fun createViewModelInEditMode(commitmentId: Long = 1L) {
-        coEvery { commitmentRepository.getCommitment(commitmentId) } returns CommitmentEntity(
-            id = commitmentId,
-            calendar = calendarId,
-            title = "Test Commitment",
-            description = "Test Description",
-            startDateTime = testInstant,
-            endDateTime = testEndInstant,
-            priorityEnum = PriorityEnum.MEDIUM
-        )
+        coEvery { commitmentRepository.getCommitment(commitmentId) } returns
+            CommitmentEntity(
+                id = commitmentId,
+                calendar = calendarId,
+                title = "Test Commitment",
+                description = "Test Description",
+                startDateTime = testInstant,
+                endDateTime = testEndInstant,
+                priorityEnum = PriorityEnum.MEDIUM,
+            )
 
-        viewModel = CommitmentFormViewModel(
-            CommitmentFormMode.Edit(commitmentId),
-            commitmentRepository,
-            settingsRepository,
-            recurrenceRepository,
-            taskNotificationScheduler
-        )
-    }
-
-    @Test
-    fun `commitmentFormViewModel in create mode should initialize with create parameters`() = runTest {
-        // When
-        createViewModelInCreateMode()
-
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
-        }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(calendarId, viewModel.commitmentUiState.value.calendarId)
-        assertEquals(testInstant, viewModel.commitmentUiState.value.startInstant)
-        assertEquals(testInstant + 30.minutes, viewModel.commitmentUiState.value.endInstant)
-        assertEquals("", viewModel.commitmentUiState.value.title)
-
-        collectJob.cancel()
-    }
-
-    @Test
-    fun `commitmentFormViewModel in edit mode should load commitment data`() = runTest {
-        // Given
-        val commitmentId = 1L
-        val testCommitment = CommitmentEntity(
-            id = commitmentId,
-            calendar = calendarId,
-            title = "Existing Commitment",
-            description = "Existing Description",
-            startDateTime = testInstant,
-            endDateTime = testEndInstant,
-            priorityEnum = PriorityEnum.HIGH
-        )
-        coEvery { commitmentRepository.getCommitment(commitmentId) } returns testCommitment
-
-        // When
-        viewModel = CommitmentFormViewModel(
-            CommitmentFormMode.Edit(commitmentId),
-            commitmentRepository,
-            settingsRepository,
-            recurrenceRepository,
-            taskNotificationScheduler
-        )
-
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
-        }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(commitmentId, viewModel.commitmentUiState.value.id)
-        assertEquals("Existing Commitment", viewModel.commitmentUiState.value.title)
-        assertEquals("Existing Description", viewModel.commitmentUiState.value.description)
-        assertEquals(PriorityEnum.HIGH, viewModel.commitmentUiState.value.priorityEnum)
-
-        collectJob.cancel()
-    }
-
-    @Test
-    fun `commitmentFormViewModel in edit mode with not found commitment should emit error`() = runTest {
-        // Given
-        val commitmentId = 1L
-        val events = mutableListOf<DatabaseUiEvent>()
-        coEvery { commitmentRepository.getCommitment(commitmentId) } returns null
-
-        // When
-        val collectJob = launch {
-            val viewModel = CommitmentFormViewModel(
+        viewModel =
+            CommitmentFormViewModel(
                 CommitmentFormMode.Edit(commitmentId),
                 commitmentRepository,
                 settingsRepository,
                 recurrenceRepository,
-                taskNotificationScheduler
+                taskNotificationScheduler,
             )
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(1, events.size)
-        assertEquals("Commitment not found", (events[0] as DatabaseUiEvent.ShowError).message)
-
-        collectJob.cancel()
     }
 
     @Test
-    fun `onTitleChange should update UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newTitle = "New Commitment Title"
+    fun `commitmentFormViewModel in create mode should initialize with create parameters`() =
+        runTest {
+            // When
+            createViewModelInCreateMode()
 
-        // When
-        viewModel.onTitleChange(newTitle)
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
 
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            // Then
+            assertEquals(calendarId, viewModel.commitmentUiState.value.calendarId)
+            assertEquals(testInstant, viewModel.commitmentUiState.value.startInstant)
+            assertEquals(testInstant + 30.minutes, viewModel.commitmentUiState.value.endInstant)
+            assertEquals("", viewModel.commitmentUiState.value.title)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newTitle, viewModel.commitmentUiState.value.title)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onDescriptionChange should update UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newDescription = "New Description"
+    fun `commitmentFormViewModel in edit mode should load commitment data`() =
+        runTest {
+            // Given
+            val commitmentId = 1L
+            val testCommitment =
+                CommitmentEntity(
+                    id = commitmentId,
+                    calendar = calendarId,
+                    title = "Existing Commitment",
+                    description = "Existing Description",
+                    startDateTime = testInstant,
+                    endDateTime = testEndInstant,
+                    priorityEnum = PriorityEnum.HIGH,
+                )
+            coEvery { commitmentRepository.getCommitment(commitmentId) } returns testCommitment
 
-        // When
-        viewModel.onDescriptionChange(newDescription)
+            // When
+            viewModel =
+                CommitmentFormViewModel(
+                    CommitmentFormMode.Edit(commitmentId),
+                    commitmentRepository,
+                    settingsRepository,
+                    recurrenceRepository,
+                    taskNotificationScheduler,
+                )
 
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(commitmentId, viewModel.commitmentUiState.value.id)
+            assertEquals("Existing Commitment", viewModel.commitmentUiState.value.title)
+            assertEquals("Existing Description", viewModel.commitmentUiState.value.description)
+            assertEquals(PriorityEnum.HIGH, viewModel.commitmentUiState.value.priorityEnum)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newDescription, viewModel.commitmentUiState.value.description)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onStartInstantChange should update UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newStartInstant = testInstant + 2.hours
+    fun `commitmentFormViewModel in edit mode with not found commitment should emit error`() =
+        runTest {
+            // Given
+            val commitmentId = 1L
+            val events = mutableListOf<DatabaseUiEvent>()
+            coEvery { commitmentRepository.getCommitment(commitmentId) } returns null
 
-        // When
-        viewModel.onStartInstantChange(newStartInstant)
+            // When
+            val collectJob =
+                launch {
+                    val viewModel =
+                        CommitmentFormViewModel(
+                            CommitmentFormMode.Edit(commitmentId),
+                            commitmentRepository,
+                            settingsRepository,
+                            recurrenceRepository,
+                            taskNotificationScheduler,
+                        )
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
 
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            // Then
+            assertEquals(1, events.size)
+            assertEquals("Commitment not found", (events[0] as DatabaseUiEvent.ShowError).message)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newStartInstant, viewModel.commitmentUiState.value.startInstant)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onEndInstantChange should update UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newEndInstant = testEndInstant + 2.hours
+    fun `onTitleChange should update UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newTitle = "New Commitment Title"
 
-        // When
-        viewModel.onEndInstantChange(newEndInstant)
+            // When
+            viewModel.onTitleChange(newTitle)
 
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newTitle, viewModel.commitmentUiState.value.title)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newEndInstant, viewModel.commitmentUiState.value.endInstant)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onPriorityChange should update UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newPriority = PriorityEnum.HIGH
+    fun `onDescriptionChange should update UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newDescription = "New Description"
 
-        // When
-        viewModel.onPriorityChange(newPriority)
+            // When
+            viewModel.onDescriptionChange(newDescription)
 
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newDescription, viewModel.commitmentUiState.value.description)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newPriority, viewModel.commitmentUiState.value.priorityEnum)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onFrequencyChange should update recurrence UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newFrequency = FrequencyEnum.WEEKLY
+    fun `onStartInstantChange should update UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newStartInstant = testInstant + 2.hours
 
-        // When
-        viewModel.onFrequencyChange(newFrequency)
+            // When
+            viewModel.onStartInstantChange(newStartInstant)
 
-        val collectJob = launch {
-            viewModel.recurrenceUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newStartInstant, viewModel.commitmentUiState.value.startInstant)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newFrequency, viewModel.recurrenceUiState.value.frequencyEnum)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onIntervalChange should update recurrence UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val newInterval = 2
+    fun `onEndInstantChange should update UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newEndInstant = testEndInstant + 2.hours
 
-        // When
-        viewModel.onIntervalChange(newInterval)
+            // When
+            viewModel.onEndInstantChange(newEndInstant)
 
-        val collectJob = launch {
-            viewModel.recurrenceUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newEndInstant, viewModel.commitmentUiState.value.endInstant)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(newInterval, viewModel.recurrenceUiState.value.interval)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onDaysOfWeekChange should update recurrence UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val daysOfWeek = listOf(DayOfWeekEnum.MONDAY, DayOfWeekEnum.WEDNESDAY)
+    fun `onPriorityChange should update UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newPriority = PriorityEnum.HIGH
 
-        // When
-        viewModel.onDaysOfWeekChange(daysOfWeek)
+            // When
+            viewModel.onPriorityChange(newPriority)
 
-        val collectJob = launch {
-            viewModel.recurrenceUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newPriority, viewModel.commitmentUiState.value.priorityEnum)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(daysOfWeek, viewModel.recurrenceUiState.value.daysOfWeekList)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onDayOfMonthChange should update recurrence UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        val dayOfMonth = 15
+    fun `onFrequencyChange should update recurrence UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newFrequency = FrequencyEnum.WEEKLY
 
-        // When
-        viewModel.onDayOfMonthChange(dayOfMonth)
+            // When
+            viewModel.onFrequencyChange(newFrequency)
 
-        val collectJob = launch {
-            viewModel.recurrenceUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.recurrenceUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newFrequency, viewModel.recurrenceUiState.value.frequencyEnum)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(dayOfMonth, viewModel.recurrenceUiState.value.dayOfMonth)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `onRecurrenceFormActiveChange should update recurrence UI state`() = runTest {
-        // Given
-        createViewModelInCreateMode()
+    fun `onIntervalChange should update recurrence UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val newInterval = 2
 
-        // When
-        viewModel.onRecurrenceFormActiveChange(true)
+            // When
+            viewModel.onIntervalChange(newInterval)
 
-        val collectJob = launch {
-            viewModel.recurrenceUiState.collect { }
+            val collectJob =
+                launch {
+                    viewModel.recurrenceUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(newInterval, viewModel.recurrenceUiState.value.interval)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(true, viewModel.recurrenceUiState.value.isRecurrenceActive)
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `insertCommitment with empty title should emit ShowError event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        createViewModelInCreateMode()
+    fun `onDaysOfWeekChange should update recurrence UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val daysOfWeek = listOf(DayOfWeekEnum.MONDAY, DayOfWeekEnum.WEDNESDAY)
 
-        viewModel.onStartInstantChange(testInstant)
-        viewModel.onEndInstantChange(testEndInstant)
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            // When
+            viewModel.onDaysOfWeekChange(daysOfWeek)
+
+            val collectJob =
+                launch {
+                    viewModel.recurrenceUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(daysOfWeek, viewModel.recurrenceUiState.value.daysOfWeekList)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
 
-        // When
-        val eventCollectJob = launch {
+    @Test
+    fun `onDayOfMonthChange should update recurrence UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            val dayOfMonth = 15
+
+            // When
+            viewModel.onDayOfMonthChange(dayOfMonth)
+
+            val collectJob =
+                launch {
+                    viewModel.recurrenceUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(dayOfMonth, viewModel.recurrenceUiState.value.dayOfMonth)
+
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `onRecurrenceFormActiveChange should update recurrence UI state`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+
+            // When
+            viewModel.onRecurrenceFormActiveChange(true)
+
+            val collectJob =
+                launch {
+                    viewModel.recurrenceUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(true, viewModel.recurrenceUiState.value.isRecurrenceActive)
+
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `insertCommitment with empty title should emit ShowError event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            createViewModelInCreateMode()
+
+            viewModel.onStartInstantChange(testInstant)
+            viewModel.onEndInstantChange(testEndInstant)
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // When
+            val eventCollectJob =
+                launch {
+                    viewModel.insertCommitment()
+                    viewModel.events.collect { events.add(it) }
+                }
+
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(1, events.size)
+            assertEquals(1, events.size)
+            assertEquals("Title cannot be empty", (events[0] as DatabaseUiEvent.ShowError).message)
+
+            collectJob.cancel()
+            eventCollectJob.cancel()
+        }
+
+    @Test
+    fun `insertCommitment with start time greater than end time should emit ShowError event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            createViewModelInCreateMode()
+
+            // When
+            val collectJob =
+                launch {
+                    viewModel.insertCommitment()
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(1, events.size)
+            assertEquals(
+                "Start time must be lesser than End time",
+                (events[0] as DatabaseUiEvent.ShowError).message,
+            )
+
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `insertCommitment with scheduling conflicts should emit ShowError event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+
+            createViewModelInCreateMode()
+            advanceUntilIdle()
+
+            viewModel.onTitleChange("Valid title")
+            viewModel.onStartInstantChange(testInstant)
+            viewModel.onEndInstantChange(testEndInstant)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    testInstant,
+                    testEndInstant,
+                    calendarId,
+                )
+            } returns 1
+
+            // When
             viewModel.insertCommitment()
-            viewModel.events.collect { events.add(it) }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(1, events.size)
+            assertEquals(
+                "There is a conflict with other commitments",
+                (events[0] as DatabaseUiEvent.ShowError).message,
+            )
+
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
         }
 
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(1, events.size)
-        assertEquals(1, events.size)
-        assertEquals("Title cannot be empty", (events[0] as DatabaseUiEvent.ShowError).message)
-
-        collectJob.cancel()
-        eventCollectJob.cancel()
-    }
-
     @Test
-    fun `insertCommitment with start time greater than end time should emit ShowError event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        createViewModelInCreateMode()
+    fun `insertCommitment with valid data should call repository and emit Saved event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            createViewModelInCreateMode()
 
-        // When
-        val collectJob = launch {
+            viewModel.onTitleChange("Valid title")
+            viewModel.onStartInstantChange(testInstant)
+            viewModel.onEndInstantChange(testEndInstant)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    testInstant,
+                    testInstant + 30.minutes,
+                    calendarId,
+                )
+            } returns 0
+            coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
+
+            // When
             viewModel.insertCommitment()
-            viewModel.events.collect { events.add(it) }
+            advanceUntilIdle()
+
+            // Then
+            coVerify {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    testInstant,
+                    testInstant + 30.minutes,
+                    calendarId,
+                )
+                commitmentRepository.insertCommitment(any())
+            }
+            assertEquals(1, events.size)
+            assertEquals(DatabaseUiEvent.Saved, events[0])
+
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
         }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(1, events.size)
-        assertEquals(
-            "Start time must be lesser than End time",
-            (events[0] as DatabaseUiEvent.ShowError).message
-        )
-
-        collectJob.cancel()
-    }
 
     @Test
-    fun `insertCommitment with scheduling conflicts should emit ShowError event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
+    fun `insertCommitment with recurrence should insert both commitment and recurrence`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            createViewModelInCreateMode()
 
-        createViewModelInCreateMode()
-        advanceUntilIdle()
+            viewModel.onTitleChange("Test Commitment")
+            viewModel.onStartInstantChange(testInstant)
+            viewModel.onEndInstantChange(testEndInstant)
+            viewModel.onRecurrenceFormActiveChange(true)
+            viewModel.onFrequencyChange(FrequencyEnum.WEEKLY)
+            viewModel.onIntervalChange(1)
+            viewModel.onDaysOfWeekChange(listOf(DayOfWeekEnum.MONDAY))
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
 
-        viewModel.onTitleChange("Valid title")
-        viewModel.onStartInstantChange(testInstant)
-        viewModel.onEndInstantChange(testEndInstant)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    calendarId,
+                )
+            } returns 0
+            coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
+            coEvery { recurrenceRepository.insert(any()) } returns Unit
+
+            // When
+            viewModel.insertCommitment()
+            advanceUntilIdle()
+
+            // Then
+            coVerify { commitmentRepository.insertCommitment(any()) }
+            coVerify { recurrenceRepository.insert(any()) }
+            assertEquals(1, events.size)
+            assertEquals(DatabaseUiEvent.Saved, events[0])
+
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
         }
-        advanceUntilIdle()
 
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
+    @Test
+    fun `updateCommitment with empty title should emit ShowError event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            createViewModelInEditMode()
+            advanceUntilIdle()
+
+            viewModel.onTitleChange("")
+            viewModel.onStartInstantChange(testInstant)
+            viewModel.onEndInstantChange(testEndInstant)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            // When & Then
+            viewModel.updateCommitment()
+            advanceUntilIdle()
+
+            assertEquals(1, events.size)
+            assertEquals("Title cannot be empty", (events[0] as DatabaseUiEvent.ShowError).message)
+
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
         }
-        advanceUntilIdle()
 
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                testInstant,
-                testEndInstant,
-                calendarId
+    @Test
+    fun `updateCommitment with start time greater than end time should emit ShowError event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            createViewModelInEditMode()
+            advanceUntilIdle()
+
+            viewModel.onTitleChange("Valid Title")
+            viewModel.onStartInstantChange(testEndInstant)
+            viewModel.onEndInstantChange(testInstant)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            // When & Then
+            viewModel.updateCommitment()
+            advanceUntilIdle()
+
+            assertEquals(1, events.size)
+            assertEquals(
+                "Start time must be lesser than End time",
+                (events[0] as DatabaseUiEvent.ShowError).message,
             )
-        } returns 1
 
-        // When
-        viewModel.insertCommitment()
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(1, events.size)
-        assertEquals(
-            "There is a conflict with other commitments",
-            (events[0] as DatabaseUiEvent.ShowError).message
-        )
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
+        }
 
     @Test
-    fun `insertCommitment with valid data should call repository and emit Saved event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        createViewModelInCreateMode()
+    fun `updateCommitment with scheduling conflicts should emit ShowError event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            val commitmentId = 1L
+            createViewModelInEditMode(commitmentId)
+            advanceUntilIdle()
 
-        viewModel.onTitleChange("Valid title")
-        viewModel.onStartInstantChange(testInstant)
-        viewModel.onEndInstantChange(testEndInstant)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
-        }
-        advanceUntilIdle()
+            viewModel.onTitleChange("Updated Commitment")
+            viewModel.onPriorityChange(PriorityEnum.HIGH)
+            viewModel.onStartInstantChange(testInstant + 1.hours)
+            viewModel.onEndInstantChange(testEndInstant + 1.hours)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
 
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
 
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                testInstant,
-                testInstant + 30.minutes,
-                calendarId
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    calendarId,
+                    commitmentId,
+                )
+            } returns 1
+
+            // When & Then
+            viewModel.updateCommitment()
+            advanceUntilIdle()
+
+            assertEquals(1, events.size)
+            assertEquals(
+                "There is a conflict with other commitments",
+                (events[0] as DatabaseUiEvent.ShowError).message,
             )
-        } returns 0
-        coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
 
-        // When
-        viewModel.insertCommitment()
-        advanceUntilIdle()
-
-        // Then
-        coVerify {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                testInstant,
-                testInstant + 30.minutes,
-                calendarId
-            )
-            commitmentRepository.insertCommitment(any())
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
         }
-        assertEquals(1, events.size)
-        assertEquals(DatabaseUiEvent.Saved, events[0])
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
 
     @Test
-    fun `insertCommitment with recurrence should insert both commitment and recurrence`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        createViewModelInCreateMode()
+    fun `updateCommitment with valid data should call repository and emit Saved event`() =
+        runTest {
+            // Given
+            val events = mutableListOf<DatabaseUiEvent>()
+            val commitmentId = 1L
+            createViewModelInEditMode(commitmentId)
+            advanceUntilIdle()
 
-        viewModel.onTitleChange("Test Commitment")
-        viewModel.onStartInstantChange(testInstant)
-        viewModel.onEndInstantChange(testEndInstant)
-        viewModel.onRecurrenceFormActiveChange(true)
-        viewModel.onFrequencyChange(FrequencyEnum.WEEKLY)
-        viewModel.onIntervalChange(1)
-        viewModel.onDaysOfWeekChange(listOf(DayOfWeekEnum.MONDAY))
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            viewModel.onTitleChange("Updated Commitment")
+            viewModel.onPriorityChange(PriorityEnum.HIGH)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            val eventCollectJob =
+                launch {
+                    viewModel.events.collect { events.add(it) }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    calendarId,
+                    commitmentId,
+                )
+            } returns 0
+            coEvery { commitmentRepository.updateCommitment(any()) } returns Unit
+
+            // When & Then
+            viewModel.updateCommitment()
+            advanceUntilIdle()
+
+            coVerify { commitmentRepository.updateCommitment(any()) }
+            assertEquals(1, events.size)
+            assertEquals(DatabaseUiEvent.Saved, events[0])
+
+            uiStateCollectJob.cancel()
+            eventCollectJob.cancel()
         }
-        advanceUntilIdle()
-
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                calendarId
-            )
-        } returns 0
-        coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
-        coEvery { recurrenceRepository.insert(any()) } returns Unit
-
-        // When
-        viewModel.insertCommitment()
-        advanceUntilIdle()
-
-        // Then
-        coVerify { commitmentRepository.insertCommitment(any()) }
-        coVerify { recurrenceRepository.insert(any()) }
-        assertEquals(1, events.size)
-        assertEquals(DatabaseUiEvent.Saved, events[0])
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
 
     @Test
-    fun `updateCommitment with empty title should emit ShowError event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        createViewModelInEditMode()
-        advanceUntilIdle()
+    fun `updateCommitment with commitment not found should emit ShowError event`() =
+        runTest {
+            // Given
+            val commitmentId = 1L
+            val events = mutableListOf<DatabaseUiEvent>()
+            coEvery { commitmentRepository.getCommitment(commitmentId) } returns null
 
-        viewModel.onTitleChange("")
-        viewModel.onStartInstantChange(testInstant)
-        viewModel.onEndInstantChange(testEndInstant)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            // When & Then
+            val collectJob =
+                launch {
+                    val tempViewModel =
+                        CommitmentFormViewModel(
+                            CommitmentFormMode.Edit(commitmentId),
+                            commitmentRepository,
+                            settingsRepository,
+                            recurrenceRepository,
+                            taskNotificationScheduler,
+                        )
+                    tempViewModel.events.collect { events.add(it) }
+                }
+
+            advanceUntilIdle()
+
+            assertEquals(1, events.size)
+            assertEquals("Commitment not found", (events[0] as DatabaseUiEvent.ShowError).message)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
-
-        // When & Then
-        viewModel.updateCommitment()
-        advanceUntilIdle()
-
-
-        assertEquals(1, events.size)
-        assertEquals("Title cannot be empty", (events[0] as DatabaseUiEvent.ShowError).message)
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
 
     @Test
-    fun `updateCommitment with start time greater than end time should emit ShowError event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        createViewModelInEditMode()
-        advanceUntilIdle()
+    fun `updateCommitment with existing recurrence should update it`() =
+        runTest {
+            // Given
+            val commitmentId = 1L
+            val existingRecurrence =
+                RecurrenceEntity(
+                    id = 1L,
+                    commitment = commitmentId,
+                    frequency = FrequencyEnum.DAILY,
+                    interval = 1,
+                    dayOfWeekList = emptyList(),
+                    dayOfMonth = 0,
+                )
+            createViewModelInEditMode(commitmentId)
+            advanceUntilIdle()
 
-        viewModel.onTitleChange("Valid Title")
-        viewModel.onStartInstantChange(testEndInstant)
-        viewModel.onEndInstantChange(testInstant)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            viewModel.onRecurrenceFormActiveChange(true)
+            viewModel.onFrequencyChange(FrequencyEnum.CUSTOMIZED)
+            viewModel.onIntervalChange(7)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    calendarId,
+                    commitmentId,
+                )
+            } returns 0
+            coEvery { commitmentRepository.updateCommitment(any()) } returns Unit
+            coEvery { recurrenceRepository.getRecurrenceByCommitment(commitmentId) } returns existingRecurrence
+            coEvery { recurrenceRepository.update(any()) } returns Unit
+
+            // When
+            viewModel.updateCommitment()
+            advanceUntilIdle()
+
+            // Then
+            coVerify { recurrenceRepository.update(any()) }
+
+            uiStateCollectJob.cancel()
         }
-        advanceUntilIdle()
-
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
-
-
-        // When & Then
-        viewModel.updateCommitment()
-        advanceUntilIdle()
-
-        assertEquals(1, events.size)
-        assertEquals(
-            "Start time must be lesser than End time",
-            (events[0] as DatabaseUiEvent.ShowError).message
-        )
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
 
     @Test
-    fun `updateCommitment with scheduling conflicts should emit ShowError event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        val commitmentId = 1L
-        createViewModelInEditMode(commitmentId)
-        advanceUntilIdle()
+    fun `updateCommitment removing recurrence should delete it`() =
+        runTest {
+            // Given
+            val commitmentId = 1L
+            val existingRecurrence =
+                RecurrenceEntity(
+                    id = 1L,
+                    commitment = commitmentId,
+                    frequency = FrequencyEnum.DAILY,
+                    interval = 1,
+                    dayOfWeekList = emptyList(),
+                    dayOfMonth = 0,
+                )
+            createViewModelInEditMode(commitmentId)
+            advanceUntilIdle()
 
-        viewModel.onTitleChange("Updated Commitment")
-        viewModel.onPriorityChange(PriorityEnum.HIGH)
-        viewModel.onStartInstantChange(testInstant + 1.hours)
-        viewModel.onEndInstantChange(testEndInstant + 1.hours)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            viewModel.onRecurrenceFormActiveChange(false)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    calendarId,
+                    commitmentId,
+                )
+            } returns 0
+            coEvery { commitmentRepository.updateCommitment(any()) } returns Unit
+            coEvery { recurrenceRepository.getRecurrenceByCommitment(commitmentId) } returns existingRecurrence
+            coEvery { recurrenceRepository.delete(any()) } returns Unit
+
+            // When
+
+            viewModel.updateCommitment()
+            advanceUntilIdle()
+
+            // Then
+            coVerify { recurrenceRepository.delete(existingRecurrence) }
+
+            uiStateCollectJob.cancel()
         }
-        advanceUntilIdle()
-
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                calendarId,
-                commitmentId
-            )
-        } returns 1
-
-        // When & Then
-        viewModel.updateCommitment()
-        advanceUntilIdle()
-
-        assertEquals(1, events.size)
-        assertEquals(
-            "There is a conflict with other commitments",
-            (events[0] as DatabaseUiEvent.ShowError).message
-        )
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
 
     @Test
-    fun `updateCommitment with valid data should call repository and emit Saved event`() = runTest {
-        // Given
-        val events = mutableListOf<DatabaseUiEvent>()
-        val commitmentId = 1L
-        createViewModelInEditMode(commitmentId)
-        advanceUntilIdle()
+    fun `insertCommitment should not schedule notification when notification option is NO_SEND`() =
+        runTest {
+            // Given
+            createViewModelInCreateMode()
+            advanceUntilIdle()
 
-        viewModel.onTitleChange("Updated Commitment")
-        viewModel.onPriorityChange(PriorityEnum.HIGH)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    any(),
+                )
+            } returns 0
+            coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
+
+            // When
+            viewModel.insertCommitment()
+            advanceUntilIdle()
+
+            // Then
+            coVerify(exactly = 0) { taskNotificationScheduler.scheduleTaskNotification(any()) }
         }
-        advanceUntilIdle()
-
-        val eventCollectJob = launch {
-            viewModel.events.collect { events.add(it) }
-        }
-        advanceUntilIdle()
-
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                calendarId,
-                commitmentId
-            )
-        } returns 0
-        coEvery { commitmentRepository.updateCommitment(any()) } returns Unit
-
-        // When & Then
-        viewModel.updateCommitment()
-        advanceUntilIdle()
-
-        coVerify { commitmentRepository.updateCommitment(any()) }
-        assertEquals(1, events.size)
-        assertEquals(DatabaseUiEvent.Saved, events[0])
-
-        uiStateCollectJob.cancel()
-        eventCollectJob.cancel()
-    }
 
     @Test
-    fun `updateCommitment with commitment not found should emit ShowError event`() = runTest {
-        // Given
-        val commitmentId = 1L
-        val events = mutableListOf<DatabaseUiEvent>()
-        coEvery { commitmentRepository.getCommitment(commitmentId) } returns null
+    fun `insertCommitment with future time should schedule notification when option is set`() =
+        runTest {
+            // Given
+            coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.ALL_COMMITMENT)
+            createViewModelInCreateMode()
 
-        // When & Then
-        val collectJob = launch {
-            val tempViewModel = CommitmentFormViewModel(
-                CommitmentFormMode.Edit(commitmentId),
-                commitmentRepository,
-                settingsRepository,
-                recurrenceRepository,
-                taskNotificationScheduler
-            )
-            tempViewModel.events.collect { events.add(it) }
+            viewModel.onTitleChange("Test Commitment")
+            viewModel.onStartInstantChange(testInstant)
+            viewModel.onEndInstantChange(testEndInstant)
+            val uiStateCollectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            coEvery {
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    any(),
+                    any(),
+                    any(),
+                )
+            } returns 0
+            coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
+
+            // When
+            viewModel.insertCommitment()
+            advanceUntilIdle()
+
+            // Then
+            coVerify { taskNotificationScheduler.scheduleTaskNotification(any()) }
+
+            uiStateCollectJob.cancel()
         }
 
-        advanceUntilIdle()
-
-        assertEquals(1, events.size)
-        assertEquals("Commitment not found", (events[0] as DatabaseUiEvent.ShowError).message)
-
-        collectJob.cancel()
-    }
-
     @Test
-    fun `updateCommitment with existing recurrence should update it`() = runTest {
-        // Given
-        val commitmentId = 1L
-        val existingRecurrence = RecurrenceEntity(
-            id = 1L,
-            commitment = commitmentId,
-            frequency = FrequencyEnum.DAILY,
-            interval = 1,
-            dayOfWeekList = emptyList(),
-            dayOfMonth = 0
-        )
-        createViewModelInEditMode(commitmentId)
-        advanceUntilIdle()
+    fun `commitmentUiState should include notification option from settings`() =
+        runTest {
+            // Given
+            coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.MEDIUM_AND_HIGH_PRIORITY)
 
-        viewModel.onRecurrenceFormActiveChange(true)
-        viewModel.onFrequencyChange(FrequencyEnum.CUSTOMIZED)
-        viewModel.onIntervalChange(7)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
+            // When
+            createViewModelInCreateMode()
+            advanceUntilIdle()
+
+            // Collect to trigger StateFlow subscription
+            val collectJob =
+                launch {
+                    viewModel.commitmentUiState.collect { }
+                }
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(NotificationEnum.MEDIUM_AND_HIGH_PRIORITY, viewModel.commitmentUiState.value.notificationOption)
+
+            collectJob.cancel()
         }
-        advanceUntilIdle()
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                calendarId,
-                commitmentId
-            )
-        } returns 0
-        coEvery { commitmentRepository.updateCommitment(any()) } returns Unit
-        coEvery { recurrenceRepository.getRecurrenceByCommitment(commitmentId) } returns existingRecurrence
-        coEvery { recurrenceRepository.update(any()) } returns Unit
-
-        // When
-        viewModel.updateCommitment()
-        advanceUntilIdle()
-
-        // Then
-        coVerify { recurrenceRepository.update(any()) }
-
-        uiStateCollectJob.cancel()
-    }
-
-    @Test
-    fun `updateCommitment removing recurrence should delete it`() = runTest {
-        // Given
-        val commitmentId = 1L
-        val existingRecurrence = RecurrenceEntity(
-            id = 1L,
-            commitment = commitmentId,
-            frequency = FrequencyEnum.DAILY,
-            interval = 1,
-            dayOfWeekList = emptyList(),
-            dayOfMonth = 0
-        )
-        createViewModelInEditMode(commitmentId)
-        advanceUntilIdle()
-
-        viewModel.onRecurrenceFormActiveChange(false)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
-        }
-        advanceUntilIdle()
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                calendarId,
-                commitmentId
-            )
-        } returns 0
-        coEvery { commitmentRepository.updateCommitment(any()) } returns Unit
-        coEvery { recurrenceRepository.getRecurrenceByCommitment(commitmentId) } returns existingRecurrence
-        coEvery { recurrenceRepository.delete(any()) } returns Unit
-
-        // When
-
-        viewModel.updateCommitment()
-        advanceUntilIdle()
-
-        // Then
-        coVerify { recurrenceRepository.delete(existingRecurrence) }
-
-        uiStateCollectJob.cancel()
-    }
-
-    @Test
-    fun `insertCommitment should not schedule notification when notification option is NO_SEND`() = runTest {
-        // Given
-        createViewModelInCreateMode()
-        advanceUntilIdle()
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                any()
-            )
-        } returns 0
-        coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
-
-        // When
-        viewModel.insertCommitment()
-        advanceUntilIdle()
-
-        // Then
-        coVerify(exactly = 0) { taskNotificationScheduler.scheduleTaskNotification(any()) }
-    }
-
-    @Test
-    fun `insertCommitment with future time should schedule notification when option is set`() = runTest {
-        // Given
-        coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.ALL_COMMITMENT)
-        createViewModelInCreateMode()
-
-        viewModel.onTitleChange("Test Commitment")
-        viewModel.onStartInstantChange(testInstant)
-        viewModel.onEndInstantChange(testEndInstant)
-        val uiStateCollectJob = launch {
-            viewModel.commitmentUiState.collect { }
-        }
-        advanceUntilIdle()
-
-        coEvery {
-            commitmentRepository.checkSchedulingConflictsBetweenCommitments(
-                any(),
-                any(),
-                any()
-            )
-        } returns 0
-        coEvery { commitmentRepository.insertCommitment(any()) } returns 1L
-
-        // When
-        viewModel.insertCommitment()
-        advanceUntilIdle()
-
-        // Then
-        coVerify { taskNotificationScheduler.scheduleTaskNotification(any()) }
-
-        uiStateCollectJob.cancel()
-    }
-
-    @Test
-    fun `commitmentUiState should include notification option from settings`() = runTest {
-        // Given
-        coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.MEDIUM_AND_HIGH_PRIORITY)
-
-        // When
-        createViewModelInCreateMode()
-        advanceUntilIdle()
-
-        // Collect to trigger StateFlow subscription
-        val collectJob = launch {
-            viewModel.commitmentUiState.collect { }
-        }
-        advanceUntilIdle()
-
-        // Then
-        assertEquals(NotificationEnum.MEDIUM_AND_HIGH_PRIORITY, viewModel.commitmentUiState.value.notificationOption)
-
-        collectJob.cancel()
-    }
 }
-
-
-
-
-
-
-

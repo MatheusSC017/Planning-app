@@ -15,24 +15,23 @@ import kotlinx.coroutines.launch
 
 class RecurrenceViewModel(
     calendarRepository: CalendarRepository,
-    private val recurrenceRepository: RecurrenceRepository
-): ViewModel() {
-
-    val uiState: StateFlow<RecurrenceUiState> = combine(
-        calendarRepository.getCalendars()
-    ) { values ->
-        RecurrenceUiState(
-            calendars = values[0]
+    private val recurrenceRepository: RecurrenceRepository,
+) : ViewModel() {
+    val uiState: StateFlow<RecurrenceUiState> =
+        combine(
+            calendarRepository.getCalendars(),
+        ) { values ->
+            RecurrenceUiState(
+                calendars = values[0],
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = RecurrenceUiState(),
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = RecurrenceUiState()
-    )
 
-    fun getRecurrencesByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> {
-        return recurrenceRepository.getRecurrenceByCalendar(calendarId = calendarId)
-    }
+    fun getRecurrencesByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> =
+        recurrenceRepository.getRecurrenceByCalendar(calendarId = calendarId)
 
     fun deleteRecurrence(recurrenceId: Long) {
         viewModelScope.launch {
@@ -43,5 +42,4 @@ class RecurrenceViewModel(
             }
         }
     }
-
 }

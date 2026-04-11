@@ -17,14 +17,14 @@ import kotlinx.datetime.Instant
             entity = CommitmentEntity::class,
             parentColumns = ["id"],
             childColumns = ["commitment"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
     indices = [
-        Index("commitment")
-    ]
+        Index("commitment"),
+    ],
 )
-class RecurrenceEntity (
+class RecurrenceEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val commitment: Long,
@@ -33,5 +33,5 @@ class RecurrenceEntity (
     val dayOfWeekList: List<DayOfWeekEnum>,
     val dayOfMonth: Int,
     val createdAt: Instant = Clock.System.now(),
-    val updatedAt: Instant  = Clock.System.now()
+    val updatedAt: Instant = Clock.System.now(),
 )
