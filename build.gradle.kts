@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.google.devtools.ksp) apply false
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 subprojects {
@@ -15,4 +16,9 @@ subprojects {
             exclude("**/generated/**")
         }
     }
+}
+
+apply(plugin = "io.gitlab.arturbosch.detekt")
+detekt {
+    parallel = true
 }
