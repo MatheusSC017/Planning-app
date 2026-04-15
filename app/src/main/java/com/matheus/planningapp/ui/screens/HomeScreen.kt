@@ -311,6 +311,9 @@ fun CalendarContent(
         .getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0)
         .collectAsState(initial = emptyList())
 
+    var commitmentSearchTerm by remember { mutableStateOf("") }
+    val searchCommitments by homeViewModel.searchCommitments(commitmentSearchTerm).collectAsState(initial = emptyList())
+
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCommitmentViewDialog by remember { mutableStateOf(false) }
@@ -407,9 +410,7 @@ fun CalendarContent(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = strings.timeline,
@@ -436,13 +437,46 @@ fun CalendarContent(
                         )
                     }
                 }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = PageDesignSettings.extraLargePaddingValue),
+                ) {
+                    TextField(
+                        value = commitmentSearchTerm,
+                        onValueChange = { commitmentSearchTerm = it },
+                        label = {
+                            Text(
+                                text = strings.commitmentTitleField,
+                                style =
+                                    TextStyle(
+                                        fontSize = PageDesignSettings.mediumText,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ),
+                            )
+                        },
+                        textStyle =
+                            TextStyle(
+                                fontSize = PageDesignSettings.mediumText,
+                                color = MaterialTheme.colorScheme.secondary,
+                            ),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(PageDesignSettings.smallComponentSize)
+                                .padding(bottom = PageDesignSettings.mediumPaddingValue),
+                        singleLine = true,
+                    )
+                }
             }
         }
 
-        if (columnViewSelected) {
-            timelineColumn(
-                strings,
-                commitments,
+        if (commitmentSearchTerm.isNotEmpty()) {
+            searchCommitmentsList(
+                searchCommitments,
                 onViewCommitment = { commitment ->
                     selectedCommitment = commitment
                     showCommitmentViewDialog = true
@@ -454,17 +488,61 @@ fun CalendarContent(
                 },
             )
         } else {
-            timelineGrid(
-                commitments,
-                onViewCommitment = { commitment ->
-                    selectedCommitment = commitment
-                    showCommitmentViewDialog = true
-                },
+            if (columnViewSelected) {
+                timelineColumn(
+                    strings,
+                    commitments,
+                    onViewCommitment = { commitment ->
+                        selectedCommitment = commitment
+                        showCommitmentViewDialog = true
+                    },
+                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                    onDeleteCommitment = { commitment ->
+                        selectedCommitment = commitment
+                        showDeleteDialog = true
+                    },
+                )
+            } else {
+                timelineGrid(
+                    commitments,
+                    onViewCommitment = { commitment ->
+                        selectedCommitment = commitment
+                        showCommitmentViewDialog = true
+                    },
+                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                    onDeleteCommitment = { commitment ->
+                        selectedCommitment = commitment
+                        showDeleteDialog = true
+                    },
+                )
+            }
+        }
+    }
+}
+
+fun LazyListScope.searchCommitmentsList(
+    commitments: List<CommitmentEntity>,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+) {
+    items(commitments) { commitment ->
+
+        Row(
+            modifier =
+                Modifier
+                    .padding(
+                        end = PageDesignSettings.extraLargePaddingValue,
+                        start = PageDesignSettings.extraLargePaddingValue,
+                        bottom = PageDesignSettings.extraLargePaddingValue,
+                    ).height(IntrinsicSize.Min)
+                    .heightIn(min = PageDesignSettings.mediumComponentSize),
+        ) {
+            CommitmentCard(
+                commitmentEntity = commitment,
+                onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                onDeleteCommitment = { commitment ->
-                    selectedCommitment = commitment
-                    showDeleteDialog = true
-                },
+                onDeleteCommitment = onDeleteCommitment,
             )
         }
     }
@@ -703,7 +781,6 @@ fun TimelineGridItem(
     val endBoxPadding = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
     val startBoxPadding = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
 
-    // TODO: Try reduce the number of Ifs
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier =

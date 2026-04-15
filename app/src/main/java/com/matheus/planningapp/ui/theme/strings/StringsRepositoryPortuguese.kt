@@ -45,6 +45,7 @@ class StringsRepositoryPortuguese : StringsRepository {
     override val commitmentStartField = "Horário de início"
     override val commitmentEndField = "Horário de término"
     override val commitmentPriorityField = "Prioridade"
+    override val searchCommitmentField = "Buscar por tarefa"
 
     // Recurrence information
     override val recurrenceFrequencyField = "Frequência"

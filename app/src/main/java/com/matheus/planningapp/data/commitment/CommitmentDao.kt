@@ -40,6 +40,14 @@ interface CommitmentDao {
 
     @Query(
         """
+        SELECT * FROM commitment
+        WHERE title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'
+    """,
+    )
+    fun searchCommitments(query: String): Flow<List<CommitmentEntity>>
+
+    @Query(
+        """
         SELECT COUNT(c.id) FROM commitment c
         LEFT JOIN Recurrence r ON c.id = r.commitment
         WHERE (:commitmentId IS NULL OR c.id != :commitmentId) AND 

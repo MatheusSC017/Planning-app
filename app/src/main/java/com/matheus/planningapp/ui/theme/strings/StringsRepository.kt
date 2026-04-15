@@ -45,6 +45,7 @@ interface StringsRepository {
     val commitmentStartField: String
     val commitmentEndField: String
     val commitmentPriorityField: String
+    val searchCommitmentField: String
 
     // Recurrence information
     val recurrenceFrequencyField: String

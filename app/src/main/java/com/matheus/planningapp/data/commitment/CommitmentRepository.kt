@@ -13,6 +13,8 @@ interface CommitmentRepository {
         calendar: Long,
     ): Flow<List<CommitmentEntity>>
 
+    fun searchCommitments(query: String): Flow<List<CommitmentEntity>>
+
     suspend fun insertCommitment(commitmentEntity: CommitmentEntity): Long
 
     suspend fun updateCommitment(commitmentEntity: CommitmentEntity)
