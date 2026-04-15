@@ -70,6 +70,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.min
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
@@ -699,6 +700,9 @@ fun TimelineGridItem(
     val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
 
+    val endBoxPadding = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
+    val startBoxPadding = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
+
     // TODO: Try reduce the number of Ifs
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -715,18 +719,8 @@ fun TimelineGridItem(
                     .padding(
                         top = PageDesignSettings.mediumPaddingValue,
                         bottom = PageDesignSettings.mediumPaddingValue,
-                        end =
-                            if (continuesInNextCell) {
-                                PageDesignSettings.zeroPaddingValue
-                            } else {
-                                PageDesignSettings.mediumPaddingValue
-                            },
-                        start =
-                            if (continuesFromPreviousCell) {
-                                PageDesignSettings.zeroPaddingValue
-                            } else {
-                                PageDesignSettings.mediumPaddingValue
-                            },
+                        end = min(endBoxPadding, PageDesignSettings.mediumPaddingValue),
+                        start = min(startBoxPadding, PageDesignSettings.mediumPaddingValue),
                     ).background(
                         brush =
                             Brush.linearGradient(
@@ -740,30 +734,10 @@ fun TimelineGridItem(
                             ),
                         shape =
                             RoundedCornerShape(
-                                topEnd =
-                                    if (continuesInNextCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
-                                bottomEnd =
-                                    if (continuesInNextCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
-                                topStart =
-                                    if (continuesFromPreviousCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
-                                bottomStart =
-                                    if (continuesFromPreviousCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
+                                topEnd = endBoxPadding,
+                                bottomEnd = endBoxPadding,
+                                topStart = startBoxPadding,
+                                bottomStart = startBoxPadding,
                             ),
                     ).border(
                         BorderStroke(
@@ -780,30 +754,10 @@ fun TimelineGridItem(
                         ),
                         shape =
                             RoundedCornerShape(
-                                topEnd =
-                                    if (continuesInNextCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
-                                bottomEnd =
-                                    if (continuesInNextCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
-                                topStart =
-                                    if (continuesFromPreviousCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
-                                bottomStart =
-                                    if (continuesFromPreviousCell) {
-                                        PageDesignSettings.zeroPaddingValue
-                                    } else {
-                                        PageDesignSettings.largePaddingValue
-                                    },
+                                topEnd = endBoxPadding,
+                                bottomEnd = endBoxPadding,
+                                topStart = startBoxPadding,
+                                bottomStart = startBoxPadding,
                             ),
                     ),
         ) {
