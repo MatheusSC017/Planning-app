@@ -3,7 +3,7 @@ package com.matheus.planningapp.ui.theme.strings
 class StringsRepositoryPortuguese : StringsRepository {
     // Project information
     override val projectName = "Planejando sua vida"
-    override val timeline = "Linha do tempo"
+    override val timeline = "Cronograma"
 
     // Text for buttons in general
     override val insertButton = "Inserir"

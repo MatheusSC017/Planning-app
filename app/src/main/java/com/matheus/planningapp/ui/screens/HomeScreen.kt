@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -51,6 +52,7 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -311,8 +313,13 @@ fun CalendarContent(
         .getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0)
         .collectAsState(initial = emptyList())
 
+    var isSearchFormActive by remember { mutableStateOf(false) }
     var commitmentSearchTerm by remember { mutableStateOf("") }
-    val searchCommitments by homeViewModel.searchCommitments(commitmentSearchTerm).collectAsState(initial = emptyList())
+    val searchCommitments by homeViewModel
+        .searchCommitments(
+            commitmentSearchTerm,
+            selectedCalendar?.id ?: 0,
+        ).collectAsState(initial = emptyList())
 
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -424,6 +431,21 @@ fun CalendarContent(
 
                     Spacer(modifier = Modifier.weight(1f))
 
+                    if (!isSearchFormActive) {
+                        IconButton(
+                            onClick = {
+                                isSearchFormActive = !isSearchFormActive
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = strings.searchCommitmentField,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(PageDesignSettings.largeIconSize),
+                            )
+                        }
+                    }
+
                     IconButton(
                         onClick = {
                             onNavigateToAddCommitment(startOfDay, selectedCalendar!!.id)
@@ -438,43 +460,118 @@ fun CalendarContent(
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = PageDesignSettings.extraLargePaddingValue),
-                ) {
-                    TextField(
-                        value = commitmentSearchTerm,
-                        onValueChange = { commitmentSearchTerm = it },
-                        label = {
-                            Text(
-                                text = strings.commitmentTitleField,
-                                style =
-                                    TextStyle(
-                                        fontSize = PageDesignSettings.mediumText,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    ),
-                            )
-                        },
-                        textStyle =
-                            TextStyle(
-                                fontSize = PageDesignSettings.mediumText,
-                                color = MaterialTheme.colorScheme.secondary,
-                            ),
+                if (isSearchFormActive) {
+                    Column(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .height(PageDesignSettings.smallComponentSize)
-                                .padding(bottom = PageDesignSettings.mediumPaddingValue),
-                        singleLine = true,
-                    )
+                                .padding(
+                                    horizontal = PageDesignSettings.mediumPaddingValue,
+                                    vertical = PageDesignSettings.extraLargePaddingValue,
+                                ).background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                                ).border(
+                                    width = PageDesignSettings.borderWidth,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                                ).padding(PageDesignSettings.mediumPaddingValue),
+                    ) {
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = PageDesignSettings.mediumPaddingValue),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = strings.searchCommitmentField,
+                                style =
+                                    TextStyle(
+                                        fontSize = PageDesignSettings.smallTitle,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ),
+                                modifier = Modifier.padding(start = PageDesignSettings.mediumPaddingValue),
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    isSearchFormActive = false
+                                    commitmentSearchTerm = ""
+                                },
+                                modifier = Modifier.size(PageDesignSettings.largeIconSize),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = strings.searchCommitmentField,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(PageDesignSettings.largeIconSize),
+                                )
+                            }
+                        }
+
+                        TextField(
+                            value = commitmentSearchTerm,
+                            onValueChange = { commitmentSearchTerm = it },
+                            placeholder = {
+                                Text(
+                                    text = strings.commitmentTitleField,
+                                    style =
+                                        TextStyle(
+                                            fontSize = PageDesignSettings.mediumText,
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                        ),
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(PageDesignSettings.smallIconSize),
+                                )
+                            },
+                            trailingIcon = {
+                                if (commitmentSearchTerm.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { commitmentSearchTerm = "" },
+                                        modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Clear search",
+                                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                            modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                                        )
+                                    }
+                                }
+                            },
+                            textStyle =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.mediumText,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Medium,
+                                ),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                            colors =
+                                TextFieldDefaults.colors(
+                                    focusedContainerColor = MaterialTheme.colorScheme.background,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                    cursorColor = MaterialTheme.colorScheme.primary,
+                                ),
+                        )
+                    }
                 }
             }
         }
 
-        if (commitmentSearchTerm.isNotEmpty()) {
+        if (isSearchFormActive && commitmentSearchTerm.isNotEmpty()) {
             searchCommitmentsList(
                 searchCommitments,
                 onViewCommitment = { commitment ->

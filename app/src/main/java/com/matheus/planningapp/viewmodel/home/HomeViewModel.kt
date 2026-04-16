@@ -98,7 +98,10 @@ class HomeViewModel(
         }
     }
 
-    fun searchCommitments(query: String): Flow<List<CommitmentEntity>> = commitmentRepository.searchCommitments(query)
+    fun searchCommitments(
+        query: String,
+        calendar: Long,
+    ): Flow<List<CommitmentEntity>> = commitmentRepository.searchCommitments(query, calendar)
 
     fun deleteCommitment(commitmentEntity: CommitmentEntity) {
         viewModelScope.launch {

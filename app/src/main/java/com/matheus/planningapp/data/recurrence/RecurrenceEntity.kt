@@ -34,4 +34,5 @@ class RecurrenceEntity(
     val dayOfMonth: Int,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now(),
+    // TODO: Set end date to recurrence
 )

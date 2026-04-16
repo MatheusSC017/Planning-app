@@ -41,10 +41,15 @@ interface CommitmentDao {
     @Query(
         """
         SELECT * FROM commitment
-        WHERE title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'
+        WHERE (title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%')
+        AND calendar = :calendarid
+        ORDER BY startDateTime
     """,
     )
-    fun searchCommitments(query: String): Flow<List<CommitmentEntity>>
+    fun searchCommitments(
+        query: String,
+        calendarid: Long,
+    ): Flow<List<CommitmentEntity>>
 
     @Query(
         """

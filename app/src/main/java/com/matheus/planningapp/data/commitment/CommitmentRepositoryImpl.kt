@@ -18,7 +18,10 @@ class CommitmentRepositoryImpl(
         calendar: Long,
     ): Flow<List<CommitmentEntity>> = commitmentDao.getCommitmentsForDay(dayStart, dayEnd, calendar)
 
-    override fun searchCommitments(query: String): Flow<List<CommitmentEntity>> = commitmentDao.searchCommitments(query)
+    override fun searchCommitments(
+        query: String,
+        calendarId: Long,
+    ): Flow<List<CommitmentEntity>> = commitmentDao.searchCommitments(query, calendarId)
 
     override suspend fun insertCommitment(commitmentEntity: CommitmentEntity): Long = commitmentDao.insert(commitmentEntity)
 
