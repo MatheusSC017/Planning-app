@@ -13,10 +13,17 @@ import com.matheus.planningapp.data.local.converters.FrequencyConverters
 import com.matheus.planningapp.data.local.converters.PriorityConverters
 import com.matheus.planningapp.data.recurrence.RecurrenceDao
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
+import com.matheus.planningapp.data.reminder.ReminderDao
+import com.matheus.planningapp.data.reminder.ReminderEntity
 
 @Database(
-    entities = [CalendarEntity::class, CommitmentEntity::class, RecurrenceEntity::class],
-    version = 11,
+    entities = [
+        CalendarEntity::class,
+        CommitmentEntity::class,
+        RecurrenceEntity::class,
+        ReminderEntity::class
+    ],
+    version = 12,
     exportSchema = false,
 )
 @TypeConverters(
@@ -31,4 +38,6 @@ abstract class CalendarDatabase : RoomDatabase() {
     abstract fun commitmentDao(): CommitmentDao
 
     abstract fun recurrenceDao(): RecurrenceDao
+
+    abstract fun reminderDao(): ReminderDao
 }
