@@ -21,7 +21,7 @@ import com.matheus.planningapp.data.reminder.ReminderEntity
         CalendarEntity::class,
         CommitmentEntity::class,
         RecurrenceEntity::class,
-        ReminderEntity::class
+        ReminderEntity::class,
     ],
     version = 12,
     exportSchema = false,

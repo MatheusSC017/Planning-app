@@ -15,7 +15,7 @@ import kotlinx.datetime.Instant
             entity = CommitmentEntity::class,
             parentColumns = ["id"],
             childColumns = ["commitment"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.CASCADE,
         ),
     ],
     indices = [

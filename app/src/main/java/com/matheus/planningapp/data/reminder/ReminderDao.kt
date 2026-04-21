@@ -18,11 +18,10 @@ interface ReminderDao {
     @Delete
     suspend fun delete(reminderEntity: ReminderEntity)
 
-
     @Query(
         """
         SELECT * FROM Reminder WHERE commitment = :commitmentId
-    """)
+    """,
+    )
     suspend fun getRemindersByCommitment(commitmentId: Long): List<ReminderEntity>
-
 }

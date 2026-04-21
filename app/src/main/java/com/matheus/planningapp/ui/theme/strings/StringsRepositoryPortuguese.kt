@@ -8,6 +8,7 @@ class StringsRepositoryPortuguese : StringsRepository {
     // Text for buttons in general
     override val insertButton = "Inserir"
     override val viewButton = "Visualizar"
+    override val reminderButton = "Lembrete"
     override val dismissButton = "Dispensar"
     override val confirmButton = "Confirmar"
     override val cancelButton = "Cancelar"
@@ -46,6 +47,9 @@ class StringsRepositoryPortuguese : StringsRepository {
     override val commitmentEndField = "Horário de término"
     override val commitmentPriorityField = "Prioridade"
     override val searchCommitmentField = "Buscar por tarefa"
+
+    // Reminder information
+    override val reminderField = "Minutos antes do compromisso"
 
     // Recurrence information
     override val recurrenceFrequencyField = "Frequência"

@@ -8,6 +8,7 @@ interface StringsRepository {
     // Text for buttons in general
     val insertButton: String
     val viewButton: String
+    val reminderButton: String
     val dismissButton: String
     val confirmButton: String
     val cancelButton: String
@@ -46,6 +47,9 @@ interface StringsRepository {
     val commitmentEndField: String
     val commitmentPriorityField: String
     val searchCommitmentField: String
+
+    // Reminder information
+    val reminderField: String
 
     // Recurrence information
     val recurrenceFrequencyField: String

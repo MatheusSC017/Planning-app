@@ -1,6 +1,5 @@
 package com.matheus.planningapp.ui.screens
 
-import android.view.MotionEvent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,11 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -51,13 +46,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.matheus.planningapp.ui.screens.components.IntegerField
+import com.matheus.planningapp.ui.screens.components.TimeStepperField
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -69,16 +64,12 @@ import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormUiState
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import com.matheus.planningapp.viewmodel.commitment.RecurrenceFormUiState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -635,204 +626,6 @@ fun DaysOfWeek(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun IntegerField(
-    selectedValue: Int,
-    onIntegerValueChange: (Int) -> Unit,
-    minValue: Int,
-    maxValue: Int,
-) {
-    val strings: StringsRepository = LocalStrings.current
-    val delayInMilliseconds = 100L
-
-    var increaseButtonPressed by remember { mutableStateOf(false) }
-    var decreaseButtonPressed by remember { mutableStateOf(false) }
-
-    LaunchedEffect(increaseButtonPressed, selectedValue) {
-        while (increaseButtonPressed) {
-            delay(delayInMilliseconds)
-            if (selectedValue < maxValue) onIntegerValueChange(selectedValue + 1)
-        }
-    }
-
-    LaunchedEffect(decreaseButtonPressed, selectedValue) {
-        while (decreaseButtonPressed) {
-            delay(delayInMilliseconds)
-            if (selectedValue > minValue) onIntegerValueChange(selectedValue - 1)
-        }
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TextField(
-            value = selectedValue.toString(),
-            onValueChange = {},
-            readOnly = true,
-            label = {
-                Text(
-                    text = strings.recurrenceValueField,
-                    style =
-                        TextStyle(
-                            fontSize = PageDesignSettings.smallText,
-                            color = MaterialTheme.colorScheme.primary,
-                        ),
-                )
-            },
-            textStyle =
-                TextStyle(
-                    fontSize = PageDesignSettings.mediumText,
-                    color = MaterialTheme.colorScheme.secondary,
-                ),
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .height(PageDesignSettings.smallComponentSize),
-            singleLine = true,
-        )
-
-        Column {
-            IconButton(
-                onClick = {},
-                modifier =
-                    Modifier.pointerInteropFilter {
-                        increaseButtonPressed =
-                            when (it.action) {
-                                MotionEvent.ACTION_DOWN -> true
-                                else -> false
-                            }
-                        true
-                    },
-            ) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = strings.increaseButton)
-            }
-
-            IconButton(
-                onClick = {},
-                modifier =
-                    Modifier.pointerInteropFilter {
-                        decreaseButtonPressed =
-                            when (it.action) {
-                                MotionEvent.ACTION_DOWN -> true
-                                else -> false
-                            }
-                        true
-                    },
-            ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = strings.decreaseButton)
-            }
-        }
-    }
-}
-
-@Composable
-fun TimeStepperField(
-    time: Instant,
-    isEndTime: Boolean = false,
-    onTimeChange: (Instant) -> Unit,
-) {
-    val strings: StringsRepository = LocalStrings.current
-    val delayInMilliseconds = 50L
-    val timeStepMinutes = 30.minutes
-    val minutesPerHour = 60
-    val hoursPerDay = 24
-
-    var selectedTime by remember { mutableStateOf(time) }
-    val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
-    val currentDayOfMonth: Int = remember { localDateTime.dayOfMonth }
-    val hourLimit: Int = if (isEndTime) 24 else 23
-    val minuteLimit: Int = if (isEndTime) 30 else 0
-
-    var increaseButtonPressed by remember { mutableStateOf(false) }
-    var decreaseButtonPressed by remember { mutableStateOf(false) }
-
-    LaunchedEffect(increaseButtonPressed, selectedTime) {
-        val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
-
-        while (increaseButtonPressed) {
-            delay(delayInMilliseconds)
-            if ((!isEndTime && (localDateTime.hour < hourLimit || localDateTime.minute == 0)) ||
-                (isEndTime && localDateTime.dayOfMonth == currentDayOfMonth)
-            ) {
-                onTimeChange(selectedTime + timeStepMinutes)
-                selectedTime += timeStepMinutes
-            }
-        }
-    }
-
-    LaunchedEffect(decreaseButtonPressed, selectedTime) {
-        val localDateTime: LocalDateTime = selectedTime.toLocalDateTime(TimeZone.currentSystemDefault())
-
-        while (decreaseButtonPressed) {
-            delay(delayInMilliseconds)
-            if (((localDateTime.hour * minutesPerHour) + localDateTime.minute > minuteLimit) ||
-                (localDateTime.dayOfMonth > currentDayOfMonth)
-            ) {
-                onTimeChange(selectedTime - timeStepMinutes)
-                selectedTime -= timeStepMinutes
-            }
-        }
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        OutlinedTextField(
-            value =
-                strings.hourFormat.format(
-                    if (localDateTime.dayOfMonth == currentDayOfMonth) localDateTime.hour else hoursPerDay,
-                    localDateTime.minute,
-                ),
-            onValueChange = {},
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                ),
-            singleLine = true,
-            textStyle =
-                TextStyle(
-                    fontSize = PageDesignSettings.largeText,
-                    color = MaterialTheme.colorScheme.secondary,
-                ),
-            modifier = Modifier.weight(1f),
-        )
-
-        Column {
-            IconButton(
-                onClick = {},
-                modifier =
-                    Modifier.pointerInteropFilter {
-                        increaseButtonPressed =
-                            when (it.action) {
-                                MotionEvent.ACTION_DOWN -> true
-                                else -> false
-                            }
-                        true
-                    },
-            ) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = strings.increaseButton)
-            }
-
-            IconButton(
-                onClick = {},
-                modifier =
-                    Modifier.pointerInteropFilter {
-                        decreaseButtonPressed =
-                            when (it.action) {
-                                MotionEvent.ACTION_DOWN -> true
-                                else -> false
-                            }
-                        true
-                    },
-            ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = strings.decreaseButton)
             }
         }
     }

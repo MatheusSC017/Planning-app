@@ -78,6 +78,7 @@ import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
+import com.matheus.planningapp.ui.screens.components.IntegerField
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -322,13 +323,20 @@ fun CalendarContent(
         ).collectAsState(initial = emptyList())
 
     var selectedCommitment by remember { mutableStateOf<CommitmentEntity?>(null) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
     var showCommitmentViewDialog by remember { mutableStateOf(false) }
+    var showReminderViewDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     CommitmentViewDialog(
         commitmentEntity = selectedCommitment,
         showDialog = showCommitmentViewDialog,
         onDismissRequest = { showCommitmentViewDialog = false },
+    )
+
+    ReminderViewDialog(
+        commitmentEntity = selectedCommitment,
+        showDialog = showReminderViewDialog,
+        onDismissRequest = { showReminderViewDialog = false },
     )
 
     ConfirmationDialog(
@@ -574,6 +582,10 @@ fun CalendarContent(
         if (isSearchFormActive && commitmentSearchTerm.isNotEmpty()) {
             searchCommitmentsList(
                 searchCommitments,
+                onReminderAction = { commitment ->
+                    selectedCommitment = commitment
+                    showReminderViewDialog = true
+                },
                 onViewCommitment = { commitment ->
                     selectedCommitment = commitment
                     showCommitmentViewDialog = true
@@ -589,6 +601,10 @@ fun CalendarContent(
                 timelineColumn(
                     strings,
                     commitments,
+                    onReminderAction = { commitment ->
+                        selectedCommitment = commitment
+                        showReminderViewDialog = true
+                    },
                     onViewCommitment = { commitment ->
                         selectedCommitment = commitment
                         showCommitmentViewDialog = true
@@ -602,6 +618,10 @@ fun CalendarContent(
             } else {
                 timelineGrid(
                     commitments,
+                    onReminderAction = { commitment ->
+                        selectedCommitment = commitment
+                        showReminderViewDialog = true
+                    },
                     onViewCommitment = { commitment ->
                         selectedCommitment = commitment
                         showCommitmentViewDialog = true
@@ -619,6 +639,7 @@ fun CalendarContent(
 
 fun LazyListScope.searchCommitmentsList(
     commitments: List<CommitmentEntity>,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
@@ -637,6 +658,7 @@ fun LazyListScope.searchCommitmentsList(
         ) {
             CommitmentCard(
                 commitmentEntity = commitment,
+                onReminderAction = onReminderAction,
                 onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 onDeleteCommitment = onDeleteCommitment,
@@ -769,6 +791,7 @@ fun DaysOnlyCalendar(
 
 fun LazyListScope.timelineGrid(
     commitments: List<CommitmentEntity>,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
@@ -816,6 +839,7 @@ fun LazyListScope.timelineGrid(
                                     colspan = 1,
                                     continuesInNextCell = false,
                                     continuesFromPreviousCell = false,
+                                    onReminderAction = {},
                                     onViewCommitment = {},
                                     onNavigateToUpdateCommitment = {},
                                     onDeleteCommitment = {},
@@ -847,6 +871,7 @@ fun LazyListScope.timelineGrid(
                                                 false
                                             },
                                         continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
+                                        onReminderAction = onReminderAction,
                                         onViewCommitment = onViewCommitment,
                                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                                         onDeleteCommitment = onDeleteCommitment,
@@ -868,6 +893,7 @@ fun TimelineGridItem(
     colspan: Int,
     continuesInNextCell: Boolean,
     continuesFromPreviousCell: Boolean,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
@@ -1018,6 +1044,26 @@ fun TimelineGridItem(
                         DropdownMenuItem(
                             text = {
                                 Text(
+                                    strings.reminderButton,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onReminderAction(commitmentEntity)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_notifications_24),
+                                    contentDescription = strings.reminderButton,
+                                    tint = MaterialTheme.colorScheme.onSecondary,
+                                )
+                            },
+                        )
+
+                        DropdownMenuItem(
+                            text = {
+                                Text(
                                     strings.updateButton,
                                     color = MaterialTheme.colorScheme.onSecondary,
                                 )
@@ -1061,6 +1107,7 @@ fun TimelineGridItem(
 fun LazyListScope.timelineColumn(
     strings: StringsRepository,
     commitments: List<CommitmentEntity>,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
@@ -1073,6 +1120,7 @@ fun LazyListScope.timelineColumn(
             TimelineRow(
                 startTime = indexToTimeString(index),
                 commitment = null,
+                onReminderAction = {},
                 onViewCommitment = {},
                 onNavigateToUpdateCommitment = {},
                 onDeleteCommitment = {},
@@ -1098,6 +1146,7 @@ fun LazyListScope.timelineColumn(
                     TimelineRow(
                         startTime = indexToTimeString(index),
                         commitment = null,
+                        onReminderAction = {},
                         onViewCommitment = {},
                         onNavigateToUpdateCommitment = {},
                         onDeleteCommitment = {},
@@ -1116,6 +1165,7 @@ fun LazyListScope.timelineColumn(
                 TimelineRow(
                     startTime = commitmentStartTime,
                     commitment = commitment,
+                    onReminderAction = onReminderAction,
                     onViewCommitment = onViewCommitment,
                     onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                     onDeleteCommitment = onDeleteCommitment,
@@ -1128,6 +1178,7 @@ fun LazyListScope.timelineColumn(
                 TimelineRow(
                     startTime = indexToTimeString(index),
                     commitment = null,
+                    onReminderAction = {},
                     onViewCommitment = {},
                     onNavigateToUpdateCommitment = {},
                     onDeleteCommitment = {},
@@ -1141,6 +1192,7 @@ fun LazyListScope.timelineColumn(
 fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
@@ -1179,6 +1231,7 @@ fun TimelineRow(
         if (commitment != null) {
             CommitmentCard(
                 commitmentEntity = commitment,
+                onReminderAction = onReminderAction,
                 onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 onDeleteCommitment = onDeleteCommitment,
@@ -1190,6 +1243,7 @@ fun TimelineRow(
 @Composable
 fun CommitmentCard(
     commitmentEntity: CommitmentEntity,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
@@ -1295,6 +1349,21 @@ fun CommitmentCard(
                             Icon(
                                 painter = painterResource(R.drawable.view),
                                 contentDescription = strings.viewButton,
+                                tint = MaterialTheme.colorScheme.onSecondary,
+                            )
+                        },
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text(strings.reminderButton, color = MaterialTheme.colorScheme.onSecondary) },
+                        onClick = {
+                            menuExpanded = false
+                            onReminderAction(commitmentEntity)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_notifications_24),
+                                contentDescription = strings.reminderButton,
                                 tint = MaterialTheme.colorScheme.onSecondary,
                             )
                         },
@@ -1458,6 +1527,136 @@ fun CommitmentViewDialog(
                     Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
 
                     HorizontalDivider()
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                Button(
+                    onClick = onDismissRequest,
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = strings.dismissButton,
+                        fontSize = PageDesignSettings.largeText,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.onBackground,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReminderViewDialog(
+    commitmentEntity: CommitmentEntity?,
+    showDialog: Boolean,
+    onDismissRequest: () -> Unit,
+) {
+    if (commitmentEntity == null) return
+
+    val strings: StringsRepository = LocalStrings.current
+
+    val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = {
+                Column {
+                    Text(
+                        text = commitmentEntity.title,
+                        fontSize = PageDesignSettings.largeText,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                    )
+
+                    HorizontalDivider()
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.mediumPaddingValue),
+                        )
+
+                        Text(
+                            text =
+                                String.format(
+                                    Locale.US,
+                                    strings.dateFormat,
+                                    commitmentStartDateTime.year,
+                                    commitmentStartDateTime.monthNumber,
+                                    commitmentStartDateTime.dayOfMonth,
+                                ),
+                            fontSize = PageDesignSettings.mediumText,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.mediumPaddingValue),
+                        )
+
+                        Text(
+                            text = "$startTimeString — $endTimeString",
+                            fontSize = PageDesignSettings.mediumText,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                        )
+                    }
+                }
+            },
+            text = {
+                Column(
+                    modifier =
+                        Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                            ).padding(PageDesignSettings.mediumPaddingValue),
+                ) {
+                    Text(
+                        text = strings.reminderField,
+                        style =
+                            TextStyle(
+                                fontSize = PageDesignSettings.smallTitle,
+                                color = MaterialTheme.colorScheme.primary,
+                            ),
+                    )
+
+                    IntegerField(
+                        selectedValue = 1,
+                        onIntegerValueChange = { minutesBeforeCommitment ->
+                            // TODO: Create a new Reminder
+                        },
+                        minValue = 1,
+                        maxValue = 60,
+                    )
                 }
             },
             confirmButton = {},
