@@ -44,6 +44,7 @@ class SettingViewModel(
     fun updateSettings(
         settingUiState: SettingUiState,
         notificationPermissionLauncher: ActivityResultLauncher<String>,
+        scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
     ) {
         viewModelScope.launch {
             val currentNotificationOption: NotificationEnum = uiState.value.notificationOption
@@ -56,13 +57,16 @@ class SettingViewModel(
                 } else {
                     if (currentNotificationOption != NotificationEnum.NO_SEND) deleteNotificationToFutureCommitments()
 
-                    requestNotificationPermission(notificationPermissionLauncher)
+                    requestNotificationPermission(notificationPermissionLauncher, scheduleExactAlarmLauncher)
                 }
             }
         }
     }
 
-    private fun requestNotificationPermission(notificationPermissionLauncher: ActivityResultLauncher<String>) {
+    private fun requestNotificationPermission(
+        notificationPermissionLauncher: ActivityResultLauncher<String>,
+        scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
+    ) {
         if (!context.hasNotificationPermission()) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             return
@@ -70,7 +74,7 @@ class SettingViewModel(
 
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         if (!alarmManager.canScheduleExact()) {
-            context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+            scheduleExactAlarmLauncher.launch(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
             return
         }
 

@@ -1,6 +1,7 @@
 package com.matheus.planningapp.viewmodel.setting
 
 import android.content.Context
+import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
@@ -39,6 +40,7 @@ class SettingViewModelTest {
     private lateinit var taskNotificationScheduler: TaskNotificationScheduler
     private lateinit var viewModel: SettingViewModel
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>
     private val dispatcher = StandardTestDispatcher()
 
     @Before
@@ -50,6 +52,7 @@ class SettingViewModelTest {
         settingsRepository = mockk<SettingsRepository>()
         taskNotificationScheduler = mockk<TaskNotificationScheduler>()
         notificationPermissionLauncher = mockk<ActivityResultLauncher<String>>()
+        scheduleExactAlarmLauncher = mockk<ActivityResultLauncher<Intent>>()
 
         every { notificationPermissionLauncher.launch(any()) } just Runs
         coEvery { settingsRepository.viewModeFlow } returns flowOf(ViewEnum.COLUMN)
@@ -121,7 +124,7 @@ class SettingViewModelTest {
             coEvery { settingsRepository.saveSettings(newSettings) } just Runs
 
             // When
-            viewModel.updateSettings(newSettings, notificationPermissionLauncher)
+            viewModel.updateSettings(newSettings, notificationPermissionLauncher, scheduleExactAlarmLauncher)
             advanceUntilIdle()
 
             // Then
@@ -138,7 +141,7 @@ class SettingViewModelTest {
             coEvery { settingsRepository.saveSettings(newSettings) } just Runs
 
             // When
-            viewModel.updateSettings(newSettings, notificationPermissionLauncher)
+            viewModel.updateSettings(newSettings, notificationPermissionLauncher, scheduleExactAlarmLauncher)
             advanceUntilIdle()
 
             // Then - just verify that saveSettings was called
@@ -279,7 +282,7 @@ class SettingViewModelTest {
             coEvery { settingsRepository.saveSettings(newSettings) } just Runs
 
             // When
-            newViewModel.updateSettings(newSettings, notificationPermissionLauncher)
+            newViewModel.updateSettings(newSettings, notificationPermissionLauncher, scheduleExactAlarmLauncher)
             advanceUntilIdle()
 
             // Then
@@ -324,7 +327,7 @@ class SettingViewModelTest {
             coEvery { taskNotificationScheduler.scheduleTaskNotification(any()) } just Runs
 
             // When
-            newViewModel.updateSettings(newSettings, notificationPermissionLauncher)
+            newViewModel.updateSettings(newSettings, notificationPermissionLauncher, scheduleExactAlarmLauncher)
             advanceUntilIdle()
 
             // Then
@@ -347,7 +350,7 @@ class SettingViewModelTest {
             coEvery { settingsRepository.saveSettings(newSettings) } just Runs
 
             // When
-            newViewModel.updateSettings(newSettings, notificationPermissionLauncher)
+            newViewModel.updateSettings(newSettings, notificationPermissionLauncher, scheduleExactAlarmLauncher)
             advanceUntilIdle()
 
             // Then

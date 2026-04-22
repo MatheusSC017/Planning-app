@@ -123,6 +123,7 @@ fun SettingsForm(
 
     var showDialog by remember { mutableStateOf(false) }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {}
+    val scheduleExactAlarmLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {}
 
     ConfirmationDialog(
         item = listOf(selectedViewOption, selectedNotificationOption),
@@ -136,7 +137,11 @@ fun SettingsForm(
                     viewMode = selectedViewOption,
                     notificationOption = selectedNotificationOption,
                 )
-            settignsViewModel.updateSettings(settingUiState, notificationPermissionLauncher)
+            settignsViewModel.updateSettings(
+                settingUiState,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher = scheduleExactAlarmLauncher,
+            )
             showDialog = false
         },
     )

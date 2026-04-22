@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReminderDao {
@@ -23,5 +24,5 @@ interface ReminderDao {
         SELECT * FROM Reminder WHERE commitment = :commitmentId
     """,
     )
-    suspend fun getRemindersByCommitment(commitmentId: Long): List<ReminderEntity>
+    fun getRemindersByCommitment(commitmentId: Long): Flow<List<ReminderEntity>>
 }

@@ -26,6 +26,13 @@ class TaskNotificationScheduler(
             return
         }
 
+        scheduleNotification(commitmentEntity)
+    }
+
+    fun scheduleNotification(
+        commitmentEntity: CommitmentEntity,
+        minutesBeforeCommitment: Int = 0,
+    ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // SDK 33+ (Android 13+) requires a notification permission
@@ -50,9 +57,11 @@ class TaskNotificationScheduler(
             )
 
         try {
+            val notificationTime = commitmentEntity.startDateTime.toEpochMilliseconds() - (minutesBeforeCommitment * 60 * 1000)
+
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                commitmentEntity.startDateTime.toEpochMilliseconds(),
+                notificationTime,
                 pendingIntent,
             )
         } catch (e: SecurityException) {

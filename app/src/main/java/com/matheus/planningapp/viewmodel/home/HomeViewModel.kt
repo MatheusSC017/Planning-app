@@ -1,12 +1,23 @@
 package com.matheus.planningapp.viewmodel.home
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
+import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.data.reminder.ReminderEntity
+import com.matheus.planningapp.data.reminder.ReminderRepository
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
+import com.matheus.planningapp.util.notification.canScheduleExact
+import com.matheus.planningapp.util.notification.hasNotificationPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,9 +34,12 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 class HomeViewModel(
+    private val context: Context,
     private val calendarRepository: CalendarRepository,
     private val commitmentRepository: CommitmentRepository,
+    private val reminderRepository: ReminderRepository,
     settingsRepository: SettingsRepository,
+    private val taskNotificationScheduler: TaskNotificationScheduler,
 ) : ViewModel() {
     init {
         viewModelScope.launch {
@@ -107,5 +121,44 @@ class HomeViewModel(
         viewModelScope.launch {
             commitmentRepository.deleteCommitment(commitmentEntity)
         }
+    }
+
+    fun insertReminder(
+        commitmentEntity: CommitmentEntity,
+        minutesBeforeCommitment: Int,
+        notificationPermissionLauncher: ActivityResultLauncher<String>,
+        scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
+    ) {
+        val reminderEntity =
+            ReminderEntity(
+                commitment = commitmentEntity.id,
+                minutesBeforeCommitment = minutesBeforeCommitment,
+            )
+
+        viewModelScope.launch {
+            reminderRepository.insert(reminderEntity)
+
+            if (requestNotificationPermission(notificationPermissionLauncher, scheduleExactAlarmLauncher)) {
+                taskNotificationScheduler.scheduleNotification(commitmentEntity, minutesBeforeCommitment)
+            }
+        }
+    }
+
+    private fun requestNotificationPermission(
+        notificationPermissionLauncher: ActivityResultLauncher<String>,
+        scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
+    ): Boolean {
+        if (!context.hasNotificationPermission()) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            return false
+        }
+
+        val alarmManager = context.getSystemService(AlarmManager::class.java)
+        if (!alarmManager.canScheduleExact()) {
+            scheduleExactAlarmLauncher.launch(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+            return false
+        }
+
+        return true
     }
 }

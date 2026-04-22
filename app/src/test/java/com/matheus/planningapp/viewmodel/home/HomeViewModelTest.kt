@@ -1,13 +1,16 @@
 package com.matheus.planningapp.viewmodel.home
 
+import android.content.Context
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.data.reminder.ReminderRepository
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.ViewEnum
+import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -30,9 +33,12 @@ import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
+    private lateinit var context: Context
     private lateinit var calendarRepository: CalendarRepository
     private lateinit var commitmentRepository: CommitmentRepository
+    private lateinit var reminderRepository: ReminderRepository
     private lateinit var settingsRepository: SettingsRepository
+    private lateinit var taskNotificationScheduler: TaskNotificationScheduler
     private lateinit var viewModel: HomeViewModel
     private val dispatcher = StandardTestDispatcher()
 
@@ -46,16 +52,27 @@ class HomeViewModelTest {
     fun setUp() {
         Dispatchers.setMain(dispatcher)
 
+        context = mockk<Context>()
         calendarRepository = mockk<CalendarRepository>()
         commitmentRepository = mockk<CommitmentRepository>()
+        reminderRepository = mockk<ReminderRepository>()
         settingsRepository = mockk<SettingsRepository>()
+        taskNotificationScheduler = mockk<TaskNotificationScheduler>()
 
         coEvery { calendarRepository.getCalendars() } returns flowOf(initialCalendars)
         coEvery { calendarRepository.ensureDefaultCalendarExists() } returns Unit
         coEvery { settingsRepository.viewModeFlow } returns flowOf(ViewEnum.COLUMN)
         coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.NO_SEND)
 
-        viewModel = HomeViewModel(calendarRepository, commitmentRepository, settingsRepository)
+        viewModel =
+            HomeViewModel(
+                context,
+                calendarRepository,
+                commitmentRepository,
+                reminderRepository,
+                settingsRepository,
+                taskNotificationScheduler,
+            )
     }
 
     @After
@@ -378,9 +395,9 @@ class HomeViewModelTest {
             // Given
             coEvery { calendarRepository.ensureDefaultCalendarExists() } returns Unit
 
-            // When - already done in setUp
-
             // Then
             coVerify { calendarRepository.ensureDefaultCalendarExists() }
         }
+
+    // TODO: Include test to reminder methods
 }

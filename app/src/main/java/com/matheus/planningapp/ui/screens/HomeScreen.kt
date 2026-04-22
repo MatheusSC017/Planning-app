@@ -1,5 +1,7 @@
 package com.matheus.planningapp.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -327,6 +329,9 @@ fun CalendarContent(
     var showReminderViewDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {}
+    val scheduleExactAlarmLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {}
+
     CommitmentViewDialog(
         commitmentEntity = selectedCommitment,
         showDialog = showCommitmentViewDialog,
@@ -336,6 +341,14 @@ fun CalendarContent(
     ReminderViewDialog(
         commitmentEntity = selectedCommitment,
         showDialog = showReminderViewDialog,
+        onReminderAction = { commitmentEntity, minutesBeforeCommitment ->
+            homeViewModel.insertReminder(
+                commitmentEntity,
+                minutesBeforeCommitment,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+        },
         onDismissRequest = { showReminderViewDialog = false },
     )
 
@@ -1558,11 +1571,14 @@ fun CommitmentViewDialog(
 fun ReminderViewDialog(
     commitmentEntity: CommitmentEntity?,
     showDialog: Boolean,
+    onReminderAction: (commitmentEntity: CommitmentEntity, minutesBeforeCommitment: Int) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     if (commitmentEntity == null) return
 
     val strings: StringsRepository = LocalStrings.current
+
+    var minutesBeforeCommitment by remember { mutableStateOf(1) }
 
     val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
     val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
@@ -1650,16 +1666,36 @@ fun ReminderViewDialog(
                     )
 
                     IntegerField(
-                        selectedValue = 1,
-                        onIntegerValueChange = { minutesBeforeCommitment ->
-                            // TODO: Create a new Reminder
+                        selectedValue = minutesBeforeCommitment,
+                        onIntegerValueChange = { newValue ->
+                            minutesBeforeCommitment = newValue
                         },
                         minValue = 1,
                         maxValue = 60,
                     )
                 }
             },
-            confirmButton = {},
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onReminderAction(commitmentEntity, minutesBeforeCommitment)
+                        onDismissRequest()
+                    },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = strings.confirmButton,
+                        fontSize = PageDesignSettings.largeText,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
             dismissButton = {
                 Button(
                     onClick = onDismissRequest,
