@@ -52,6 +52,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -62,6 +63,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +77,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.min
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.commitment.CommitmentEntity
@@ -84,6 +89,7 @@ import com.matheus.planningapp.ui.screens.components.IntegerField
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.ViewEnum
@@ -92,6 +98,8 @@ import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.util.timeToIndex
 import com.matheus.planningapp.viewmodel.home.HomeUiState
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -120,6 +128,32 @@ fun HomeScreen(
     LaunchedEffect(uiState.calendars) {
         if (selectedCalendar == null && uiState.calendars.isNotEmpty()) {
             selectedCalendar = uiState.calendars.first()
+        }
+    }
+
+    val strings: StringsRepository = LocalStrings.current
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            homeViewModel.events.collect { event ->
+                when (event) {
+                    is DatabaseUiEvent.ShowError -> {
+                        scope.launch {
+                            snackBarHostState.showSnackbar(event.message)
+                        }
+                    }
+
+                    DatabaseUiEvent.Saved -> {
+                        scope.launch {
+                            snackBarHostState.showSnackbar(strings.savedMessage)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1054,25 +1088,27 @@ fun TimelineGridItem(
                             },
                         )
 
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    strings.reminderButton,
-                                    color = MaterialTheme.colorScheme.onSecondary,
-                                )
-                            },
-                            onClick = {
-                                menuExpanded = false
-                                onReminderAction(commitmentEntity)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.outline_notifications_24),
-                                    contentDescription = strings.reminderButton,
-                                    tint = MaterialTheme.colorScheme.onSecondary,
-                                )
-                            },
-                        )
+                        if (commitmentEntity.startDateTime > Clock.System.now()) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        strings.reminderButton,
+                                        color = MaterialTheme.colorScheme.onSecondary,
+                                    )
+                                },
+                                onClick = {
+                                    menuExpanded = false
+                                    onReminderAction(commitmentEntity)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.outline_notifications_24),
+                                        contentDescription = strings.reminderButton,
+                                        tint = MaterialTheme.colorScheme.onSecondary,
+                                    )
+                                },
+                            )
+                        }
 
                         DropdownMenuItem(
                             text = {
@@ -1367,20 +1403,22 @@ fun CommitmentCard(
                         },
                     )
 
-                    DropdownMenuItem(
-                        text = { Text(strings.reminderButton, color = MaterialTheme.colorScheme.onSecondary) },
-                        onClick = {
-                            menuExpanded = false
-                            onReminderAction(commitmentEntity)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_notifications_24),
-                                contentDescription = strings.reminderButton,
-                                tint = MaterialTheme.colorScheme.onSecondary,
-                            )
-                        },
-                    )
+                    if (commitmentEntity.startDateTime > Clock.System.now()) {
+                        DropdownMenuItem(
+                            text = { Text(strings.reminderButton, color = MaterialTheme.colorScheme.onSecondary) },
+                            onClick = {
+                                menuExpanded = false
+                                onReminderAction(commitmentEntity)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_notifications_24),
+                                    contentDescription = strings.reminderButton,
+                                    tint = MaterialTheme.colorScheme.onSecondary,
+                                )
+                            },
+                        )
+                    }
 
                     DropdownMenuItem(
                         text = { Text(strings.updateButton, color = MaterialTheme.colorScheme.onSecondary) },
