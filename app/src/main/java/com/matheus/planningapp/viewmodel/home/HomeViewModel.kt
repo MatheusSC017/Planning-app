@@ -131,12 +131,15 @@ class HomeViewModel(
         }
     }
 
+    fun getRemindersByCommitment(commitmentId: Long): Flow<List<ReminderEntity>> = reminderRepository.getRemindersByCommitment(commitmentId)
+
     fun insertReminder(
         commitmentEntity: CommitmentEntity,
         minutesBeforeCommitment: Int,
         notificationPermissionLauncher: ActivityResultLauncher<String>,
         scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
     ) {
+        // TODO: Include error messages in strings
         if (isPastCommitment(commitmentEntity.startDateTime, minutesBeforeCommitment)) {
             viewModelScope.launch {
                 _events.emit(

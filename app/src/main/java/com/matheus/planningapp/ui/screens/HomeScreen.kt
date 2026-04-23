@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
@@ -84,6 +85,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.data.reminder.ReminderEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.ui.screens.components.IntegerField
 import com.matheus.planningapp.ui.theme.PageDesignSettings
@@ -363,6 +365,10 @@ fun CalendarContent(
     var showReminderViewDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    val reminders by homeViewModel
+        .getRemindersByCommitment(selectedCommitment?.id ?: 0L)
+        .collectAsState(initial = emptyList())
+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {}
     val scheduleExactAlarmLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {}
 
@@ -374,6 +380,7 @@ fun CalendarContent(
 
     ReminderViewDialog(
         commitmentEntity = selectedCommitment,
+        reminders = reminders,
         showDialog = showReminderViewDialog,
         onReminderAction = { commitmentEntity, minutesBeforeCommitment ->
             homeViewModel.insertReminder(
@@ -1608,6 +1615,7 @@ fun CommitmentViewDialog(
 @Composable
 fun ReminderViewDialog(
     commitmentEntity: CommitmentEntity?,
+    reminders: List<ReminderEntity>,
     showDialog: Boolean,
     onReminderAction: (commitmentEntity: CommitmentEntity, minutesBeforeCommitment: Int) -> Unit,
     onDismissRequest: () -> Unit,
@@ -1625,7 +1633,10 @@ fun ReminderViewDialog(
 
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = onDismissRequest,
+            onDismissRequest = {
+                minutesBeforeCommitment = 1
+                onDismissRequest()
+            },
             title = {
                 Column {
                     Text(
@@ -1711,12 +1722,71 @@ fun ReminderViewDialog(
                         minValue = 1,
                         maxValue = 60,
                     )
+
+                    LazyColumn(
+                        modifier = Modifier.padding(top = PageDesignSettings.mediumPaddingValue),
+                    ) {
+                        items(reminders) { reminder ->
+                            Row(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = PageDesignSettings.mediumPaddingValue)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = RoundedCornerShape(PageDesignSettings.smallIconClip),
+                                        ).border(
+                                            BorderStroke(
+                                                PageDesignSettings.borderWidth,
+                                                MaterialTheme.colorScheme.secondary,
+                                            ),
+                                            shape = RoundedCornerShape(PageDesignSettings.smallIconClip),
+                                        ).padding(PageDesignSettings.smallPaddingValue),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                // TODO: Move this text to strings
+                                Text(
+                                    text = "Reminder in ${reminder.minutesBeforeCommitment} Minutes",
+                                    style =
+                                        TextStyle(
+                                            fontSize = PageDesignSettings.mediumText,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                        ),
+                                )
+
+                                IconButton(
+                                    onClick = {
+                                        // TODO: Edit reminder action
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = strings.updateButton,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        // TODO: Delete reminder action
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = strings.deleteButton,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
                         onReminderAction(commitmentEntity, minutesBeforeCommitment)
+                        minutesBeforeCommitment = 1
                         onDismissRequest()
                     },
                     colors =
@@ -1736,7 +1806,10 @@ fun ReminderViewDialog(
             },
             dismissButton = {
                 Button(
-                    onClick = onDismissRequest,
+                    onClick = {
+                        minutesBeforeCommitment = 1
+                        onDismissRequest()
+                    },
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
