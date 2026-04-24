@@ -292,7 +292,7 @@ class CommitmentFormViewModel(
             if ((commitmentUiState.value.notificationOption != NotificationEnum.NO_SEND) &&
                 (newCommitmentEntity.startDateTime > Clock.System.now())
             ) {
-                taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity)
+                taskNotificationScheduler.cancelTaskNotification(newCommitmentEntity.id)
                 taskNotificationScheduler.scheduleTaskNotification(newCommitmentEntity)
             }
 

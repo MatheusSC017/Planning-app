@@ -5,9 +5,7 @@ import kotlinx.coroutines.flow.Flow
 class ReminderRepositoryImpl(
     private val reminderDao: ReminderDao,
 ) : ReminderRepository {
-    override suspend fun insert(reminderEntity: ReminderEntity) {
-        reminderDao.insert(reminderEntity)
-    }
+    override suspend fun insert(reminderEntity: ReminderEntity): Long = reminderDao.insert(reminderEntity)
 
     override suspend fun update(reminderEntity: ReminderEntity) {
         reminderDao.update(reminderEntity)

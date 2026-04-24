@@ -3,7 +3,7 @@ package com.matheus.planningapp.data.reminder
 import kotlinx.coroutines.flow.Flow
 
 interface ReminderRepository {
-    suspend fun insert(reminderEntity: ReminderEntity)
+    suspend fun insert(reminderEntity: ReminderEntity): Long
 
     suspend fun update(reminderEntity: ReminderEntity)
 

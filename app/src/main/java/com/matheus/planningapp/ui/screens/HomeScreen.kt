@@ -401,7 +401,7 @@ fun CalendarContent(
         onConfirm = { commitmentEntity: CommitmentEntity ->
             homeViewModel.deleteCommitment(commitmentEntity)
             if (uiState.notificationOption != NotificationEnum.NO_SEND) {
-                taskNotificationScheduler.cancelTaskNotification(commitmentEntity)
+                taskNotificationScheduler.cancelTaskNotification(commitmentEntity.id)
             }
         },
         onDismissRequest = {

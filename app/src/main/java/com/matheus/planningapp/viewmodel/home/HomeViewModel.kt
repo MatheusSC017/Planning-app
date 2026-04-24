@@ -156,10 +156,14 @@ class HomeViewModel(
             )
 
         viewModelScope.launch {
-            reminderRepository.insert(reminderEntity)
+            val remiderId: Long = reminderRepository.insert(reminderEntity)
 
             if (requestNotificationPermission(notificationPermissionLauncher, scheduleExactAlarmLauncher)) {
-                taskNotificationScheduler.scheduleNotification(commitmentEntity, minutesBeforeCommitment)
+                taskNotificationScheduler.scheduleReminderNotification(
+                    commitmentEntity = commitmentEntity,
+                    reminderId = remiderId,
+                    minutesBeforeCommitment = minutesBeforeCommitment,
+                )
             }
         }
     }

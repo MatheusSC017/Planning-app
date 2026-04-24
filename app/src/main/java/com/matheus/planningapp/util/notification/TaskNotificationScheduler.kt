@@ -26,11 +26,24 @@ class TaskNotificationScheduler(
             return
         }
 
-        scheduleNotification(commitmentEntity)
+        scheduleNotification(commitmentEntity, RequestCodeGenerator.commitmentNotification(commitmentEntity.id))
     }
 
-    fun scheduleNotification(
+    fun scheduleReminderNotification(
         commitmentEntity: CommitmentEntity,
+        reminderId: Long,
+        minutesBeforeCommitment: Int,
+    ) {
+        scheduleNotification(
+            commitmentEntity,
+            RequestCodeGenerator.reminderNotification(commitmentEntity.id, reminderId),
+            minutesBeforeCommitment,
+        )
+    }
+
+    private fun scheduleNotification(
+        commitmentEntity: CommitmentEntity,
+        requestCode: Int,
         minutesBeforeCommitment: Int = 0,
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -51,7 +64,7 @@ class TaskNotificationScheduler(
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                commitmentEntity.id.toInt(),
+                requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
@@ -69,13 +82,13 @@ class TaskNotificationScheduler(
         }
     }
 
-    fun cancelTaskNotification(commitmentEntity: CommitmentEntity) {
+    fun cancelTaskNotification(commitmentId: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                commitmentEntity.id.toInt(),
+                RequestCodeGenerator.commitmentNotification(commitmentId),
                 Intent(context, NotificationReceiver::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
@@ -84,5 +97,37 @@ class TaskNotificationScheduler(
             alarmManager.cancel(it)
             it.cancel()
         }
+    }
+
+    fun cancelReminderNotification(
+        commitmentId: Long,
+        reminderId: Long,
+    ) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val pendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                RequestCodeGenerator.reminderNotification(commitmentId, reminderId),
+                Intent(context, NotificationReceiver::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+
+        pendingIntent.let {
+            alarmManager.cancel(it)
+            it.cancel()
+        }
+    }
+
+    private object RequestCodeGenerator {
+        private const val COMMITMENT_NOTIFICATION_REQUEST_BASE = 10_000
+        private const val REMINDER_NOTIFICATION_REQUEST_BASE = 20_000
+
+        fun commitmentNotification(commitmentId: Long): Int = (COMMITMENT_NOTIFICATION_REQUEST_BASE + commitmentId).toInt()
+
+        fun reminderNotification(
+            commitmentId: Long,
+            reminderId: Long,
+        ): Int = ((COMMITMENT_NOTIFICATION_REQUEST_BASE + commitmentId) * (REMINDER_NOTIFICATION_REQUEST_BASE + reminderId)).toInt()
     }
 }

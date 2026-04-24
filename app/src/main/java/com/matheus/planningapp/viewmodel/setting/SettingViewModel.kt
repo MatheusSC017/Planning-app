@@ -92,7 +92,7 @@ class SettingViewModel(
     fun deleteNotificationToFutureCommitments() {
         viewModelScope.launch {
             commitmentRepository.getFutureCommitments().forEach {
-                taskNotificationScheduler.cancelTaskNotification(it)
+                taskNotificationScheduler.cancelTaskNotification(it.id)
             }
         }
     }
