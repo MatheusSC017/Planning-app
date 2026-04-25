@@ -7,6 +7,10 @@ import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.reminder.ReminderRepository
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryEnglish
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryPortuguese
+import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
 import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.ViewEnum
@@ -30,6 +34,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -39,6 +44,7 @@ class HomeViewModelTest {
     private lateinit var reminderRepository: ReminderRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var taskNotificationScheduler: TaskNotificationScheduler
+    private lateinit var strings: StringsRepository
     private lateinit var viewModel: HomeViewModel
     private val dispatcher = StandardTestDispatcher()
 
@@ -58,6 +64,12 @@ class HomeViewModelTest {
         reminderRepository = mockk<ReminderRepository>()
         settingsRepository = mockk<SettingsRepository>()
         taskNotificationScheduler = mockk<TaskNotificationScheduler>()
+        strings =
+            when (Locale.getDefault().language) {
+                "pt" -> StringsRepositoryPortuguese()
+                "es" -> StringsRepositorySpanish()
+                else -> StringsRepositoryEnglish()
+            }
 
         coEvery { calendarRepository.getCalendars() } returns flowOf(initialCalendars)
         coEvery { calendarRepository.ensureDefaultCalendarExists() } returns Unit
@@ -72,6 +84,7 @@ class HomeViewModelTest {
                 reminderRepository,
                 settingsRepository,
                 taskNotificationScheduler,
+                strings,
             )
     }
 

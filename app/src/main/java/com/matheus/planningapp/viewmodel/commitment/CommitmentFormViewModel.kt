@@ -7,6 +7,7 @@ import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
 import com.matheus.planningapp.data.recurrence.RecurrenceRepository
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
@@ -32,6 +33,7 @@ class CommitmentFormViewModel(
     settingsRepository: SettingsRepository,
     private val recurrenceRepository: RecurrenceRepository,
     private val taskNotificationScheduler: TaskNotificationScheduler,
+    private val strings: StringsRepository,
 ) : ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
@@ -138,7 +140,7 @@ class CommitmentFormViewModel(
                     val commitmentEntity = commitmentRepository.getCommitment(commitmentFormMode.commitmentId)
 
                     if (commitmentEntity == null) {
-                        _events.emit(DatabaseUiEvent.ShowError("Commitment not found"))
+                        _events.emit(DatabaseUiEvent.ShowError(strings.commitmentNotFoundError))
                         return@launch
                     }
 
@@ -189,7 +191,7 @@ class CommitmentFormViewModel(
             // Check if start time is lesser than end time
             if (!verifyStartAndEndTime(commitmentEntity.startDateTime, commitmentEntity.endDateTime)) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Start time must be lesser than End time"),
+                    DatabaseUiEvent.ShowError(strings.commitmentStartTimeError),
                 )
                 return@launch
             }
@@ -197,7 +199,7 @@ class CommitmentFormViewModel(
             // Check if title is not empty
             if (commitmentEntity.title.isEmpty()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Title cannot be empty"),
+                    DatabaseUiEvent.ShowError(strings.commitmentTitleEmptyError),
                 )
                 return@launch
             }
@@ -212,7 +214,7 @@ class CommitmentFormViewModel(
 
             if (conflictsNumbers > 0) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("There is a conflict with other commitments"),
+                    DatabaseUiEvent.ShowError(strings.commitmentConflictError),
                 )
                 return@launch
             }
@@ -240,7 +242,7 @@ class CommitmentFormViewModel(
             val oldCommitmentEntity = commitmentRepository.getCommitment(commitmentUiState.value.id!!)
 
             if (oldCommitmentEntity == null) {
-                _events.emit(DatabaseUiEvent.ShowError("Commitment not found"))
+                _events.emit(DatabaseUiEvent.ShowError(strings.commitmentNotFoundError))
                 return@launch
             }
 
@@ -256,7 +258,7 @@ class CommitmentFormViewModel(
             // Check if start time is lesser than end time
             if (!verifyStartAndEndTime(newCommitmentEntity.startDateTime, newCommitmentEntity.endDateTime)) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Start time must be lesser than End time"),
+                    DatabaseUiEvent.ShowError(strings.commitmentStartTimeError),
                 )
                 return@launch
             }
@@ -264,7 +266,7 @@ class CommitmentFormViewModel(
             // Check if title is not empty
             if (newCommitmentEntity.title.isEmpty()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Title cannot be empty"),
+                    DatabaseUiEvent.ShowError(strings.commitmentTitleEmptyError),
                 )
                 return@launch
             }
@@ -280,7 +282,7 @@ class CommitmentFormViewModel(
 
             if (conflictsNumbers > 0) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("There is a conflict with other commitments"),
+                    DatabaseUiEvent.ShowError(strings.commitmentConflictError),
                 )
                 return@launch
             }

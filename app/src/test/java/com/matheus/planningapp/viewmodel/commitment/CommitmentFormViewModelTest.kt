@@ -5,6 +5,10 @@ import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
 import com.matheus.planningapp.data.recurrence.RecurrenceRepository
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryEnglish
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryPortuguese
+import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.enums.FrequencyEnum
@@ -28,6 +32,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -37,6 +42,7 @@ class CommitmentFormViewModelTest {
     private lateinit var recurrenceRepository: RecurrenceRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var taskNotificationScheduler: TaskNotificationScheduler
+    private lateinit var strings: StringsRepository
     private lateinit var viewModel: CommitmentFormViewModel
     private val dispatcher = StandardTestDispatcher()
 
@@ -53,6 +59,12 @@ class CommitmentFormViewModelTest {
         recurrenceRepository = mockk<RecurrenceRepository>()
         settingsRepository = mockk<SettingsRepository>()
         taskNotificationScheduler = mockk<TaskNotificationScheduler>(relaxed = true)
+        strings =
+            when (Locale.getDefault().language) {
+                "pt" -> StringsRepositoryPortuguese()
+                "es" -> StringsRepositorySpanish()
+                else -> StringsRepositoryEnglish()
+            }
 
         coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.NO_SEND)
         coEvery { recurrenceRepository.getRecurrenceByCommitment(any()) } returns null
@@ -71,6 +83,7 @@ class CommitmentFormViewModelTest {
                 settingsRepository,
                 recurrenceRepository,
                 taskNotificationScheduler,
+                strings,
             )
     }
 
@@ -93,6 +106,7 @@ class CommitmentFormViewModelTest {
                 settingsRepository,
                 recurrenceRepository,
                 taskNotificationScheduler,
+                strings,
             )
     }
 
@@ -142,6 +156,7 @@ class CommitmentFormViewModelTest {
                     settingsRepository,
                     recurrenceRepository,
                     taskNotificationScheduler,
+                    strings,
                 )
 
             val collectJob =
@@ -177,6 +192,7 @@ class CommitmentFormViewModelTest {
                             settingsRepository,
                             recurrenceRepository,
                             taskNotificationScheduler,
+                            strings,
                         )
                     viewModel.events.collect { events.add(it) }
                 }
@@ -184,7 +200,7 @@ class CommitmentFormViewModelTest {
 
             // Then
             assertEquals(1, events.size)
-            assertEquals("Commitment not found", (events[0] as DatabaseUiEvent.ShowError).message)
+            assertEquals(strings.commitmentNotFoundError, (events[0] as DatabaseUiEvent.ShowError).message)
 
             collectJob.cancel()
         }
@@ -435,7 +451,7 @@ class CommitmentFormViewModelTest {
             // Then
             assertEquals(1, events.size)
             assertEquals(1, events.size)
-            assertEquals("Title cannot be empty", (events[0] as DatabaseUiEvent.ShowError).message)
+            assertEquals(strings.commitmentTitleEmptyError, (events[0] as DatabaseUiEvent.ShowError).message)
 
             collectJob.cancel()
             eventCollectJob.cancel()
@@ -459,7 +475,7 @@ class CommitmentFormViewModelTest {
             // Then
             assertEquals(1, events.size)
             assertEquals(
-                "Start time must be lesser than End time",
+                strings.commitmentStartTimeError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -505,7 +521,7 @@ class CommitmentFormViewModelTest {
             // Then
             assertEquals(1, events.size)
             assertEquals(
-                "There is a conflict with other commitments",
+                strings.commitmentConflictError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -642,7 +658,7 @@ class CommitmentFormViewModelTest {
             advanceUntilIdle()
 
             assertEquals(1, events.size)
-            assertEquals("Title cannot be empty", (events[0] as DatabaseUiEvent.ShowError).message)
+            assertEquals(strings.commitmentTitleEmptyError, (events[0] as DatabaseUiEvent.ShowError).message)
 
             uiStateCollectJob.cancel()
             eventCollectJob.cancel()
@@ -677,7 +693,7 @@ class CommitmentFormViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "Start time must be lesser than End time",
+                strings.commitmentStartTimeError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -725,7 +741,7 @@ class CommitmentFormViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "There is a conflict with other commitments",
+                strings.commitmentConflictError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -796,6 +812,7 @@ class CommitmentFormViewModelTest {
                             settingsRepository,
                             recurrenceRepository,
                             taskNotificationScheduler,
+                            strings,
                         )
                     tempViewModel.events.collect { events.add(it) }
                 }
@@ -803,7 +820,7 @@ class CommitmentFormViewModelTest {
             advanceUntilIdle()
 
             assertEquals(1, events.size)
-            assertEquals("Commitment not found", (events[0] as DatabaseUiEvent.ShowError).message)
+            assertEquals(strings.commitmentNotFoundError, (events[0] as DatabaseUiEvent.ShowError).message)
 
             collectJob.cancel()
         }

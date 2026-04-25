@@ -3,6 +3,10 @@ package com.matheus.planningapp.viewmodel.calendar
 import android.database.sqlite.SQLiteConstraintException
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.calendar.CalendarRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryEnglish
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryPortuguese
+import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
 import com.matheus.planningapp.util.DatabaseUiEvent
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -20,10 +24,12 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModelTest {
     private lateinit var calendarRepository: CalendarRepository
+    private lateinit var strings: StringsRepository
     private lateinit var viewModel: CalendarViewModel
     private val dispatcher = StandardTestDispatcher()
     private val initialCalendars =
@@ -37,8 +43,14 @@ class CalendarViewModelTest {
         Dispatchers.setMain(dispatcher)
 
         calendarRepository = mockk<CalendarRepository>()
+        strings =
+            when (Locale.getDefault().language) {
+                "pt" -> StringsRepositoryPortuguese()
+                "es" -> StringsRepositorySpanish()
+                else -> StringsRepositoryEnglish()
+            }
         coEvery { calendarRepository.getCalendars() } returns flowOf(initialCalendars)
-        viewModel = CalendarViewModel(calendarRepository)
+        viewModel = CalendarViewModel(calendarRepository, strings)
     }
 
     @After
@@ -66,7 +78,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "Calendar name cannot be empty",
+                strings.calendarEmptyNameError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -93,7 +105,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "Calendar name cannot be empty",
+                strings.calendarEmptyNameError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -175,7 +187,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "Calendar name must be unique",
+                strings.calendarNameMustBeUnique,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -202,7 +214,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "Calendar name cannot be empty",
+                strings.calendarEmptyNameError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -229,7 +241,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "Calendar name cannot be empty",
+                strings.calendarEmptyNameError,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -292,7 +304,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "The default calendar cannot be changed.",
+                strings.defaultCalendarCannotBeChanged,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 
@@ -339,7 +351,7 @@ class CalendarViewModelTest {
 
             assertEquals(1, events.size)
             assertEquals(
-                "The default calendar cannot be deleted.",
+                strings.defaultCalendarCannotBeDeleted,
                 (events[0] as DatabaseUiEvent.ShowError).message,
             )
 

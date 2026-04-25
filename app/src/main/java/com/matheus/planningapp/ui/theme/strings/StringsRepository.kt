@@ -37,6 +37,10 @@ interface StringsRepository {
     val dialogDeleteCalendarMessage: String
     val calendarNameField: String
     val calendarIsDefaultField: String
+    val calendarEmptyNameError: String
+    val calendarNameMustBeUnique: String
+    val defaultCalendarCannotBeChanged: String
+    val defaultCalendarCannotBeDeleted: String
 
     // Commitment information
     val dialogDeleteCommitmentTitle: String
@@ -47,9 +51,15 @@ interface StringsRepository {
     val commitmentEndField: String
     val commitmentPriorityField: String
     val searchCommitmentField: String
+    val commitmentNotFoundError: String
+    val commitmentStartTimeError: String
+    val commitmentTitleEmptyError: String
+    val commitmentConflictError: String
 
     // Reminder information
+    val reminderInfo: String
     val reminderField: String
+    val pastReminderError: String
 
     // Recurrence information
     val recurrenceFrequencyField: String

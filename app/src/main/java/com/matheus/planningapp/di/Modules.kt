@@ -11,6 +11,10 @@ import com.matheus.planningapp.data.recurrence.RecurrenceRepositoryImpl
 import com.matheus.planningapp.data.reminder.ReminderRepository
 import com.matheus.planningapp.data.reminder.ReminderRepositoryImpl
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryEnglish
+import com.matheus.planningapp.ui.theme.strings.StringsRepositoryPortuguese
+import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
@@ -21,9 +25,18 @@ import com.matheus.planningapp.viewmodel.setting.SettingViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import java.util.Locale
 
 val appModules =
     module {
+        single<StringsRepository> {
+            when (Locale.getDefault().language) {
+                "pt" -> StringsRepositoryPortuguese()
+                "es" -> StringsRepositorySpanish()
+                else -> StringsRepositoryEnglish()
+            }
+        }
+
         single {
             Room
                 .databaseBuilder(
@@ -46,8 +59,8 @@ val appModules =
         single<SettingsRepository> { SettingsRepository(get()) }
         single<TaskNotificationScheduler> { TaskNotificationScheduler(get(), get()) }
 
-        viewModel { HomeViewModel(get(), get(), get(), get(), get(), get()) }
-        viewModel { CalendarViewModel(get()) }
+        viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { CalendarViewModel(get(), get()) }
         viewModel { (commitmentFormMode: CommitmentFormMode) ->
             CommitmentFormViewModel(
                 commitmentFormMode = commitmentFormMode,
@@ -55,6 +68,7 @@ val appModules =
                 settingsRepository = get(),
                 recurrenceRepository = get(),
                 taskNotificationScheduler = get(),
+                strings = get(),
             )
         }
         viewModel { SettingViewModel(get(), get(), get(), get()) }

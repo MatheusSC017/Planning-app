@@ -37,6 +37,10 @@ class StringsRepositoryPortuguese : StringsRepository {
     override val dialogDeleteCalendarMessage = "Tem certeza de que deseja excluir este calendário?"
     override val calendarNameField = "Nome do calendário"
     override val calendarIsDefaultField = "Definir como padrão"
+    override val calendarEmptyNameError = "O nome do calendário não pode estar vazio"
+    override val calendarNameMustBeUnique = "O nome do calendário deve ser único"
+    override val defaultCalendarCannotBeChanged = "O calendário padrão não pode ser alterado"
+    override val defaultCalendarCannotBeDeleted = "O calendário padrão não pode ser excluído"
 
     // Commitment information
     override val dialogDeleteCommitmentTitle = "Excluir compromisso"
@@ -47,9 +51,15 @@ class StringsRepositoryPortuguese : StringsRepository {
     override val commitmentEndField = "Horário de término"
     override val commitmentPriorityField = "Prioridade"
     override val searchCommitmentField = "Buscar por tarefa"
+    override val commitmentNotFoundError = "Compromisso não encontrado"
+    override val commitmentStartTimeError = "O horário de início deve ser menor que o horário de término"
+    override val commitmentTitleEmptyError = "O título não pode estar vazio"
+    override val commitmentConflictError = "Há conflito com outro compromisso"
 
     // Reminder information
+    override val reminderInfo = "Lembrete em %s minutos"
     override val reminderField = "Minutos antes do compromisso"
+    override val pastReminderError = "Compromissos no passado não podem ter lembretes"
 
     // Recurrence information
     override val recurrenceFrequencyField = "Frequência"

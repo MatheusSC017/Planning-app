@@ -14,6 +14,7 @@ import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.reminder.ReminderEntity
 import com.matheus.planningapp.data.reminder.ReminderRepository
 import com.matheus.planningapp.datastore.SettingsRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
 import com.matheus.planningapp.util.enums.DayOfWeekEnum
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
@@ -45,6 +46,7 @@ class HomeViewModel(
     private val reminderRepository: ReminderRepository,
     settingsRepository: SettingsRepository,
     private val taskNotificationScheduler: TaskNotificationScheduler,
+    private val strings: StringsRepository,
 ) : ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
@@ -143,7 +145,7 @@ class HomeViewModel(
         if (isPastCommitment(commitmentEntity.startDateTime, minutesBeforeCommitment)) {
             viewModelScope.launch {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Past commitments cannot have reminders"),
+                    DatabaseUiEvent.ShowError(strings.pastReminderError),
                 )
             }
             return

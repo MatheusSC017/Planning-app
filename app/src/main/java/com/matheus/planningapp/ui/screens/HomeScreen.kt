@@ -1746,7 +1746,7 @@ fun ReminderViewDialog(
                             ) {
                                 // TODO: Move this text to strings
                                 Text(
-                                    text = "Reminder in ${reminder.minutesBeforeCommitment} Minutes",
+                                    text = strings.reminderInfo.format(reminder.minutesBeforeCommitment),
                                     style =
                                         TextStyle(
                                             fontSize = PageDesignSettings.mediumText,

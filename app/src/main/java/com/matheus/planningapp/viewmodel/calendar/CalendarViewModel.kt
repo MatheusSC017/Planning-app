@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.calendar.CalendarRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 
 class CalendarViewModel(
     private val calendarRepository: CalendarRepository,
+    private val strings: StringsRepository,
 ) : ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
@@ -24,7 +26,7 @@ class CalendarViewModel(
             // Check if calendar name is empty
             if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Calendar name cannot be empty"),
+                    DatabaseUiEvent.ShowError(strings.calendarEmptyNameError),
                 )
                 return@launch
             }
@@ -40,7 +42,7 @@ class CalendarViewModel(
             } catch (e: SQLiteConstraintException) {
                 e.printStackTrace()
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Calendar name must be unique"),
+                    DatabaseUiEvent.ShowError(strings.calendarNameMustBeUnique),
                 )
                 return@launch
             }
@@ -52,7 +54,7 @@ class CalendarViewModel(
             // Check if calendar name is empty
             if (calendarEntity.name.isEmpty() || calendarEntity.name.isBlank()) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("Calendar name cannot be empty"),
+                    DatabaseUiEvent.ShowError(strings.calendarEmptyNameError),
                 )
                 return@launch
             }
@@ -66,7 +68,7 @@ class CalendarViewModel(
             // Check if the current calendar is the default; if it is, a different calendar must be set first.
             if (currentCalendarEntity?.isDefault == true && !calendarEntity.isDefault) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("The default calendar cannot be changed."),
+                    DatabaseUiEvent.ShowError(strings.defaultCalendarCannotBeChanged),
                 )
                 return@launch
             }
@@ -79,7 +81,7 @@ class CalendarViewModel(
         viewModelScope.launch {
             if (calendarEntity.isDefault) {
                 _events.emit(
-                    DatabaseUiEvent.ShowError("The default calendar cannot be deleted."),
+                    DatabaseUiEvent.ShowError(strings.defaultCalendarCannotBeDeleted),
                 )
                 return@launch
             }
