@@ -141,7 +141,6 @@ class HomeViewModel(
         notificationPermissionLauncher: ActivityResultLauncher<String>,
         scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
     ) {
-        // TODO: Include error messages in strings
         if (isPastCommitment(commitmentEntity.startDateTime, minutesBeforeCommitment)) {
             viewModelScope.launch {
                 _events.emit(
@@ -164,6 +163,55 @@ class HomeViewModel(
                 taskNotificationScheduler.scheduleReminderNotification(
                     commitmentEntity = commitmentEntity,
                     reminderId = remiderId,
+                    minutesBeforeCommitment = minutesBeforeCommitment,
+                )
+            }
+        }
+    }
+
+    fun updateReminder(
+        reminderEntity: ReminderEntity,
+        startDateTime: Instant,
+        minutesBeforeCommitment: Int,
+        notificationPermissionLauncher: ActivityResultLauncher<String>,
+        scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
+    ) {
+        if (isPastCommitment(startDateTime, minutesBeforeCommitment)) {
+            viewModelScope.launch {
+                _events.emit(
+                    DatabaseUiEvent.ShowError(strings.pastReminderError),
+                )
+            }
+            return
+        }
+
+        val updatedReminder =
+            ReminderEntity(
+                id = reminderEntity.id,
+                commitment = reminderEntity.commitment,
+                minutesBeforeCommitment = minutesBeforeCommitment,
+                createdAt = reminderEntity.createdAt,
+                updatedAt = Clock.System.now(),
+            )
+
+        viewModelScope.launch {
+            reminderRepository.update(updatedReminder)
+
+            if (requestNotificationPermission(notificationPermissionLauncher, scheduleExactAlarmLauncher)) {
+                val commitmentEntity = commitmentRepository.getCommitment(updatedReminder.commitment)
+
+                if (commitmentEntity == null) {
+                    _events.emit(DatabaseUiEvent.ShowError(strings.commitmentNotFoundError))
+                    return@launch
+                }
+
+                taskNotificationScheduler.cancelReminderNotification(
+                    commitmentId = commitmentEntity.id,
+                    reminderId = updatedReminder.id,
+                )
+                taskNotificationScheduler.scheduleReminderNotification(
+                    commitmentEntity = commitmentEntity,
+                    reminderId = updatedReminder.id,
                     minutesBeforeCommitment = minutesBeforeCommitment,
                 )
             }

@@ -382,9 +382,18 @@ fun CalendarContent(
         commitmentEntity = selectedCommitment,
         reminders = reminders,
         showDialog = showReminderViewDialog,
-        onReminderAction = { commitmentEntity, minutesBeforeCommitment ->
+        onInsertReminderAction = { commitmentEntity, minutesBeforeCommitment ->
             homeViewModel.insertReminder(
                 commitmentEntity,
+                minutesBeforeCommitment,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+        },
+        onUpdateReminderAction = { reminderEntity, startDateTime, minutesBeforeCommitment ->
+            homeViewModel.updateReminder(
+                reminderEntity,
+                startDateTime,
                 minutesBeforeCommitment,
                 notificationPermissionLauncher,
                 scheduleExactAlarmLauncher,
@@ -1617,13 +1626,15 @@ fun ReminderViewDialog(
     commitmentEntity: CommitmentEntity?,
     reminders: List<ReminderEntity>,
     showDialog: Boolean,
-    onReminderAction: (commitmentEntity: CommitmentEntity, minutesBeforeCommitment: Int) -> Unit,
+    onInsertReminderAction: (commitmentEntity: CommitmentEntity, minutesBeforeCommitment: Int) -> Unit,
+    onUpdateReminderAction: (reminderEntity: ReminderEntity, startDateTime: Instant, minutesBeforeCommitment: Int) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     if (commitmentEntity == null) return
 
     val strings: StringsRepository = LocalStrings.current
 
+    var selectedReminder by remember { mutableStateOf<ReminderEntity?>(null) }
     var minutesBeforeCommitment by remember { mutableStateOf(1) }
 
     val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -1723,6 +1734,31 @@ fun ReminderViewDialog(
                         maxValue = 60,
                     )
 
+                    if (selectedReminder != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            Button(
+                                onClick = {
+                                    selectedReminder = null
+                                },
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.secondary,
+                                    ),
+                            ) {
+                                Text(
+                                    text = strings.cancelButton,
+                                    fontSize = PageDesignSettings.largeText,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
+                        }
+                    }
+
                     LazyColumn(
                         modifier = Modifier.padding(top = PageDesignSettings.mediumPaddingValue),
                     ) {
@@ -1744,7 +1780,6 @@ fun ReminderViewDialog(
                                         ).padding(PageDesignSettings.smallPaddingValue),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                // TODO: Move this text to strings
                                 Text(
                                     text = strings.reminderInfo.format(reminder.minutesBeforeCommitment),
                                     style =
@@ -1756,7 +1791,8 @@ fun ReminderViewDialog(
 
                                 IconButton(
                                     onClick = {
-                                        // TODO: Edit reminder action
+                                        selectedReminder = reminder
+                                        minutesBeforeCommitment = reminder.minutesBeforeCommitment
                                     },
                                 ) {
                                     Icon(
@@ -1785,19 +1821,24 @@ fun ReminderViewDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        onReminderAction(commitmentEntity, minutesBeforeCommitment)
+                        val currentReminder = selectedReminder
+
+                        if (currentReminder == null) {
+                            onInsertReminderAction(commitmentEntity, minutesBeforeCommitment)
+                        } else {
+                            onUpdateReminderAction(currentReminder, commitmentEntity.startDateTime, minutesBeforeCommitment)
+                        }
                         minutesBeforeCommitment = 1
-                        onDismissRequest()
                     },
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.primary,
                         ),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.width(PageDesignSettings.mediumComponentSize),
                 ) {
                     Text(
-                        text = strings.confirmButton,
+                        text = if (selectedReminder == null) strings.insertButton else strings.updateButton,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary,
@@ -1815,7 +1856,7 @@ fun ReminderViewDialog(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.secondary,
                         ),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.width(PageDesignSettings.mediumComponentSize),
                 ) {
                     Text(
                         text = strings.dismissButton,

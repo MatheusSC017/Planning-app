@@ -6,7 +6,7 @@ class StringsRepositorySpanish : StringsRepository {
     override val timeline = "Cronograma"
 
     // Text for buttons in general
-    override val insertButton = "Insertar nuevo elemento"
+    override val insertButton = "Insertar"
     override val viewButton = "Ver"
     override val reminderButton = "Recordar"
     override val dismissButton = "Descartar"
