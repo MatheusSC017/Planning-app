@@ -399,6 +399,9 @@ fun CalendarContent(
                 scheduleExactAlarmLauncher,
             )
         },
+        onDeleteReminderAction = { reminderEntity ->
+            homeViewModel.deleteReminder(reminderEntity, notificationPermissionLauncher, scheduleExactAlarmLauncher)
+        },
         onDismissRequest = { showReminderViewDialog = false },
     )
 
@@ -1628,6 +1631,7 @@ fun ReminderViewDialog(
     showDialog: Boolean,
     onInsertReminderAction: (commitmentEntity: CommitmentEntity, minutesBeforeCommitment: Int) -> Unit,
     onUpdateReminderAction: (reminderEntity: ReminderEntity, startDateTime: Instant, minutesBeforeCommitment: Int) -> Unit,
+    onDeleteReminderAction: (reminderEntity: ReminderEntity) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     if (commitmentEntity == null) return
@@ -1804,7 +1808,7 @@ fun ReminderViewDialog(
 
                                 IconButton(
                                     onClick = {
-                                        // TODO: Delete reminder action
+                                        onDeleteReminderAction(reminder)
                                     },
                                 ) {
                                     Icon(
@@ -1827,6 +1831,7 @@ fun ReminderViewDialog(
                             onInsertReminderAction(commitmentEntity, minutesBeforeCommitment)
                         } else {
                             onUpdateReminderAction(currentReminder, commitmentEntity.startDateTime, minutesBeforeCommitment)
+                            selectedReminder = null
                         }
                         minutesBeforeCommitment = 1
                     },

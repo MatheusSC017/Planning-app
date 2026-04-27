@@ -218,6 +218,23 @@ class HomeViewModel(
         }
     }
 
+    fun deleteReminder(
+        reminderEntity: ReminderEntity,
+        notificationPermissionLauncher: ActivityResultLauncher<String>,
+        scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>,
+    ) {
+        viewModelScope.launch {
+            reminderRepository.delete(reminderEntity)
+
+            if (requestNotificationPermission(notificationPermissionLauncher, scheduleExactAlarmLauncher)) {
+                taskNotificationScheduler.cancelReminderNotification(
+                    commitmentId = reminderEntity.commitment,
+                    reminderId = reminderEntity.id,
+                )
+            }
+        }
+    }
+
     private fun isPastCommitment(
         startDateTime: Instant,
         minutesBeforeCommitment: Int,
