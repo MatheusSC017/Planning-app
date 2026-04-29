@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -29,7 +30,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
@@ -77,6 +77,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -1650,6 +1651,7 @@ fun ReminderViewDialog(
         AlertDialog(
             onDismissRequest = {
                 minutesBeforeCommitment = 1
+                selectedReminder = null
                 onDismissRequest()
             },
             title = {
@@ -1661,10 +1663,15 @@ fun ReminderViewDialog(
                         color = MaterialTheme.colorScheme.onSecondary,
                     )
 
-                    HorizontalDivider()
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = PageDesignSettings.mediumPaddingValue),
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = PageDesignSettings.smallPaddingValue),
                     ) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
@@ -1715,145 +1722,60 @@ fun ReminderViewDialog(
                 Column(
                     modifier =
                         Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
-                            ).padding(PageDesignSettings.mediumPaddingValue),
+                            .fillMaxWidth(),
                 ) {
-                    Text(
-                        text = strings.reminderField,
-                        style =
-                            TextStyle(
-                                fontSize = PageDesignSettings.smallTitle,
-                                color = MaterialTheme.colorScheme.primary,
-                            ),
-                    )
+                    // Section 1: Reminder Form
+                    Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
 
-                    IntegerField(
-                        selectedValue = minutesBeforeCommitment,
-                        onIntegerValueChange = { newValue ->
-                            minutesBeforeCommitment = newValue
+                    ReminderFormSection(
+                        selectedReminder = selectedReminder,
+                        minutesBeforeCommitment = minutesBeforeCommitment,
+                        onMinutesChange = { minutesBeforeCommitment = it },
+                        onCancelClick = { selectedReminder = null },
+                        onSubmitClick = {
+                            val currentReminder = selectedReminder
+
+                            if (currentReminder == null) {
+                                onInsertReminderAction(commitmentEntity, minutesBeforeCommitment)
+                            } else {
+                                onUpdateReminderAction(currentReminder, commitmentEntity.startDateTime, minutesBeforeCommitment)
+                                selectedReminder = null
+                            }
+                            minutesBeforeCommitment = 1
                         },
-                        minValue = 1,
-                        maxValue = 60,
                     )
 
-                    if (selectedReminder != null) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            Button(
-                                onClick = {
-                                    selectedReminder = null
-                                },
-                                colors =
-                                    ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.secondary,
-                                    ),
-                            ) {
-                                Text(
-                                    text = strings.cancelButton,
-                                    fontSize = PageDesignSettings.largeText,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                )
-                            }
-                        }
-                    }
+                    if (reminders.isNotEmpty()) {
+                        // Section 2: Reminder List
+                        Text(
+                            text = "Active Reminders (${reminders.size})",
+                            style =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.smallTitle,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                ),
+                            modifier = Modifier.padding(bottom = PageDesignSettings.mediumPaddingValue),
+                        )
 
-                    LazyColumn(
-                        modifier = Modifier.padding(top = PageDesignSettings.mediumPaddingValue),
-                    ) {
-                        items(reminders) { reminder ->
-                            Row(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = PageDesignSettings.mediumPaddingValue)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = RoundedCornerShape(PageDesignSettings.smallIconClip),
-                                        ).border(
-                                            BorderStroke(
-                                                PageDesignSettings.borderWidth,
-                                                MaterialTheme.colorScheme.secondary,
-                                            ),
-                                            shape = RoundedCornerShape(PageDesignSettings.smallIconClip),
-                                        ).padding(PageDesignSettings.smallPaddingValue),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = strings.reminderInfo.format(reminder.minutesBeforeCommitment),
-                                    style =
-                                        TextStyle(
-                                            fontSize = PageDesignSettings.mediumText,
-                                            color = MaterialTheme.colorScheme.secondary,
-                                        ),
-                                )
-
-                                IconButton(
-                                    onClick = {
-                                        selectedReminder = reminder
-                                        minutesBeforeCommitment = reminder.minutesBeforeCommitment
-                                    },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = strings.updateButton,
-                                        tint = MaterialTheme.colorScheme.secondary,
-                                    )
-                                }
-
-                                IconButton(
-                                    onClick = {
-                                        onDeleteReminderAction(reminder)
-                                    },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = strings.deleteButton,
-                                        tint = MaterialTheme.colorScheme.secondary,
-                                    )
-                                }
-                            }
-                        }
+                        ReminderListSection(
+                            reminders = reminders,
+                            selectedReminder = selectedReminder,
+                            onEditReminder = { reminder ->
+                                selectedReminder = reminder
+                                minutesBeforeCommitment = reminder.minutesBeforeCommitment
+                            },
+                            onDeleteReminder = onDeleteReminderAction,
+                        )
                     }
                 }
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val currentReminder = selectedReminder
-
-                        if (currentReminder == null) {
-                            onInsertReminderAction(commitmentEntity, minutesBeforeCommitment)
-                        } else {
-                            onUpdateReminderAction(currentReminder, commitmentEntity.startDateTime, minutesBeforeCommitment)
-                            selectedReminder = null
-                        }
-                        minutesBeforeCommitment = 1
-                    },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                        ),
-                    modifier = Modifier.width(PageDesignSettings.mediumComponentSize),
-                ) {
-                    Text(
-                        text = if (selectedReminder == null) strings.insertButton else strings.updateButton,
-                        fontSize = PageDesignSettings.largeText,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            },
+            confirmButton = {},
             dismissButton = {
                 Button(
                     onClick = {
                         minutesBeforeCommitment = 1
+                        selectedReminder = null
                         onDismissRequest()
                     },
                     colors =
@@ -1861,17 +1783,323 @@ fun ReminderViewDialog(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.secondary,
                         ),
-                    modifier = Modifier.width(PageDesignSettings.mediumComponentSize),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
                 ) {
                     Text(
                         text = strings.dismissButton,
                         fontSize = PageDesignSettings.largeText,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(vertical = PageDesignSettings.smallPaddingValue),
                     )
                 }
             },
             containerColor = MaterialTheme.colorScheme.onBackground,
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(PageDesignSettings.largeIconClip))
+                    .border(
+                        width = 1.5.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                    ),
         )
+    }
+}
+
+@Composable
+fun ReminderFormSection(
+    selectedReminder: ReminderEntity?,
+    minutesBeforeCommitment: Int,
+    onMinutesChange: (Int) -> Unit,
+    onCancelClick: () -> Unit,
+    onSubmitClick: () -> Unit,
+) {
+    val strings: StringsRepository = LocalStrings.current
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    brush =
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            ),
+                        ),
+                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                ).border(
+                    width = 1.5.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                ).padding(PageDesignSettings.extraLargePaddingValue),
+    ) {
+        // Form Title
+        Text(
+            text = if (selectedReminder == null) strings.insertButton else strings.updateButton,
+            style =
+                TextStyle(
+                    fontSize = PageDesignSettings.smallTitle,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                ),
+            modifier = Modifier.padding(bottom = PageDesignSettings.mediumPaddingValue),
+        )
+
+        // Minutes Input Field
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = PageDesignSettings.extraLargePaddingValue),
+        ) {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = PageDesignSettings.smallPaddingValue),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.mediumIconSize)
+                            .padding(end = PageDesignSettings.mediumPaddingValue),
+                )
+
+                Text(
+                    text = strings.reminderField,
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                )
+            }
+
+            IntegerField(
+                selectedValue = minutesBeforeCommitment,
+                onIntegerValueChange = onMinutesChange,
+                minValue = 1,
+                maxValue = 60,
+            )
+        }
+
+        // Action Buttons
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = PageDesignSettings.mediumPaddingValue),
+            horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumPaddingValue),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Button(
+                enabled = selectedReminder != null,
+                onClick = onCancelClick,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    ),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+            ) {
+                Text(
+                    text = strings.cancelButton,
+                    fontSize = PageDesignSettings.mediumText,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            Button(
+                onClick = onSubmitClick,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
+                modifier =
+                    Modifier
+                        .weight(1.2f)
+                        .height(48.dp),
+                shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                elevation =
+                    ButtonDefaults.buttonElevation(
+                        defaultElevation = 8.dp,
+                        pressedElevation = 12.dp,
+                    ),
+            ) {
+                Text(
+                    text = if (selectedReminder == null) strings.insertButton else strings.updateButton,
+                    fontSize = PageDesignSettings.mediumText,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ReminderListSection(
+    reminders: List<ReminderEntity>,
+    selectedReminder: ReminderEntity?,
+    onEditReminder: (ReminderEntity) -> Unit,
+    onDeleteReminder: (ReminderEntity) -> Unit,
+) {
+    LazyColumn(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp),
+        verticalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumPaddingValue),
+    ) {
+        items(reminders) { reminder ->
+            ReminderItemCard(
+                reminder = reminder,
+                isSelected = selectedReminder?.id == reminder.id,
+                onEdit = { onEditReminder(reminder) },
+                onDelete = { onDeleteReminder(reminder) },
+            )
+        }
+    }
+}
+
+@Composable
+fun ReminderItemCard(
+    reminder: ReminderEntity,
+    isSelected: Boolean,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    val strings: StringsRepository = LocalStrings.current
+
+    Card(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(
+                    width = if (isSelected) 2.dp else 1.dp,
+                    color =
+                        if (isSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.tertiary
+                        },
+                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                ).clip(RoundedCornerShape(PageDesignSettings.mediumIconClip)),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    } else {
+                        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+                    },
+            ),
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(PageDesignSettings.mediumPaddingValue),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            // Reminder Info with Icon
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumPaddingValue),
+            ) {
+                // Time Icon with background
+                Box(
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.largeIconSize)
+                            .background(
+                                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
+                                shape = CircleShape,
+                            ).clip(CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                    )
+                }
+
+                // Reminder text info
+                Text(
+                    text = strings.reminderInfo.format(reminder.minutesBeforeCommitment),
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.smallText,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        ),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+
+            // Action Buttons
+            Row(
+                modifier =
+                    Modifier
+                        .wrapContentWidth()
+                        .padding(start = PageDesignSettings.smallPaddingValue),
+                horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.smallPaddingValue),
+            ) {
+                IconButton(
+                    onClick = onEdit,
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.mediumIconSize)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                            ).clip(RoundedCornerShape(PageDesignSettings.largeIconClip)),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = strings.updateButton,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                    )
+                }
+
+                IconButton(
+                    onClick = onDelete,
+                    modifier =
+                        Modifier
+                            .size(PageDesignSettings.mediumIconSize)
+                            .background(
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                            ).clip(RoundedCornerShape(PageDesignSettings.largeIconClip)),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = strings.deleteButton,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                    )
+                }
+            }
+        }
     }
 }
