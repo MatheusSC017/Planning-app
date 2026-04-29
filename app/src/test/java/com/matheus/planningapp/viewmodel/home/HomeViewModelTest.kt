@@ -1,10 +1,13 @@
 package com.matheus.planningapp.viewmodel.home
 
 import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
+import com.matheus.planningapp.data.reminder.ReminderEntity
 import com.matheus.planningapp.data.reminder.ReminderRepository
 import com.matheus.planningapp.datastore.SettingsRepository
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -15,8 +18,11 @@ import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.ViewEnum
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +41,7 @@ import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
 import java.util.Locale
+import kotlin.String
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -44,6 +51,8 @@ class HomeViewModelTest {
     private lateinit var reminderRepository: ReminderRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var taskNotificationScheduler: TaskNotificationScheduler
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>
     private lateinit var strings: StringsRepository
     private lateinit var viewModel: HomeViewModel
     private val dispatcher = StandardTestDispatcher()
@@ -64,6 +73,9 @@ class HomeViewModelTest {
         reminderRepository = mockk<ReminderRepository>()
         settingsRepository = mockk<SettingsRepository>()
         taskNotificationScheduler = mockk<TaskNotificationScheduler>()
+        notificationPermissionLauncher = mockk<ActivityResultLauncher<String>>()
+        scheduleExactAlarmLauncher = mockk<ActivityResultLauncher<Intent>>()
+
         strings =
             when (Locale.getDefault().language) {
                 "pt" -> StringsRepositoryPortuguese()
@@ -75,6 +87,8 @@ class HomeViewModelTest {
         coEvery { calendarRepository.ensureDefaultCalendarExists() } returns Unit
         coEvery { settingsRepository.viewModeFlow } returns flowOf(ViewEnum.COLUMN)
         coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.NO_SEND)
+        every { notificationPermissionLauncher.launch(any()) } just Runs
+        every { scheduleExactAlarmLauncher.launch(any()) } just Runs
 
         viewModel =
             HomeViewModel(
@@ -412,5 +426,204 @@ class HomeViewModelTest {
             coVerify { calendarRepository.ensureDefaultCalendarExists() }
         }
 
-    // TODO: Include test to reminder methods
+    @Test
+    fun `getRemindersByCommitment should emit reminders for specified commitment`() =
+        runTest {
+            // Given
+            val commitmentId = 1L
+            val reminders =
+                listOf(
+                    ReminderEntity(
+                        id = 1,
+                        commitment = commitmentId,
+                        minutesBeforeCommitment = 15,
+                    ),
+                    ReminderEntity(
+                        id = 2,
+                        commitment = commitmentId,
+                        minutesBeforeCommitment = 30,
+                    ),
+                )
+
+            coEvery { reminderRepository.getRemindersByCommitment(commitmentId) } returns flowOf(reminders)
+
+            // When
+            val collectedReminders = mutableListOf<List<ReminderEntity>>()
+            val collectJob =
+                launch {
+                    viewModel.getRemindersByCommitment(commitmentId).collect {
+                        collectedReminders.add(it)
+                    }
+                }
+
+            advanceUntilIdle()
+
+            // Then
+            assertEquals(1, collectedReminders.size)
+            assertEquals(reminders, collectedReminders[0])
+
+            collectJob.cancel()
+        }
+
+    @Test
+    fun `insertReminder should emit error when commitment is in the past`() =
+        runTest {
+            // Given
+            val pastCommitment =
+                CommitmentEntity(
+                    id = 1,
+                    calendar = 1,
+                    title = "Past Meeting",
+                    description = null,
+                    startDateTime = Clock.System.now().minus(kotlin.time.Duration.parse("1h")),
+                    endDateTime = Clock.System.now().minus(kotlin.time.Duration.parse("30m")),
+                    priorityEnum = PriorityEnum.HIGH,
+                )
+            val minutesBeforeCommitment = 15
+
+            // When
+            viewModel.insertReminder(
+                pastCommitment,
+                minutesBeforeCommitment,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+            advanceUntilIdle()
+
+            // Then
+            coVerify(exactly = 0) {
+                reminderRepository.insert(any())
+            }
+        }
+
+    @Test
+    fun `updateReminder should emit error when commitment is in the past`() =
+        runTest {
+            // Given
+            val reminderEntity =
+                ReminderEntity(
+                    id = 1,
+                    commitment = 1,
+                    minutesBeforeCommitment = 15,
+                )
+            val pastDateTime = Clock.System.now().minus(kotlin.time.Duration.parse("1h"))
+            val minutesBeforeCommitment = 30
+
+            // When
+            viewModel.updateReminder(
+                reminderEntity,
+                pastDateTime,
+                minutesBeforeCommitment,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+            advanceUntilIdle()
+
+            // Then
+            coVerify(exactly = 0) {
+                reminderRepository.update(any())
+            }
+        }
+
+    @Test
+    fun `insertReminder should call repository insert when commitment is not past`() =
+        runTest {
+            // Given
+            val commitmentEntity =
+                CommitmentEntity(
+                    id = 1,
+                    calendar = 1,
+                    title = "Future Meeting",
+                    description = null,
+                    startDateTime = Clock.System.now().plus(kotlin.time.Duration.parse("2h")),
+                    endDateTime = Clock.System.now().plus(kotlin.time.Duration.parse("3h")),
+                    priorityEnum = PriorityEnum.HIGH,
+                )
+            val minutesBeforeCommitment = 15
+            val reminderId = 1L
+
+            coEvery { reminderRepository.insert(any()) } returns reminderId
+            coEvery { taskNotificationScheduler.scheduleReminderNotification(any(), any(), any()) } returns Unit
+
+            // When
+            viewModel.insertReminder(
+                commitmentEntity,
+                minutesBeforeCommitment,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+            advanceUntilIdle()
+
+            // Then
+            coVerify { reminderRepository.insert(any()) }
+        }
+
+    @Test
+    fun `updateReminder should call repository update when commitment is not past`() =
+        runTest {
+            // Given
+            val reminderEntity =
+                ReminderEntity(
+                    id = 1,
+                    commitment = 1,
+                    minutesBeforeCommitment = 15,
+                )
+            val newMinutesBeforeCommitment = 30
+            val futureDateTime = Clock.System.now().plus(kotlin.time.Duration.parse("2h"))
+
+            val commitmentEntity =
+                CommitmentEntity(
+                    id = 1,
+                    calendar = 1,
+                    title = "Meeting",
+                    description = null,
+                    startDateTime = futureDateTime,
+                    endDateTime = futureDateTime.plus(kotlin.time.Duration.parse("1h")),
+                    priorityEnum = PriorityEnum.HIGH,
+                )
+
+            coEvery { reminderRepository.update(any()) } returns Unit
+            coEvery { commitmentRepository.getCommitment(1) } returns commitmentEntity
+            coEvery { taskNotificationScheduler.scheduleReminderNotification(any(), any(), any()) } returns Unit
+            coEvery { taskNotificationScheduler.cancelReminderNotification(any(), any()) } returns Unit
+
+            // When
+            viewModel.updateReminder(
+                reminderEntity,
+                futureDateTime,
+                newMinutesBeforeCommitment,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+            advanceUntilIdle()
+
+            // Then
+            coVerify { reminderRepository.update(any()) }
+        }
+
+    @Test
+    fun `deleteReminder should call repository delete and cancel notification`() =
+        runTest {
+            // Given
+            val reminderEntity =
+                ReminderEntity(
+                    id = 1,
+                    commitment = 1,
+                    minutesBeforeCommitment = 15,
+                )
+
+            coEvery { reminderRepository.delete(any()) } returns Unit
+            coEvery { taskNotificationScheduler.cancelReminderNotification(any(), any()) } returns Unit
+
+            // When
+            viewModel.deleteReminder(
+                reminderEntity,
+                notificationPermissionLauncher,
+                scheduleExactAlarmLauncher,
+            )
+            advanceUntilIdle()
+
+            // Then
+            coVerify { reminderRepository.delete(reminderEntity) }
+        }
 }
