@@ -57,6 +57,7 @@ interface StringsRepository {
     val commitmentConflictError: String
 
     // Reminder information
+    val reminderListTitle: String
     val reminderInfo: String
     val reminderField: String
     val pastReminderError: String

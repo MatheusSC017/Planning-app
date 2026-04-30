@@ -57,6 +57,7 @@ class StringsRepositorySpanish : StringsRepository {
     override val commitmentConflictError = "Hay un conflicto con otro compromiso"
 
     // Reminder information
+    override val reminderListTitle = "Recordatorios activos"
     override val reminderInfo = "Recordar en %s minutos"
     override val reminderField = "Minutos antes del compromiso"
     override val pastReminderError = "Los compartimentos en el pasado no pueden tener recordatorios"

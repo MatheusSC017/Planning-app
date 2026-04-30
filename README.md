@@ -2,13 +2,25 @@
 
 Planning App is a task and schedule management application designed to help users organize daily activities efficiently. It supports time-based scheduling and recurring tasks, focusing on scalability and clean data handling.
 
+## Indices
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Technologies](#Technologies)
+- [Structure](#Structure)
+- [Recurrence Logic](#Recurrence%20Logic)
+- [License](#License)
+- [Author](#Author)
+
 ## Features
 
 - Create, edit, and delete tasks
 
 - Organize tasks by priority
 
-- Define the recurrence of tasks.
+- Define the recurrence of tasks
+
+- Define reminders for tasks
 
 - Simple and intuitive user interface
 
@@ -35,7 +47,7 @@ Planning App is a task and schedule management application designed to help user
 ### Settings
 ![settings_ui.png](images_readme/settings_ui.png)
 
-## Technologies Used
+## Technologies
 
 Language: Kotlin
 
@@ -49,7 +61,7 @@ Build: Gradle
 
 Version Control System: Git
 
-## Project Structure
+## Structure
 
 ```
 Planningapp
@@ -59,6 +71,7 @@ Planningapp
 |   |   ├── calendar
 |   |   ├── commitment
 |   |   ├── recurrence
+|   |   ├── reminder
 |   |   ├── local.converters
 |   |   └── CalendarDatabase
 │   ├── datastore
@@ -67,8 +80,16 @@ Planningapp
 │   ├── ui
 |   |   ├── screens
 |   |   └── theme
+|   |       └── strings
 │   ├── utils
+|   |   ├── enums
+|   |   └── notification
 │   ├── viewmodel
+|   |   ├── calendar
+|   |   ├── commitment
+|   |   ├── recurrence
+|   |   ├── setting
+|   |   └── home
 │   ├── MainActivity.kt
 │   └── PlanningAppApplication.kt
 └── README.md

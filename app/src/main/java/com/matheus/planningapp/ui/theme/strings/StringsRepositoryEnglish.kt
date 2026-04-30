@@ -57,6 +57,7 @@ class StringsRepositoryEnglish : StringsRepository {
     override val commitmentConflictError = "There is a conflict with other commitments"
 
     // Reminder information
+    override val reminderListTitle = "Active Reminders"
     override val reminderInfo = "Reminder in %s Minutes"
     override val reminderField = "Minutes before the appointment"
     override val pastReminderError = "Past commitments cannot have reminders"

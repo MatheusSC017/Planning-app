@@ -1748,7 +1748,7 @@ fun ReminderViewDialog(
                     if (reminders.isNotEmpty()) {
                         // Section 2: Reminder List
                         Text(
-                            text = "Active Reminders (${reminders.size})",
+                            text = "${strings.reminderListTitle} (${reminders.size})",
                             style =
                                 TextStyle(
                                     fontSize = PageDesignSettings.smallTitle,
