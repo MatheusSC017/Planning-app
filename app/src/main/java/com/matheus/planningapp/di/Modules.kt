@@ -15,6 +15,7 @@ import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.ui.theme.strings.StringsRepositoryEnglish
 import com.matheus.planningapp.ui.theme.strings.StringsRepositoryPortuguese
 import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
+import com.matheus.planningapp.util.PermissionManager
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
@@ -58,6 +59,7 @@ val appModules =
         single<ReminderRepository> { ReminderRepositoryImpl(get()) }
         single<SettingsRepository> { SettingsRepository(get()) }
         single<TaskNotificationScheduler> { TaskNotificationScheduler(get(), get()) }
+        single<PermissionManager> { PermissionManager(get()) }
 
         viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get()) }
         viewModel { CalendarViewModel(get(), get()) }

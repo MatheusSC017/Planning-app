@@ -14,6 +14,7 @@ import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.ui.theme.strings.StringsRepositoryEnglish
 import com.matheus.planningapp.ui.theme.strings.StringsRepositoryPortuguese
 import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
+import com.matheus.planningapp.util.PermissionManager
 import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.ViewEnum
@@ -45,10 +46,10 @@ import kotlin.String
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
-    private lateinit var context: Context
     private lateinit var calendarRepository: CalendarRepository
     private lateinit var commitmentRepository: CommitmentRepository
     private lateinit var reminderRepository: ReminderRepository
+    private lateinit var permissionManager: PermissionManager
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var taskNotificationScheduler: TaskNotificationScheduler
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
@@ -67,10 +68,10 @@ class HomeViewModelTest {
     fun setUp() {
         Dispatchers.setMain(dispatcher)
 
-        context = mockk<Context>()
         calendarRepository = mockk<CalendarRepository>()
         commitmentRepository = mockk<CommitmentRepository>()
         reminderRepository = mockk<ReminderRepository>()
+        permissionManager = mockk<PermissionManager>()
         settingsRepository = mockk<SettingsRepository>()
         taskNotificationScheduler = mockk<TaskNotificationScheduler>()
         notificationPermissionLauncher = mockk<ActivityResultLauncher<String>>()
@@ -92,10 +93,10 @@ class HomeViewModelTest {
 
         viewModel =
             HomeViewModel(
-                context,
                 calendarRepository,
                 commitmentRepository,
                 reminderRepository,
+                permissionManager,
                 settingsRepository,
                 taskNotificationScheduler,
                 strings,
@@ -481,6 +482,8 @@ class HomeViewModelTest {
                 )
             val minutesBeforeCommitment = 15
 
+            coEvery { permissionManager.requestNotificationAndAlarmPermissions(any(), any()) } returns true
+
             // When
             viewModel.insertReminder(
                 pastCommitment,
@@ -508,6 +511,8 @@ class HomeViewModelTest {
                 )
             val pastDateTime = Clock.System.now().minus(kotlin.time.Duration.parse("1h"))
             val minutesBeforeCommitment = 30
+
+            coEvery { permissionManager.requestNotificationAndAlarmPermissions(any(), any()) } returns true
 
             // When
             viewModel.updateReminder(
@@ -543,6 +548,7 @@ class HomeViewModelTest {
             val reminderId = 1L
 
             coEvery { reminderRepository.insert(any()) } returns reminderId
+            coEvery { permissionManager.requestNotificationAndAlarmPermissions(any(), any()) } returns true
             coEvery { taskNotificationScheduler.scheduleReminderNotification(any(), any(), any()) } returns Unit
 
             // When
@@ -584,6 +590,7 @@ class HomeViewModelTest {
 
             coEvery { reminderRepository.update(any()) } returns Unit
             coEvery { commitmentRepository.getCommitment(1) } returns commitmentEntity
+            coEvery { permissionManager.requestNotificationAndAlarmPermissions(any(), any()) } returns true
             coEvery { taskNotificationScheduler.scheduleReminderNotification(any(), any(), any()) } returns Unit
             coEvery { taskNotificationScheduler.cancelReminderNotification(any(), any()) } returns Unit
 
@@ -613,6 +620,7 @@ class HomeViewModelTest {
                 )
 
             coEvery { reminderRepository.delete(any()) } returns Unit
+            coEvery { permissionManager.requestNotificationAndAlarmPermissions(any(), any()) } returns true
             coEvery { taskNotificationScheduler.cancelReminderNotification(any(), any()) } returns Unit
 
             // When
