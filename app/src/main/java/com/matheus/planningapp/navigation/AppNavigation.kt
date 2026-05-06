@@ -4,6 +4,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -11,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.matheus.planningapp.ui.screens.CalendarScreen
 import com.matheus.planningapp.ui.screens.CommitmentScreen
 import com.matheus.planningapp.ui.screens.HomeScreen
@@ -22,29 +24,49 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(navEventManager: NavEventManager? = null) {
     val navHostController: NavHostController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    navEventManager?.let {
+        LaunchedEffect(navEventManager) {
+            navEventManager.navigationEvents.collect { event ->
+                navHostController.handleNavigationEvent(event)
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             NavigationDrawerSheet(
                 onNavigateToHomeScreen = {
-                    navHostController.navigate(Screens.HomeScreen.route)
+                    scope.launch {
+                        navEventManager?.navigateToHome()
+                            ?: navHostController.navigate(HomeScreen.route)
+                    }
                     scope.launch { drawerState.close() }
                 },
                 onNavigateToCalendarScreen = {
-                    navHostController.navigate(Screens.CalendarScreen.route)
+                    scope.launch {
+                        navEventManager?.navigateToCalendar()
+                            ?: navHostController.navigate(CalendarScreen.route)
+                    }
                     scope.launch { drawerState.close() }
                 },
                 onNavigateToSettingsScreen = {
-                    navHostController.navigate(Screens.SettingScreen.route)
+                    scope.launch {
+                        navEventManager?.navigateToSettings()
+                            ?: navHostController.navigate(SettingScreen.route)
+                    }
                     scope.launch { drawerState.close() }
                 },
                 onNavigateToRecurrenceScreen = {
-                    navHostController.navigate(Screens.RecurrenceScreen.route)
+                    scope.launch {
+                        navEventManager?.navigateToRecurrence()
+                            ?: navHostController.navigate(RecurrenceScreen.route)
+                    }
                     scope.launch { drawerState.close() }
                 },
             )
@@ -52,27 +74,38 @@ fun AppNavigation() {
     ) {
         NavHost(
             navController = navHostController,
-            startDestination = Screens.HomeScreen.route,
+            startDestination = HomeScreen.route,
         ) {
-            composable(Screens.HomeScreen.route) {
+            composable(
+                route = HomeScreen.route,
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = HomeScreen.deepLinkPattern },
+                    ),
+            ) {
                 HomeScreen(
                     onNavigateToAddCommitment = { datetimeInstant, selectedCalendar ->
-                        val payload =
-                            Json.encodeToString(
-                                CreateCommitmentPayload(
-                                    calendarId = selectedCalendar,
-                                    datetimeInstant = datetimeInstant,
-                                ),
-                            )
-
-                        navHostController.navigate(
-                            "${Screens.CommitmentFormScreen.route}/create/$payload",
-                        )
+                        scope.launch {
+                            navEventManager?.navigateToCommitmentCreate(
+                                calendarId = selectedCalendar,
+                                datetimeInstant = datetimeInstant,
+                            ) ?: run {
+                                val payload =
+                                    Json.encodeToString(
+                                        CreateCommitmentPayload(
+                                            calendarId = selectedCalendar,
+                                            datetimeInstant = datetimeInstant,
+                                        ),
+                                    )
+                                navHostController.navigate("commitmentForm/create/$payload")
+                            }
+                        }
                     },
                     onNavigateToUpdateCommitment = { commitmentId ->
-                        navHostController.navigate(
-                            "${Screens.CommitmentFormScreen.route}/edit/$commitmentId",
-                        )
+                        scope.launch {
+                            navEventManager?.navigateToCommitmentEdit(commitmentId)
+                                ?: navHostController.navigate("commitmentForm/edit/$commitmentId")
+                        }
                     },
                     onMenuClick = {
                         scope.launch { drawerState.open() }
@@ -80,14 +113,17 @@ fun AppNavigation() {
                 )
             }
             composable(
-                route = "${Screens.CommitmentFormScreen.route}/{mode}/{payload}",
+                route = CommitmentFormScreen().route,
                 arguments =
                     listOf(
                         navArgument("mode") { type = NavType.StringType },
                         navArgument("payload") { type = NavType.StringType },
                     ),
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = CommitmentFormScreen().deepLinkPattern },
+                    ),
             ) { backStackEntry ->
-
                 val modeArg = backStackEntry.arguments?.getString("mode")!!
                 val payloadArg = backStackEntry.arguments?.getString("payload")!!
 
@@ -95,49 +131,71 @@ fun AppNavigation() {
                     when (modeArg) {
                         "create" -> {
                             val payloadData = Json.decodeFromString<CreateCommitmentPayload>(payloadArg)
-
                             CommitmentFormMode.Create(
                                 calendarId = payloadData.calendarId,
                                 initialInstant = payloadData.datetimeInstant,
                             )
                         }
-
                         "edit" -> {
                             CommitmentFormMode.Edit(
                                 commitmentId = payloadArg.toLong(),
                             )
                         }
-
-                        else -> error("Invalid mode")
+                        else -> error("Invalid mode: $modeArg")
                     }
 
                 CommitmentScreen(
                     onBackPressed = {
-                        navHostController.popBackStack()
+                        scope.launch {
+                            navEventManager?.navigateBack()
+                                ?: navHostController.popBackStack()
+                        }
                     },
                     commitmentFormMode = mode,
                 )
             }
-            composable(Screens.CalendarScreen.route) {
+
+            composable(
+                route = CalendarScreen.route,
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = CalendarScreen.deepLinkPattern },
+                    ),
+            ) {
                 CalendarScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     },
                 )
             }
-            composable(Screens.RecurrenceScreen.route) {
+
+            composable(
+                route = RecurrenceScreen.route,
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = RecurrenceScreen.deepLinkPattern },
+                    ),
+            ) {
                 RecurrenceScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     },
                     onNavigateToUpdateCommitment = { commitmentId ->
-                        navHostController.navigate(
-                            "${Screens.CommitmentFormScreen.route}/edit/$commitmentId",
-                        )
+                        scope.launch {
+                            navEventManager?.navigateToCommitmentEdit(commitmentId)
+                                ?: navHostController.navigate("commitmentForm/edit/$commitmentId")
+                        }
                     },
                 )
             }
-            composable(Screens.SettingScreen.route) {
+
+            composable(
+                route = SettingScreen.route,
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = SettingScreen.deepLinkPattern },
+                    ),
+            ) {
                 SettingScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
