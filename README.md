@@ -115,6 +115,22 @@ Planningapp
 
 - PlanningAppApplication.kt: Root of the project responsible for creating the koin module instance and the data storage channel.
 
+### Navigation Architecture Flow
+
+```
+Composable UI
+    ↓
+Calls: navEventManager.navigateToCommitmentCreate()
+    ↓
+NavEventManager emits NavigationEvent.NavigateToCommitmentCreate
+    ↓
+Navigation observer catches event
+    ↓
+handleNavigationEvent() processes it
+    ↓
+NavHostController.navigate() executes actual navigation
+```
+
 ## Recurrence Logic
 
 Recurring tasks are handled dynamically. Instead of storing repeated entries, the system generates occurrences based on recurrence rules when displaying tasks. This improves performance and avoids data duplication.
