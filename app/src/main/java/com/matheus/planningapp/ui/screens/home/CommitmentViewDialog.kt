@@ -1,0 +1,188 @@
+package com.matheus.planningapp.ui.screens.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import com.matheus.planningapp.R
+import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.ui.theme.PageDesignSettings
+import com.matheus.planningapp.ui.theme.strings.LocalStrings
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.util.enums.PriorityEnum
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommitmentViewDialog(
+    commitmentEntity: CommitmentEntity?,
+    showDialog: Boolean,
+    onDismissRequest: () -> Unit,
+) {
+    if (commitmentEntity == null) return
+
+    val strings: StringsRepository = LocalStrings.current
+
+    val statusColor =
+        when (commitmentEntity.priorityEnum) {
+            PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+            PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+            PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
+        }
+
+    val commitmentStartDateTime: LocalDateTime = commitmentEntity.startDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startTimeString = String.format(Locale.US, strings.hourFormat, commitmentStartDateTime.hour, commitmentStartDateTime.minute)
+    val commitmentEndDateTime: LocalDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+    val endTimeString = String.format(Locale.US, strings.hourFormat, commitmentEndDateTime.hour, commitmentEndDateTime.minute)
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = {
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(PageDesignSettings.extraLargePaddingValue),
+                    ) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.extraSmallIconSize)
+                                    .clip(CircleShape)
+                                    .background(statusColor),
+                        )
+
+                        Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
+
+                        Text(
+                            text = commitmentEntity.title,
+                            fontSize = PageDesignSettings.largeText,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.mediumPaddingValue),
+                        )
+
+                        Text(
+                            text =
+                                String.format(
+                                    Locale.US,
+                                    strings.dateFormat,
+                                    commitmentStartDateTime.year,
+                                    commitmentStartDateTime.monthNumber,
+                                    commitmentStartDateTime.dayOfMonth,
+                                ),
+                            fontSize = PageDesignSettings.mediumText,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_nest_clock_farsight_analog_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                            modifier =
+                                Modifier
+                                    .size(PageDesignSettings.smallIconSize)
+                                    .padding(end = PageDesignSettings.mediumPaddingValue),
+                        )
+
+                        Text(
+                            text = "$startTimeString — $endTimeString",
+                            fontSize = PageDesignSettings.mediumText,
+                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
+                        )
+                    }
+                }
+            },
+            text = {
+                Column {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.secondary,
+                                    shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+                                ).padding(PageDesignSettings.mediumPaddingValue),
+                    ) {
+                        Text(
+                            text = commitmentEntity.description ?: "",
+                            fontSize = PageDesignSettings.smallText,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
+
+                    HorizontalDivider()
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                Button(
+                    onClick = onDismissRequest,
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = strings.dismissButton,
+                        fontSize = PageDesignSettings.largeText,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.onBackground,
+        )
+    }
+}
