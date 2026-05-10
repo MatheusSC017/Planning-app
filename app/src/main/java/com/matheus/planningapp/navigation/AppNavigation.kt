@@ -14,11 +14,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.matheus.planningapp.ui.screens.CalendarScreen
-import com.matheus.planningapp.ui.screens.CommitmentScreen
-import com.matheus.planningapp.ui.screens.RecurrenceScreen
 import com.matheus.planningapp.ui.screens.SettingScreen
+import com.matheus.planningapp.ui.screens.commitment.CommitmentScreen
 import com.matheus.planningapp.ui.screens.components.NavigationDrawerSheet
 import com.matheus.planningapp.ui.screens.home.HomeScreen
+import com.matheus.planningapp.ui.screens.recurrence.RecurrenceScreen
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
