@@ -18,7 +18,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,9 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
+import com.matheus.planningapp.ui.screens.components.HandleEvents
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -59,28 +56,22 @@ fun CommitmentScreen(
         )
     val commitmentUiState by commitmentFormViewModel.commitmentUiState.collectAsState()
 
-    val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     val localDate: LocalDate = commitmentUiState.startInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-    LaunchedEffect(Unit) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            commitmentFormViewModel.events.collect { event ->
-                when (event) {
-                    is DatabaseUiEvent.ShowError -> {
-                        scope.launch {
-                            snackBarHostState.showSnackbar(event.message)
-                        }
-                    }
+    HandleEvents(commitmentFormViewModel.events) { event ->
+        when (event) {
+            is DatabaseUiEvent.ShowError -> {
+                scope.launch {
+                    snackBarHostState.showSnackbar(event.message)
+                }
+            }
 
-                    DatabaseUiEvent.Saved -> {
-                        onBackPressed()
-                        scope.launch {
-                            snackBarHostState.showSnackbar(strings.savedMessage)
-                        }
-                    }
+            DatabaseUiEvent.Saved -> {
+                scope.launch {
+                    snackBarHostState.showSnackbar(strings.savedMessage)
                 }
             }
         }

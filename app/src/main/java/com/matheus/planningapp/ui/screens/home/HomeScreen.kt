@@ -16,11 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.ui.screens.components.HandleEvents
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
@@ -51,25 +49,20 @@ fun HomeScreen(
 
     val strings: StringsRepository = LocalStrings.current
 
-    val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-            homeViewModel.events.collect { event ->
-                when (event) {
-                    is DatabaseUiEvent.ShowError -> {
-                        scope.launch {
-                            snackBarHostState.showSnackbar(event.message)
-                        }
-                    }
+    HandleEvents(homeViewModel.events) { event ->
+        when (event) {
+            is DatabaseUiEvent.ShowError -> {
+                scope.launch {
+                    snackBarHostState.showSnackbar(event.message)
+                }
+            }
 
-                    DatabaseUiEvent.Saved -> {
-                        scope.launch {
-                            snackBarHostState.showSnackbar(strings.savedMessage)
-                        }
-                    }
+            DatabaseUiEvent.Saved -> {
+                scope.launch {
+                    snackBarHostState.showSnackbar(strings.savedMessage)
                 }
             }
         }
