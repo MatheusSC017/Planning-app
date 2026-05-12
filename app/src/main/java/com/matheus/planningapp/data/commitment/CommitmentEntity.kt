@@ -5,6 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.util.enums.PriorityEnum
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -17,6 +18,12 @@ import kotlinx.datetime.Instant
             parentColumns = ["id"],
             childColumns = ["calendar"],
             onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = CategoryEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["category"],
+            onDelete = ForeignKey.SET_NULL,
         ),
     ],
     indices = [
@@ -34,6 +41,7 @@ data class CommitmentEntity(
     val startDateTime: Instant,
     val endDateTime: Instant,
     val priorityEnum: PriorityEnum,
+    val category: Long? = null,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now(),
 )

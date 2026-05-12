@@ -5,6 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.matheus.planningapp.data.calendar.CalendarDao
 import com.matheus.planningapp.data.calendar.CalendarEntity
+import com.matheus.planningapp.data.category.CategoryDao
+import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.data.commitment.CommitmentDao
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.local.converters.DateTimeConverters
@@ -22,8 +24,9 @@ import com.matheus.planningapp.data.reminder.ReminderEntity
         CommitmentEntity::class,
         RecurrenceEntity::class,
         ReminderEntity::class,
+        CategoryEntity::class,
     ],
-    version = 12,
+    version = 13,
     exportSchema = false,
 )
 @TypeConverters(
@@ -40,4 +43,6 @@ abstract class CalendarDatabase : RoomDatabase() {
     abstract fun recurrenceDao(): RecurrenceDao
 
     abstract fun reminderDao(): ReminderDao
+
+    abstract fun categoryDao(): CategoryDao
 }
