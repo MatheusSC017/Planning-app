@@ -25,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -40,8 +39,8 @@ fun CategoryContent(
     val strings: StringsRepository = LocalStrings.current
     val searchQuery by categoryViewModel.searchQuery.collectAsState()
     val categories by categoryViewModel.categories.collectAsState()
+    val categoryFormUiState by categoryViewModel.categoryFormUiState.collectAsState()
     var showForm by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf<CategoryEntity?>(null) }
 
     Column(
         modifier =
@@ -53,20 +52,19 @@ fun CategoryContent(
         if (showForm) {
             CategoryForm(
                 categoryViewModel = categoryViewModel,
-                selectedCategory = selectedCategory,
+                categoryFormUiState = categoryFormUiState,
                 onSave = {
-                    if (selectedCategory == null) {
+                    if (categoryFormUiState.id == null) {
                         categoryViewModel.insertCategory()
                     } else {
                         categoryViewModel.updateCategory()
                     }
                     onShowSnackbar(strings.savedMessage)
                     showForm = false
-                    selectedCategory = null
                 },
                 onCancel = {
+                    categoryViewModel.resetForm()
                     showForm = false
-                    selectedCategory = null
                 },
                 onShowSnackbar = onShowSnackbar,
             )
@@ -101,11 +99,13 @@ fun CategoryContent(
                         CategoryListItem(
                             category = category,
                             onEdit = {
-                                selectedCategory = category
+                                categoryViewModel.onIdChange(category.id)
+                                categoryViewModel.onNameChange(category.name)
+                                categoryViewModel.onDescriptionChange(category.description ?: "")
                                 showForm = true
                             },
                             onDelete = {
-                                // Will be implemented in ViewModel
+                                categoryViewModel.deleteCategory(category)
                                 onShowSnackbar(strings.categoryDeletedMessage)
                             },
                         )
@@ -119,7 +119,7 @@ fun CategoryContent(
             ) {
                 IconButton(
                     onClick = {
-                        selectedCategory = null
+                        categoryViewModel.resetForm()
                         showForm = true
                     },
                 ) {

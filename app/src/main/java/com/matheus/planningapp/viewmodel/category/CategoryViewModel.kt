@@ -50,6 +50,12 @@ class CategoryViewModel(
         _searchQuery.value = query.ifBlank { null }
     }
 
+    fun onIdChange(id: Long) {
+        _categoryFormUiState.update {
+            it.copy(id = id)
+        }
+    }
+
     fun onNameChange(name: String) {
         _categoryFormUiState.update {
             it.copy(name = name)

@@ -21,23 +21,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.viewmodel.category.CategoryFormUiState
 import com.matheus.planningapp.viewmodel.category.CategoryViewModel
 
 @Composable
 fun CategoryForm(
     categoryViewModel: CategoryViewModel,
-    selectedCategory: CategoryEntity?,
+    categoryFormUiState: CategoryFormUiState,
     onSave: () -> Unit,
     onCancel: () -> Unit,
     onShowSnackbar: (String) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
-    var categoryName by remember { mutableStateOf(selectedCategory?.name ?: "") }
-    var categoryDescription by remember { mutableStateOf(selectedCategory?.description ?: "") }
     var nameError by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(
@@ -51,7 +49,7 @@ fun CategoryForm(
 
         item {
             Text(
-                text = if (selectedCategory != null) strings.updateCategoryTitle else strings.createCategoryTitle,
+                text = if (categoryFormUiState.id != null) strings.updateCategoryTitle else strings.createCategoryTitle,
                 style =
                     TextStyle(
                         fontSize = PageDesignSettings.mediumTitle,
@@ -66,9 +64,9 @@ fun CategoryForm(
                 verticalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumPaddingValue),
             ) {
                 TextField(
-                    value = categoryName,
+                    value = categoryFormUiState.name,
                     onValueChange = {
-                        categoryName = it
+                        categoryViewModel.onNameChange(it)
                         if (it.isNotEmpty()) {
                             nameError = null
                         }
@@ -111,8 +109,10 @@ fun CategoryForm(
 
         item {
             TextField(
-                value = categoryDescription,
-                onValueChange = { categoryDescription = it },
+                value = categoryFormUiState.description,
+                onValueChange = {
+                    categoryViewModel.onDescriptionChange(it)
+                },
                 label = {
                     Text(
                         text = strings.categoryDescriptionField,
@@ -159,12 +159,10 @@ fun CategoryForm(
 
                 Button(
                     onClick = {
-                        if (categoryName.isBlank()) {
+                        if (categoryFormUiState.name.isBlank()) {
                             nameError = strings.categoryEmptyNameError
                             onShowSnackbar(strings.categoryEmptyNameError)
                         } else {
-                            categoryViewModel.onNameChange(categoryName)
-                            categoryViewModel.onDescriptionChange(categoryDescription)
                             onSave()
                         }
                     },
@@ -174,7 +172,7 @@ fun CategoryForm(
                         ),
                 ) {
                     Text(
-                        if (selectedCategory != null) strings.updateButton else strings.insertButton,
+                        if (categoryFormUiState.id != null) strings.updateButton else strings.insertButton,
                     )
                 }
             }
