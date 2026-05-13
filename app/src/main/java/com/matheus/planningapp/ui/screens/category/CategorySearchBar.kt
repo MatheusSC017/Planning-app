@@ -14,13 +14,13 @@ import com.matheus.planningapp.ui.theme.strings.StringsRepository
 
 @Composable
 fun CategorySearchBar(
-    searchQuery: String,
+    searchQuery: String?,
     onSearchQueryChange: (String) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
     TextField(
-        value = searchQuery,
+        value = searchQuery ?: "",
         onValueChange = onSearchQueryChange,
         label = {
             Text(

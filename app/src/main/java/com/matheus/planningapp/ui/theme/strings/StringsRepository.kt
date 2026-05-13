@@ -84,9 +84,14 @@ interface StringsRepository {
     val createCategoryTitle: String
     val updateCategoryTitle: String
     val categoryEmptyNameError: String
+    val categoryNotFoundError: String
+    val categoryInsertError: String
+    val categoryUpdateError: String
+    val categoryDeleteError: String
     val noCategoriesFound: String
     val categoryDeletedMessage: String
     val editButton: String
+    val searchError: String
 
     // Datetime information
     val monthNames: List<String>

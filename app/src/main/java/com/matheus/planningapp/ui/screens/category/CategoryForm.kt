@@ -25,12 +25,13 @@ import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.viewmodel.category.CategoryViewModel
 
 @Composable
 fun CategoryForm(
-    modifier: Modifier,
+    categoryViewModel: CategoryViewModel,
     selectedCategory: CategoryEntity?,
-    onSave: (CategoryEntity) -> Unit,
+    onSave: () -> Unit,
     onCancel: () -> Unit,
     onShowSnackbar: (String) -> Unit,
 ) {
@@ -40,7 +41,7 @@ fun CategoryForm(
     var nameError by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(
-        modifier = modifier,
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(PageDesignSettings.largePaddingValue),
     ) {
@@ -162,13 +163,9 @@ fun CategoryForm(
                             nameError = strings.categoryEmptyNameError
                             onShowSnackbar(strings.categoryEmptyNameError)
                         } else {
-                            val newCategory =
-                                CategoryEntity(
-                                    id = selectedCategory?.id ?: 0,
-                                    name = categoryName,
-                                    description = if (categoryDescription.isBlank()) null else categoryDescription,
-                                )
-                            onSave(newCategory)
+                            categoryViewModel.onNameChange(categoryName)
+                            categoryViewModel.onDescriptionChange(categoryDescription)
+                            onSave()
                         }
                     },
                     colors =

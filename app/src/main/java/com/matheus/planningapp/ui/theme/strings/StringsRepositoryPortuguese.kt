@@ -84,9 +84,14 @@ class StringsRepositoryPortuguese : StringsRepository {
     override val createCategoryTitle = "Criar Nova Categoria"
     override val updateCategoryTitle = "Atualizar Categoria"
     override val categoryEmptyNameError = "O nome da categoria não pode estar vazio"
+    override val categoryNotFoundError = "Categoria não encontrada"
+    override val categoryInsertError = "Erro ao criar categoria"
+    override val categoryUpdateError = "Erro ao atualizar categoria"
+    override val categoryDeleteError = "Erro ao excluir categoria"
     override val noCategoriesFound = "Nenhuma categoria encontrada"
     override val categoryDeletedMessage = "Categoria excluída com sucesso"
     override val editButton = "Editar"
+    override val searchError = "Erro ao pesquisar categorias"
 
     // Datetime information
     override val monthNames =

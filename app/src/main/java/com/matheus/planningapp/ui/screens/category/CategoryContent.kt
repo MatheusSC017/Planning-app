@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,23 +29,17 @@ import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.viewmodel.category.CategoryViewModel
 
 @Composable
 fun CategoryContent(
     modifier: Modifier,
+    categoryViewModel: CategoryViewModel,
     onShowSnackbar: (String) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
-    var categories by remember {
-        mutableStateOf<List<CategoryEntity>>(
-            listOf(
-                CategoryEntity(name = "Category 1", description = "Description 1"),
-                CategoryEntity(name = "Category 2", description = "Description 2"),
-                CategoryEntity(name = "Category 3", description = "Description 3"),
-            ),
-        )
-    }
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQuery by categoryViewModel.searchQuery.collectAsState()
+    val categories by categoryViewModel.categories.collectAsState()
     var showForm by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<CategoryEntity?>(null) }
 
@@ -55,21 +50,19 @@ fun CategoryContent(
                 .padding(PageDesignSettings.largePaddingValue),
         verticalArrangement = Arrangement.spacedBy(PageDesignSettings.largePaddingValue),
     ) {
-        CategorySearchBar(
-            searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it },
-        )
-
         if (showForm) {
             CategoryForm(
-                modifier = Modifier.fillMaxWidth(),
+                categoryViewModel = categoryViewModel,
                 selectedCategory = selectedCategory,
-                onSave = { _ ->
-                    // Will be implemented in ViewModel
+                onSave = {
+                    if (selectedCategory == null) {
+                        categoryViewModel.insertCategory()
+                    } else {
+                        categoryViewModel.updateCategory()
+                    }
                     onShowSnackbar(strings.savedMessage)
                     showForm = false
                     selectedCategory = null
-                    searchQuery = ""
                 },
                 onCancel = {
                     showForm = false
@@ -78,6 +71,13 @@ fun CategoryContent(
                 onShowSnackbar = onShowSnackbar,
             )
         } else {
+            CategorySearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = {
+                    categoryViewModel.onSearchQueryChange(it)
+                },
+            )
+
             if (categories.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxWidth().weight(1f),

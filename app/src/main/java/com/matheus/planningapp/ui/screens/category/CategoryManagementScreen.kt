@@ -24,11 +24,16 @@ import androidx.compose.ui.text.TextStyle
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.viewmodel.category.CategoryViewModel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryManagementScreen(onMenuClick: () -> Unit) {
+fun CategoryManagementScreen(
+    categoryViewModel: CategoryViewModel = koinViewModel(),
+    onMenuClick: () -> Unit,
+) {
     val strings: StringsRepository = LocalStrings.current
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -78,6 +83,7 @@ fun CategoryManagementScreen(onMenuClick: () -> Unit) {
                                 end = Offset.Infinite,
                             ),
                         ),
+                categoryViewModel = categoryViewModel,
                 onShowSnackbar = { message ->
                     scope.launch {
                         snackBarHostState.showSnackbar(message)

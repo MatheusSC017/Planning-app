@@ -20,6 +20,7 @@ import com.matheus.planningapp.ui.theme.strings.StringsRepositorySpanish
 import com.matheus.planningapp.util.PermissionManager
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
 import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
+import com.matheus.planningapp.viewmodel.category.CategoryViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
@@ -79,4 +80,5 @@ val appModules =
         }
         viewModel { SettingViewModel(get(), get(), get(), get()) }
         viewModel { RecurrenceViewModel(get(), get()) }
+        viewModel { CategoryViewModel(get(), get()) }
     }
