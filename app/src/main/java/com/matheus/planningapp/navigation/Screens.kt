@@ -41,6 +41,12 @@ object RecurrenceScreen : NavigationRoute {
 }
 
 @Serializable
+object CategoryScreen : NavigationRoute {
+    override val route = "category"
+    override val deepLinkPattern = "planningapp://category"
+}
+
+@Serializable
 sealed class CommitmentFormMode {
     @Serializable
     data class Create(

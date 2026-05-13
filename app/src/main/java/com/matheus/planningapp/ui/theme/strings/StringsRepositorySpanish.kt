@@ -76,6 +76,18 @@ class StringsRepositorySpanish : StringsRepository {
     override val settingViewModeField = "Modo de visualización"
     override val settingNotificationField = "Configuración de notificaciones"
 
+    // Category information
+    override val categoryManagementTitle = "Categorías"
+    override val categoryNameField = "Nombre de la categoría"
+    override val categoryDescriptionField = "Descripción de la categoría"
+    override val searchCategoryField = "Buscar categorías"
+    override val createCategoryTitle = "Crear Nueva Categoría"
+    override val updateCategoryTitle = "Actualizar Categoría"
+    override val categoryEmptyNameError = "El nombre de la categoría no puede estar vacío"
+    override val noCategoriesFound = "No se encontraron categorías"
+    override val categoryDeletedMessage = "Categoría eliminada exitosamente"
+    override val editButton = "Editar"
+
     // Datetime information
     override val monthNames =
         listOf(

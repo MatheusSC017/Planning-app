@@ -81,7 +81,7 @@ fun HomeScreen(
             )
         },
         content = { paddingValues ->
-            CalendarContent(
+            HomeContent(
                 modifier =
                     Modifier
                         .padding(paddingValues)

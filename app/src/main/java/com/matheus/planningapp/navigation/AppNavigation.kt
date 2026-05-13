@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.matheus.planningapp.ui.screens.CalendarScreen
 import com.matheus.planningapp.ui.screens.SettingScreen
+import com.matheus.planningapp.ui.screens.category.CategoryManagementScreen
 import com.matheus.planningapp.ui.screens.commitment.CommitmentScreen
 import com.matheus.planningapp.ui.screens.components.NavigationDrawerSheet
 import com.matheus.planningapp.ui.screens.home.HomeScreen
@@ -66,6 +67,12 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                     scope.launch {
                         navEventManager?.navigateToRecurrence()
                             ?: navHostController.navigate(RecurrenceScreen.route)
+                    }
+                    scope.launch { drawerState.close() }
+                },
+                onNavigateToCategoryScreen = {
+                    scope.launch {
+                        navHostController.navigate(CategoryScreen.route)
                     }
                     scope.launch { drawerState.close() }
                 },
@@ -197,6 +204,20 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                     ),
             ) {
                 SettingScreen(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    },
+                )
+            }
+
+            composable(
+                route = CategoryScreen.route,
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = CategoryScreen.deepLinkPattern },
+                    ),
+            ) {
+                CategoryManagementScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     },

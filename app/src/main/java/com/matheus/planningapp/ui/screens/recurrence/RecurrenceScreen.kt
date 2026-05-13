@@ -52,6 +52,7 @@ fun RecurrenceScreen(
             )
         },
         content = { paddingValues ->
+            // TODO: Add Box with no recurrences found and search form
             RecurrenceList(
                 modifier =
                     Modifier

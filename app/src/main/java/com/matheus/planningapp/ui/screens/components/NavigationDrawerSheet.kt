@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,6 +38,7 @@ fun NavigationDrawerSheet(
     onNavigateToCalendarScreen: () -> Unit,
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToRecurrenceScreen: () -> Unit,
+    onNavigateToCategoryScreen: () -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
@@ -89,6 +92,12 @@ fun NavigationDrawerSheet(
                 title = strings.recurrencesMenuButton,
                 icon = Icons.Default.Refresh,
                 onNavigate = onNavigateToRecurrenceScreen,
+            )
+
+            MenuNavigationDrawerItem(
+                title = strings.categoryManagementTitle,
+                icon = Icons.AutoMirrored.Filled.List,
+                onNavigate = onNavigateToCategoryScreen,
             )
 
             MenuNavigationDrawerItem(

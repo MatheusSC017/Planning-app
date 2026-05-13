@@ -76,6 +76,18 @@ interface StringsRepository {
     val settingViewModeField: String
     val settingNotificationField: String
 
+    // Category information
+    val categoryManagementTitle: String
+    val categoryNameField: String
+    val categoryDescriptionField: String
+    val searchCategoryField: String
+    val createCategoryTitle: String
+    val updateCategoryTitle: String
+    val categoryEmptyNameError: String
+    val noCategoriesFound: String
+    val categoryDeletedMessage: String
+    val editButton: String
+
     // Datetime information
     val monthNames: List<String>
     val weekDaysAbbrev: List<Char>

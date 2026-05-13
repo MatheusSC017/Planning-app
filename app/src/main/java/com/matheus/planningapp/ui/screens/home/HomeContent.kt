@@ -61,7 +61,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 
 @Composable
-fun CalendarContent(
+fun HomeContent(
     modifier: Modifier,
     selectedCalendar: CalendarEntity?,
     columnViewSelected: Boolean,
