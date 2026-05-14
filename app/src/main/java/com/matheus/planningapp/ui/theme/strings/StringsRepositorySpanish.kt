@@ -78,9 +78,10 @@ class StringsRepositorySpanish : StringsRepository {
 
     // Category information
     override val categoryManagementTitle = "Categorías"
-    override val categoryNameField = "Nombre de la categoría"
-    override val categoryDescriptionField = "Descripción de la categoría"
-    override val searchCategoryField = "Buscar categorías"
+    override val categoryNameField = "Nombre"
+    override val categoryDescriptionField = "Descripción"
+    override val searchCategoryField = "Buscar"
+    override val noCategorySelected = "No se ha seleccionado ninguna categoría"
     override val createCategoryTitle = "Crear Nueva Categoría"
     override val updateCategoryTitle = "Actualizar Categoría"
     override val categoryEmptyNameError = "El nombre de la categoría no puede estar vacío"

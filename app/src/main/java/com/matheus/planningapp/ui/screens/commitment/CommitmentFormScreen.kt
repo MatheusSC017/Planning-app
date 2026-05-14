@@ -154,6 +154,7 @@ fun CommitmentScreen(
                                         end = Offset.Infinite,
                                     ),
                                 ),
+                        onBackPressed = onBackPressed,
                         commitmentUiState = commitmentUiState,
                         commitmentFormViewModel = commitmentFormViewModel,
                     )

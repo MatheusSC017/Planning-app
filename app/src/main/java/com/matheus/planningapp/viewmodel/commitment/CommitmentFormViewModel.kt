@@ -2,6 +2,8 @@ package com.matheus.planningapp.viewmodel.commitment
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.matheus.planningapp.data.category.CategoryEntity
+import com.matheus.planningapp.data.category.CategoryRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
@@ -30,6 +32,7 @@ import kotlin.time.Duration.Companion.minutes
 class CommitmentFormViewModel(
     commitmentFormMode: CommitmentFormMode,
     private val commitmentRepository: CommitmentRepository,
+    categoryRepository: CategoryRepository,
     settingsRepository: SettingsRepository,
     private val recurrenceRepository: RecurrenceRepository,
     private val taskNotificationScheduler: TaskNotificationScheduler,
@@ -37,6 +40,15 @@ class CommitmentFormViewModel(
 ) : ViewModel() {
     private val _events = MutableSharedFlow<DatabaseUiEvent>()
     val events = _events.asSharedFlow()
+
+    val categories: StateFlow<List<CategoryEntity>> =
+        categoryRepository
+            .getAllCategories()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList(),
+            )
 
     private val _commitmentUiState: MutableStateFlow<CommitmentFormUiState> = MutableStateFlow(CommitmentFormUiState())
     val commitmentUiState: StateFlow<CommitmentFormUiState> =
@@ -88,6 +100,12 @@ class CommitmentFormViewModel(
     fun onPriorityChange(priorityEnum: PriorityEnum) {
         _commitmentUiState.update {
             it.copy(priorityEnum = priorityEnum)
+        }
+    }
+
+    fun onCategoryChange(category: CategoryEntity?) {
+        _commitmentUiState.update {
+            it.copy(category = category)
         }
     }
 
@@ -154,6 +172,7 @@ class CommitmentFormViewModel(
                             startInstant = commitmentEntity.startDateTime,
                             endInstant = commitmentEntity.endDateTime,
                             priorityEnum = commitmentEntity.priorityEnum,
+                            category = commitmentEntity.category?.let { categoryRepository.getCategory(it) },
                         )
                     }
 
@@ -185,6 +204,7 @@ class CommitmentFormViewModel(
                 startDateTime = commitmentUiState.value.startInstant,
                 endDateTime = commitmentUiState.value.endInstant,
                 priorityEnum = commitmentUiState.value.priorityEnum,
+                category = commitmentUiState.value.category?.id,
             )
 
         viewModelScope.launch {
@@ -253,6 +273,7 @@ class CommitmentFormViewModel(
                     startDateTime = commitmentUiState.value.startInstant,
                     endDateTime = commitmentUiState.value.endInstant,
                     priorityEnum = commitmentUiState.value.priorityEnum,
+                    category = commitmentUiState.value.category?.id,
                 )
 
             // Check if start time is lesser than end time

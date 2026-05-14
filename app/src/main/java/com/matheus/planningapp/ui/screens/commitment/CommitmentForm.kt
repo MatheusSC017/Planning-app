@@ -41,12 +41,15 @@ import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 @Composable
 fun CommitmentForm(
     modifier: Modifier,
+    onBackPressed: () -> Unit,
     commitmentUiState: CommitmentFormUiState,
     commitmentFormViewModel: CommitmentFormViewModel,
 ) {
     val strings: StringsRepository = LocalStrings.current
+    val categories by commitmentFormViewModel.categories.collectAsState()
     val recurrenceUiState by commitmentFormViewModel.recurrenceUiState.collectAsState()
     var expandedPriorityDropDown by remember { mutableStateOf(false) }
+    var expandedCategoryDropDown by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier =
@@ -212,6 +215,87 @@ fun CommitmentForm(
         }
 
         item {
+            Text(
+                text = strings.categoryManagementTitle,
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
+            )
+
+            Spacer(modifier = Modifier.height(PageDesignSettings.extraLargePaddingValue))
+
+            ExposedDropdownMenuBox(
+                expanded = expandedCategoryDropDown,
+                onExpandedChange = { expandedCategoryDropDown = !expandedCategoryDropDown },
+            ) {
+                TextField(
+                    value = commitmentUiState.category?.name ?: strings.noCategorySelected,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expandedCategoryDropDown)
+                    },
+                    modifier =
+                        Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            .fillMaxWidth(),
+                    textStyle =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                        ),
+                    colors =
+                        ExposedDropdownMenuDefaults.textFieldColors(
+                            focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                            disabledIndicatorColor = MaterialTheme.colorScheme.onSecondary,
+                            focusedTextColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                            disabledTextColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedCategoryDropDown,
+                    onDismissRequest = { expandedCategoryDropDown = false },
+                    containerColor = MaterialTheme.colorScheme.background,
+                    border = BorderStroke(PageDesignSettings.borderWidth, MaterialTheme.colorScheme.primary),
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = strings.noCategorySelected,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        },
+                        onClick = {
+                            commitmentFormViewModel.onCategoryChange(null)
+                            expandedCategoryDropDown = false
+                        },
+                    )
+
+                    categories.forEach { category ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = category.name,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+                            },
+                            onClick = {
+                                commitmentFormViewModel.onCategoryChange(category)
+                                expandedCategoryDropDown = false
+                            },
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -261,6 +345,7 @@ fun CommitmentForm(
                         } else {
                             commitmentFormViewModel.updateCommitment()
                         }
+                        onBackPressed()
                     },
                 ) {
                     Text(

@@ -1,5 +1,6 @@
 package com.matheus.planningapp.viewmodel.commitment
 
+import com.matheus.planningapp.data.category.CategoryRepository
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
@@ -40,6 +41,7 @@ import kotlin.time.Duration.Companion.minutes
 class CommitmentFormViewModelTest {
     private lateinit var commitmentRepository: CommitmentRepository
     private lateinit var recurrenceRepository: RecurrenceRepository
+    private lateinit var categoryRepository: CategoryRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var taskNotificationScheduler: TaskNotificationScheduler
     private lateinit var strings: StringsRepository
@@ -57,6 +59,7 @@ class CommitmentFormViewModelTest {
 
         commitmentRepository = mockk<CommitmentRepository>()
         recurrenceRepository = mockk<RecurrenceRepository>()
+        categoryRepository = mockk<CategoryRepository>()
         settingsRepository = mockk<SettingsRepository>()
         taskNotificationScheduler = mockk<TaskNotificationScheduler>(relaxed = true)
         strings =
@@ -68,6 +71,7 @@ class CommitmentFormViewModelTest {
 
         coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.NO_SEND)
         coEvery { recurrenceRepository.getRecurrenceByCommitment(any()) } returns null
+        coEvery { categoryRepository.getAllCategories() } returns flowOf(emptyList())
     }
 
     @After
@@ -80,6 +84,7 @@ class CommitmentFormViewModelTest {
             CommitmentFormViewModel(
                 CommitmentFormMode.Create(calendarId, testInstant),
                 commitmentRepository,
+                categoryRepository,
                 settingsRepository,
                 recurrenceRepository,
                 taskNotificationScheduler,
@@ -103,6 +108,7 @@ class CommitmentFormViewModelTest {
             CommitmentFormViewModel(
                 CommitmentFormMode.Edit(commitmentId),
                 commitmentRepository,
+                categoryRepository,
                 settingsRepository,
                 recurrenceRepository,
                 taskNotificationScheduler,
@@ -153,6 +159,7 @@ class CommitmentFormViewModelTest {
                 CommitmentFormViewModel(
                     CommitmentFormMode.Edit(commitmentId),
                     commitmentRepository,
+                    categoryRepository,
                     settingsRepository,
                     recurrenceRepository,
                     taskNotificationScheduler,
@@ -189,6 +196,7 @@ class CommitmentFormViewModelTest {
                         CommitmentFormViewModel(
                             CommitmentFormMode.Edit(commitmentId),
                             commitmentRepository,
+                            categoryRepository,
                             settingsRepository,
                             recurrenceRepository,
                             taskNotificationScheduler,
@@ -809,6 +817,7 @@ class CommitmentFormViewModelTest {
                         CommitmentFormViewModel(
                             CommitmentFormMode.Edit(commitmentId),
                             commitmentRepository,
+                            categoryRepository,
                             settingsRepository,
                             recurrenceRepository,
                             taskNotificationScheduler,

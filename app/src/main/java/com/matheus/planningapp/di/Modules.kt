@@ -72,6 +72,7 @@ val appModules =
             CommitmentFormViewModel(
                 commitmentFormMode = commitmentFormMode,
                 commitmentRepository = get(),
+                categoryRepository = get(),
                 settingsRepository = get(),
                 recurrenceRepository = get(),
                 taskNotificationScheduler = get(),

@@ -81,6 +81,7 @@ interface StringsRepository {
     val categoryNameField: String
     val categoryDescriptionField: String
     val searchCategoryField: String
+    val noCategorySelected: String
     val createCategoryTitle: String
     val updateCategoryTitle: String
     val categoryEmptyNameError: String
