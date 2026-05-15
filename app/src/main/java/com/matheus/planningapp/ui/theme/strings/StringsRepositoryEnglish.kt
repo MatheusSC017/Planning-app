@@ -19,6 +19,7 @@ class StringsRepositoryEnglish : StringsRepository {
 
     // Text for messages in general
     override val savedMessage = "Saved"
+    override val noValuesFound = "No values found"
 
     // Menu Options
     override val menuButton = "Menu"

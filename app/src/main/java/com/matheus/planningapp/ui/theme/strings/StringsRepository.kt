@@ -19,6 +19,7 @@ interface StringsRepository {
 
     // Text for messages in general
     val savedMessage: String
+    val noValuesFound: String
 
     // Menu Options
     val menuButton: String

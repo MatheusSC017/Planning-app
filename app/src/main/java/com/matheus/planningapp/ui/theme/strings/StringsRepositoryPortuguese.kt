@@ -19,6 +19,7 @@ class StringsRepositoryPortuguese : StringsRepository {
 
     // Text for messages in general
     override val savedMessage = "Salvo"
+    override val noValuesFound = "Nenhum valor encontrado"
 
     // Menu Options
     override val menuButton = "Menu"
