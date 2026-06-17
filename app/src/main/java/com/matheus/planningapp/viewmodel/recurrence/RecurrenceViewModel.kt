@@ -6,10 +6,14 @@ import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
 import com.matheus.planningapp.data.recurrence.RecurrenceRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -17,6 +21,25 @@ class RecurrenceViewModel(
     calendarRepository: CalendarRepository,
     private val recurrenceRepository: RecurrenceRepository,
 ) : ViewModel() {
+    private val _selectedCalendarId = MutableStateFlow<Long?>(null)
+
+    fun selectCalendar(calendarId: Long) {
+        _selectedCalendarId.value = calendarId
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val filteredRecurrences: StateFlow<List<CommitmentRecurrenceDataClass>> =
+        _selectedCalendarId
+            .flatMapLatest { id ->
+                if (id == null) flowOf(emptyList())
+                else recurrenceRepository.getRecurrenceByCalendar(id)
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
     val uiState: StateFlow<RecurrenceUiState> =
         combine(
             calendarRepository.getCalendars(),
@@ -29,9 +52,6 @@ class RecurrenceViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = RecurrenceUiState(),
         )
-
-    fun getRecurrencesByCalendar(calendarId: Long): Flow<List<CommitmentRecurrenceDataClass>> =
-        recurrenceRepository.getRecurrenceByCalendar(calendarId = calendarId)
 
     fun deleteRecurrence(recurrenceId: Long) {
         viewModelScope.launch {

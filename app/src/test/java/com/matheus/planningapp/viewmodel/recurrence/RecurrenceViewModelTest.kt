@@ -88,16 +88,17 @@ class RecurrenceViewModelTest {
             // When
             val collectJob =
                 launch {
-                    viewModel.getRecurrencesByCalendar(calendarId).collect { recurrences ->
+                    viewModel.filteredRecurrences.collect { recurrences ->
                         collectedRecurrences.add(recurrences)
                     }
                 }
-
+            viewModel.selectCalendar(calendarId)
             advanceUntilIdle()
 
             // Then
-            assertEquals(1, collectedRecurrences.size)
-            assertEquals(initialRecurrences, collectedRecurrences[0])
+            assertEquals(2, collectedRecurrences.size)
+            assertEquals(emptyList<CommitmentRecurrenceDataClass>(), collectedRecurrences[0])
+            assertEquals(initialRecurrences, collectedRecurrences[1])
 
             collectJob.cancel()
         }
@@ -113,7 +114,7 @@ class RecurrenceViewModelTest {
             // When
             val collectJob =
                 launch {
-                    viewModel.getRecurrencesByCalendar(calendarId).collect { recurrences ->
+                    viewModel.filteredRecurrences.collect { recurrences ->
                         collectedRecurrences.add(recurrences)
                     }
                 }

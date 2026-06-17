@@ -38,26 +38,28 @@ fun RecurrenceScreen(
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
 ) {
     val uiState by recurrenceViewModel.uiState.collectAsStateWithLifecycle()
+    val recurrences by recurrenceViewModel.filteredRecurrences.collectAsStateWithLifecycle()
     val strings: StringsRepository = LocalStrings.current
 
     var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
 
     LaunchedEffect(uiState.calendars) {
         if (selectedCalendar == null && uiState.calendars.isNotEmpty()) {
-            selectedCalendar = uiState.calendars.first()
+            val default = uiState.calendars.first()
+            selectedCalendar = default
+            recurrenceViewModel.selectCalendar(default.id)
         }
     }
-
-    val recurrences: List<CommitmentRecurrenceDataClass> by recurrenceViewModel
-        .getRecurrencesByCalendar(calendarId = selectedCalendar?.id ?: 0)
-        .collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
             RecurrenceTopAppBar(
                 calendarsEntities = uiState.calendars,
                 selectedCalendar = selectedCalendar,
-                onCalendarSelected = { selectedCalendar = it },
+                onCalendarSelected = {
+                    selectedCalendar = it
+                    recurrenceViewModel.selectCalendar(it.id)
+                },
                 onMenuClick = onMenuClick,
             )
         },
