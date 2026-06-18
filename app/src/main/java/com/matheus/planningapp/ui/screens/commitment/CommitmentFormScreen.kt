@@ -1,6 +1,5 @@
 package com.matheus.planningapp.ui.screens.commitment
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,13 +21,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import com.matheus.planningapp.ui.screens.components.HandleEvents
+import com.matheus.planningapp.ui.screens.components.IsLoadingScreen
 import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
@@ -116,17 +113,7 @@ fun CommitmentScreen(
 
             when {
                 commitmentUiState.isLoading -> {
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .padding(paddingValues)
-                                .stardardBackground(),
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-                    }
+                    IsLoadingScreen(paddingValues)
                 }
 
                 else -> {

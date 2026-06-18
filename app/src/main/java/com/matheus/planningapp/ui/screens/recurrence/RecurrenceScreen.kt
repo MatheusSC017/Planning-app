@@ -1,9 +1,7 @@
 package com.matheus.planningapp.ui.screens.recurrence
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -11,19 +9,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
-import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
 import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
@@ -66,21 +60,12 @@ fun RecurrenceScreen(
         },
         content = { paddingValues ->
 
-            if (recurrences.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = strings.noValuesFound,
-                        style =
-                            TextStyle(
-                                fontSize = PageDesignSettings.smallTitle,
-                                color = MaterialTheme.colorScheme.secondary,
-                            ),
-                    )
-                }
-            } else {
+            if (recurrences.isEmpty())
+                EmptyListRecurrences(
+                    paddingValues = paddingValues,
+                    strings = strings,
+                )
+            else
                 RecurrenceList(
                     modifier =
                         Modifier
@@ -92,7 +77,27 @@ fun RecurrenceScreen(
                     recurrences = recurrences,
                     onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 )
-            }
         },
     )
+}
+
+
+@Composable
+fun EmptyListRecurrences(
+    paddingValues: androidx.compose.foundation.layout.PaddingValues,
+    strings: StringsRepository
+) {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(paddingValues).stardardBackground(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = strings.noValuesFound,
+            style =
+                TextStyle(
+                    fontSize = PageDesignSettings.smallTitle,
+                    color = MaterialTheme.colorScheme.secondary,
+                ),
+        )
+    }
 }
