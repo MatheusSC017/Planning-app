@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.HandleEvents
+import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.DatabaseUiEvent
@@ -85,17 +86,7 @@ fun HomeScreen(
                 modifier =
                     Modifier
                         .padding(paddingValues)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                    MaterialTheme.colorScheme.background,
-                                ),
-                                start = Offset.Zero,
-                                end = Offset.Infinite,
-                            ),
-                        ),
+                        .stardardBackground(),
                 selectedCalendar = selectedCalendar,
                 columnViewSelected = columnViewSelected,
                 onNavigateToAddCommitment = onNavigateToAddCommitment,

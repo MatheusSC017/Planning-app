@@ -45,17 +45,7 @@ fun NavigationDrawerSheet(
     ModalDrawerSheet {
         Column(
             modifier =
-                Modifier.background(
-                    Brush.linearGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                            MaterialTheme.colorScheme.background,
-                        ),
-                        start = Offset.Zero,
-                        end = Offset.Infinite,
-                    ),
-                ),
+                Modifier.stardardBackground(),
         ) {
             Text(
                 text = strings.projectName,

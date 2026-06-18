@@ -57,7 +57,7 @@ import kotlin.collections.forEach
 @Composable
 fun RecurrenceList(
     modifier: Modifier,
-    recurrenceViewModel: RecurrenceViewModel,
+    onDeleteRecurrence: (recurrenceId: Long) -> Unit,
     recurrences: List<CommitmentRecurrenceDataClass>,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
 ) {
@@ -88,9 +88,7 @@ fun RecurrenceList(
                             showRecurrenceViewDialog = true
                         },
                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                        onDeleteRecurrence = { recurrenceId ->
-                            recurrenceViewModel.deleteRecurrence(recurrenceId)
-                        },
+                        onDeleteRecurrence = onDeleteRecurrence
                     )
                 }
             }

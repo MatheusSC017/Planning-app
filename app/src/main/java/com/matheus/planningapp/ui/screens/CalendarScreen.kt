@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.ConfirmationDialog
 import com.matheus.planningapp.ui.screens.components.HandleEvents
+import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -114,17 +115,7 @@ fun CalendarScreen(
                 modifier =
                     Modifier
                         .padding(paddingValues)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                    MaterialTheme.colorScheme.background,
-                                ),
-                                start = Offset.Zero,
-                                end = Offset.Infinite,
-                            ),
-                        ),
+                        .stardardBackground(),
                 calendarViewModel = calendarViewModel,
             )
         },

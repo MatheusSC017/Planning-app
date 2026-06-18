@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
+import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -72,17 +73,7 @@ fun CategoryManagementScreen(
                 modifier =
                     Modifier
                         .padding(paddingValues)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                    MaterialTheme.colorScheme.background,
-                                ),
-                                start = Offset.Zero,
-                                end = Offset.Infinite,
-                            ),
-                        ),
+                        .stardardBackground(),
                 categoryViewModel = categoryViewModel,
                 onShowSnackbar = { message ->
                     scope.launch {

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
+import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
@@ -84,18 +85,10 @@ fun RecurrenceScreen(
                     modifier =
                         Modifier
                             .padding(paddingValues)
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(
-                                        MaterialTheme.colorScheme.background,
-                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = .8f),
-                                        MaterialTheme.colorScheme.background,
-                                    ),
-                                    start = Offset.Zero,
-                                    end = Offset.Infinite,
-                                ),
-                            ),
-                    recurrenceViewModel = recurrenceViewModel,
+                            .stardardBackground(),
+                    onDeleteRecurrence = { recurrenceId ->
+                        recurrenceViewModel.deleteRecurrence(recurrenceId)
+                    },
                     recurrences = recurrences,
                     onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 )
