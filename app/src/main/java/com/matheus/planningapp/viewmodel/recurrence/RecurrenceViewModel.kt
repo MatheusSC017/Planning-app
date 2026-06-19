@@ -2,6 +2,7 @@ package com.matheus.planningapp.viewmodel.recurrence
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.data.calendar.CalendarRepository
 import com.matheus.planningapp.data.recurrence.CommitmentRecurrenceDataClass
 import com.matheus.planningapp.data.recurrence.RecurrenceEntity
@@ -21,18 +22,25 @@ class RecurrenceViewModel(
     calendarRepository: CalendarRepository,
     private val recurrenceRepository: RecurrenceRepository,
 ) : ViewModel() {
-    private val _selectedCalendarId = MutableStateFlow<Long?>(null)
+    private val _selectedCalendar = MutableStateFlow<CalendarEntity?>(null)
+    val selectedCalendar: StateFlow<CalendarEntity?> = _selectedCalendar
 
-    fun selectCalendar(calendarId: Long) {
-        _selectedCalendarId.value = calendarId
+    fun onCalendarSelected(calendar: CalendarEntity) {
+        _selectedCalendar.value = calendar
+    }
+
+    fun initializeDefaultCalendar(calendars: List<CalendarEntity>) {
+        if (_selectedCalendar.value == null && calendars.isNotEmpty()) {
+            _selectedCalendar.value = calendars.first()
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val filteredRecurrences: StateFlow<List<CommitmentRecurrenceDataClass>> =
-        _selectedCalendarId
-            .flatMapLatest { id ->
-                if (id == null) flowOf(emptyList())
-                else recurrenceRepository.getRecurrenceByCalendar(id)
+        _selectedCalendar
+            .flatMapLatest { calendar ->
+                if (calendar == null) flowOf(emptyList())
+                else recurrenceRepository.getRecurrenceByCalendar(calendar.id)
             }
             .stateIn(
                 scope = viewModelScope,

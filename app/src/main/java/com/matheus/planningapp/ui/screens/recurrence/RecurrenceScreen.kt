@@ -10,14 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.matheus.planningapp.data.calendar.CalendarEntity
 import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
@@ -36,14 +32,10 @@ fun RecurrenceScreen(
     val recurrences by recurrenceViewModel.filteredRecurrences.collectAsStateWithLifecycle()
     val strings: StringsRepository = LocalStrings.current
 
-    var selectedCalendar by remember { mutableStateOf<CalendarEntity?>(null) }
+    val selectedCalendar by recurrenceViewModel.selectedCalendar.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.calendars) {
-        if (selectedCalendar == null && uiState.calendars.isNotEmpty()) {
-            val default = uiState.calendars.first()
-            selectedCalendar = default
-            recurrenceViewModel.selectCalendar(default.id)
-        }
+        recurrenceViewModel.initializeDefaultCalendar(uiState.calendars)
     }
 
     Scaffold(
@@ -51,9 +43,8 @@ fun RecurrenceScreen(
             RecurrenceTopAppBar(
                 calendarsEntities = uiState.calendars,
                 selectedCalendar = selectedCalendar,
-                onCalendarSelected = {
-                    selectedCalendar = it
-                    recurrenceViewModel.selectCalendar(it.id)
+                onCalendarSelected = { calendar ->
+                    recurrenceViewModel.onCalendarSelected(calendar)
                 },
                 onMenuClick = onMenuClick,
             )

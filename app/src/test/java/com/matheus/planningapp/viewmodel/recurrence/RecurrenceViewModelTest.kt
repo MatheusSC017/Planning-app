@@ -81,8 +81,7 @@ class RecurrenceViewModelTest {
     fun `getRecurrencesByCalendar should return flow of recurrences for calendar`() =
         runTest {
             // Given
-            val calendarId = 1L
-            coEvery { recurrenceRepository.getRecurrenceByCalendar(calendarId) } returns flowOf(initialRecurrences)
+            coEvery { recurrenceRepository.getRecurrenceByCalendar(initialCalendars[0].id) } returns flowOf(initialRecurrences)
             val collectedRecurrences = mutableListOf<List<CommitmentRecurrenceDataClass>>()
 
             // When
@@ -92,7 +91,7 @@ class RecurrenceViewModelTest {
                         collectedRecurrences.add(recurrences)
                     }
                 }
-            viewModel.selectCalendar(calendarId)
+            viewModel.onCalendarSelected(initialCalendars[0])
             advanceUntilIdle()
 
             // Then
