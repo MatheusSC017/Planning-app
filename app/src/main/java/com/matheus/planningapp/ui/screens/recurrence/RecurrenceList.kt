@@ -47,7 +47,6 @@ import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.enums.FrequencyEnum
-import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -56,7 +55,6 @@ import kotlin.collections.forEach
 
 @Composable
 fun RecurrenceList(
-    modifier: Modifier,
     onDeleteRecurrence: (recurrenceId: Long) -> Unit,
     recurrences: List<CommitmentRecurrenceDataClass>,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
@@ -70,12 +68,7 @@ fun RecurrenceList(
         onDismissRequest = { showRecurrenceViewDialog = false },
     )
 
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(PageDesignSettings.extraLargePaddingValue),
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
         ) {

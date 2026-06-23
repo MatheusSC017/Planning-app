@@ -50,24 +50,25 @@ fun RecurrenceScreen(
             )
         },
         content = { paddingValues ->
+            Box(
+                modifier =  Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .stardardBackground(),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (recurrences.isEmpty())
+                    EmptyListRecurrences(strings = strings)
+                else
+                    RecurrenceList(
+                        onDeleteRecurrence = { recurrenceId ->
+                            recurrenceViewModel.deleteRecurrence(recurrenceId)
+                        },
+                        recurrences = recurrences,
+                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                    )
+            }
 
-            if (recurrences.isEmpty())
-                EmptyListRecurrences(
-                    paddingValues = paddingValues,
-                    strings = strings,
-                )
-            else
-                RecurrenceList(
-                    modifier =
-                        Modifier
-                            .padding(paddingValues)
-                            .stardardBackground(),
-                    onDeleteRecurrence = { recurrenceId ->
-                        recurrenceViewModel.deleteRecurrence(recurrenceId)
-                    },
-                    recurrences = recurrences,
-                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                )
         },
     )
 }
@@ -75,20 +76,14 @@ fun RecurrenceScreen(
 
 @Composable
 fun EmptyListRecurrences(
-    paddingValues: androidx.compose.foundation.layout.PaddingValues,
     strings: StringsRepository
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize().padding(paddingValues).stardardBackground(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = strings.noValuesFound,
-            style =
-                TextStyle(
-                    fontSize = PageDesignSettings.smallTitle,
-                    color = MaterialTheme.colorScheme.secondary,
-                ),
-        )
-    }
+    Text(
+        text = strings.noValuesFound,
+        style =
+            TextStyle(
+                fontSize = PageDesignSettings.smallTitle,
+                color = MaterialTheme.colorScheme.secondary,
+            ),
+    )
 }
