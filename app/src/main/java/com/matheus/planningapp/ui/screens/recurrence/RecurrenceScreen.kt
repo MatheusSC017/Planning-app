@@ -3,12 +3,10 @@ package com.matheus.planningapp.ui.screens.recurrence
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,11 +15,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
-import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurrenceScreen(
     recurrenceViewModel: RecurrenceViewModel = koinViewModel(),
@@ -30,13 +26,7 @@ fun RecurrenceScreen(
 ) {
     val uiState by recurrenceViewModel.uiState.collectAsStateWithLifecycle()
     val recurrences by recurrenceViewModel.filteredRecurrences.collectAsStateWithLifecycle()
-    val strings: StringsRepository = LocalStrings.current
-
     val selectedCalendar by recurrenceViewModel.selectedCalendar.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.calendars) {
-        recurrenceViewModel.initializeDefaultCalendar(uiState.calendars)
-    }
 
     Scaffold(
         topBar = {
@@ -58,7 +48,7 @@ fun RecurrenceScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 if (recurrences.isEmpty())
-                    EmptyListRecurrences(strings = strings)
+                    EmptyListRecurrences(LocalStrings.current.noValuesFound)
                 else
                     RecurrenceList(
                         onDeleteRecurrence = { recurrenceId ->
@@ -76,10 +66,10 @@ fun RecurrenceScreen(
 
 @Composable
 fun EmptyListRecurrences(
-    strings: StringsRepository
+    emptyText: String,
 ) {
     Text(
-        text = strings.noValuesFound,
+        text = emptyText,
         style =
             TextStyle(
                 fontSize = PageDesignSettings.smallTitle,
