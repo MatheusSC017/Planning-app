@@ -33,9 +33,7 @@ fun RecurrenceScreen(
             RecurrenceTopAppBar(
                 calendarsEntities = uiState.calendars,
                 selectedCalendar = selectedCalendar,
-                onCalendarSelected = { calendar ->
-                    recurrenceViewModel.onCalendarSelected(calendar)
-                },
+                onCalendarSelected = recurrenceViewModel::onCalendarSelected,
                 onMenuClick = onMenuClick,
             )
         },
@@ -58,16 +56,13 @@ fun RecurrenceScreen(
                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                     )
             }
-
         },
     )
 }
 
 
 @Composable
-fun EmptyListRecurrences(
-    emptyText: String,
-) {
+fun EmptyListRecurrences(emptyText: String) {
     Text(
         text = emptyText,
         style =
