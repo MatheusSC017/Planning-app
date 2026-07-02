@@ -3,6 +3,7 @@ package com.matheus.planningapp.ui.screens.home
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
@@ -41,8 +43,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.ui.theme.PageDesignSettings
@@ -52,14 +57,19 @@ import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.indexToTimeString
 import com.matheus.planningapp.util.timeToIndex
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.util.Locale
+import kotlin.math.roundToInt
+import kotlin.time.Duration
 
 fun LazyListScope.timelineColumn(
     strings: StringsRepository,
     commitments: List<CommitmentEntity>,
+    onMove: (CommitmentEntity, Instant) -> Unit,
     onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
@@ -73,6 +83,7 @@ fun LazyListScope.timelineColumn(
             TimelineRow(
                 startTime = indexToTimeString(index),
                 commitment = null,
+                onMove = onMove,
                 onReminderAction = {},
                 onViewCommitment = {},
                 onNavigateToUpdateCommitment = {},
@@ -99,6 +110,7 @@ fun LazyListScope.timelineColumn(
                     TimelineRow(
                         startTime = indexToTimeString(index),
                         commitment = null,
+                        onMove = onMove,
                         onReminderAction = {},
                         onViewCommitment = {},
                         onNavigateToUpdateCommitment = {},
@@ -118,6 +130,7 @@ fun LazyListScope.timelineColumn(
                 TimelineRow(
                     startTime = commitmentStartTime,
                     commitment = commitment,
+                    onMove = onMove,
                     onReminderAction = onReminderAction,
                     onViewCommitment = onViewCommitment,
                     onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
@@ -131,6 +144,7 @@ fun LazyListScope.timelineColumn(
                 TimelineRow(
                     startTime = indexToTimeString(index),
                     commitment = null,
+                    onMove = onMove,
                     onReminderAction = {},
                     onViewCommitment = {},
                     onNavigateToUpdateCommitment = {},
@@ -145,6 +159,7 @@ fun LazyListScope.timelineColumn(
 fun TimelineRow(
     startTime: String,
     commitment: CommitmentEntity?,
+    onMove: (CommitmentEntity, Instant) -> Unit,
     onReminderAction: (commitment: CommitmentEntity) -> Unit,
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
@@ -157,8 +172,8 @@ fun TimelineRow(
                     end = PageDesignSettings.extraLargePaddingValue,
                     start = PageDesignSettings.extraLargePaddingValue,
                     bottom = PageDesignSettings.extraLargePaddingValue,
-                ).height(IntrinsicSize.Min)
-                .heightIn(min = PageDesignSettings.mediumComponentSize),
+                )
+                .height(PageDesignSettings.mediumComponentSize),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,14 +197,56 @@ fun TimelineRow(
         Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
 
         if (commitment != null) {
-            CommitmentCard(
+            DraggableCommitmentCard(
                 commitmentEntity = commitment,
+                onMove = onMove,
                 onReminderAction = onReminderAction,
                 onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 onDeleteCommitment = onDeleteCommitment,
             )
         }
+    }
+}
+
+@Composable
+fun DraggableCommitmentCard(
+    commitmentEntity: CommitmentEntity,
+    onMove: (CommitmentEntity, Instant) -> Unit,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+) {
+    var offsetY by remember { mutableStateOf(0f)}
+
+    Box(
+        modifier = Modifier
+            .offset { IntOffset(0, offsetY.roundToInt()) }
+            .pointerInput(Unit) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = {},
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetY += dragAmount.y
+                    },
+                    onDragEnd = {
+                        val slotsMoved = (offsetY / PageDesignSettings.mediumComponentSize.toPx()).roundToInt()
+
+                        val newInstant = commitmentEntity.startDateTime.plus(Duration.parse("${slotsMoved * 30}m"))
+                        onMove(commitmentEntity, newInstant)
+                        offsetY = 0f
+                    }
+                )
+            }
+    ) {
+        CommitmentCard(
+            commitmentEntity = commitmentEntity,
+            onReminderAction = onReminderAction,
+            onViewCommitment = onViewCommitment,
+            onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+            onDeleteCommitment = onDeleteCommitment,
+        )
     }
 }
 
@@ -265,6 +322,7 @@ fun CommitmentCard(
                     fontSize = PageDesignSettings.mediumText,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary,
+                    maxLines = 3
                 )
 
                 Spacer(modifier = Modifier.height(PageDesignSettings.smallPaddingValue))

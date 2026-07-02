@@ -403,6 +403,9 @@ fun HomeContent(
                 timelineColumn(
                     strings,
                     commitments,
+                    onMove = { commitment, instant ->
+                        homeViewModel.moveCommitment(commitment, instant)
+                    },
                     onReminderAction = { commitment ->
                         selectedCommitment = commitment
                         showReminderViewDialog = true

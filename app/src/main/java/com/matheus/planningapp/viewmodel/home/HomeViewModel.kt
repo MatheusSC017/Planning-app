@@ -98,6 +98,18 @@ class HomeViewModel(
         onSelectedDate(year = selectedDate.value.year - 1)
     }
 
+    fun moveCommitment(commitment: CommitmentEntity, newStartTime: Instant) {
+        val duration = commitment.endDateTime - commitment.startDateTime
+        val updatedCommitment = commitment.copy(
+            startDateTime = newStartTime,
+            endDateTime = newStartTime + duration,
+            updatedAt = Clock.System.now()
+        )
+        viewModelScope.launch {
+            commitmentRepository.updateCommitment(updatedCommitment)
+        }
+    }
+
     fun getCommitmentsForDay(
         dayStart: Instant,
         dayEnd: Instant,
