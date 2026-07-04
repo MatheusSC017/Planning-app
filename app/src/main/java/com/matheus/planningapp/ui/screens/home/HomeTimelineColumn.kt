@@ -47,7 +47,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import com.matheus.planningapp.R
 import com.matheus.planningapp.data.commitment.CommitmentEntity
 import com.matheus.planningapp.ui.theme.PageDesignSettings
@@ -80,15 +79,7 @@ fun LazyListScope.timelineColumn(
 
     if (commitments.isEmpty()) {
         items(timeLineItems) { index ->
-            TimelineRow(
-                startTime = indexToTimeString(index),
-                commitment = null,
-                onMove = onMove,
-                onReminderAction = {},
-                onViewCommitment = {},
-                onNavigateToUpdateCommitment = {},
-                onDeleteCommitment = {},
-            )
+            TimelineRow(startTime = indexToTimeString(index)) {}
         }
     } else {
         val timesList = List(timeLineItems) { it }
@@ -107,15 +98,7 @@ fun LazyListScope.timelineColumn(
 
             if (commitmentsLastIndex < commitmentStartIndex) {
                 items(timesList.subList(commitmentsLastIndex, commitmentStartIndex)) { index ->
-                    TimelineRow(
-                        startTime = indexToTimeString(index),
-                        commitment = null,
-                        onMove = onMove,
-                        onReminderAction = {},
-                        onViewCommitment = {},
-                        onNavigateToUpdateCommitment = {},
-                        onDeleteCommitment = {},
-                    )
+                    TimelineRow(startTime = indexToTimeString(index),) {}
                 }
             }
 
@@ -127,29 +110,22 @@ fun LazyListScope.timelineColumn(
                 }
 
             item {
-                TimelineRow(
-                    startTime = commitmentStartTime,
-                    commitment = commitment,
-                    onMove = onMove,
-                    onReminderAction = onReminderAction,
-                    onViewCommitment = onViewCommitment,
-                    onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                    onDeleteCommitment = onDeleteCommitment,
-                )
+                TimelineRow(startTime = commitmentStartTime) {
+                    DraggableCommitmentCard(
+                        commitmentEntity = commitment,
+                        onMove = onMove,
+                        onReminderAction = onReminderAction,
+                        onViewCommitment = onViewCommitment,
+                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                        onDeleteCommitment = onDeleteCommitment,
+                    )
+                }
             }
         }
 
         if (commitmentsLastIndex < timeLineItems) {
             items(timesList.subList(commitmentsLastIndex, timeLineItems)) { index ->
-                TimelineRow(
-                    startTime = indexToTimeString(index),
-                    commitment = null,
-                    onMove = onMove,
-                    onReminderAction = {},
-                    onViewCommitment = {},
-                    onNavigateToUpdateCommitment = {},
-                    onDeleteCommitment = {},
-                )
+                TimelineRow(startTime = indexToTimeString(index)) {}
             }
         }
     }
@@ -158,12 +134,7 @@ fun LazyListScope.timelineColumn(
 @Composable
 fun TimelineRow(
     startTime: String,
-    commitment: CommitmentEntity?,
-    onMove: (CommitmentEntity, Instant) -> Unit,
-    onReminderAction: (commitment: CommitmentEntity) -> Unit,
-    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    content: @Composable () -> Unit
 ) {
     Row(
         modifier =
@@ -196,16 +167,7 @@ fun TimelineRow(
 
         Spacer(modifier = Modifier.width(PageDesignSettings.largePaddingValue))
 
-        if (commitment != null) {
-            DraggableCommitmentCard(
-                commitmentEntity = commitment,
-                onMove = onMove,
-                onReminderAction = onReminderAction,
-                onViewCommitment = onViewCommitment,
-                onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                onDeleteCommitment = onDeleteCommitment,
-            )
-        }
+        content()
     }
 }
 
