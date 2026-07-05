@@ -98,17 +98,9 @@ fun LazyListScope.timelineGrid(
 
                             if (indexCommitment == -1) {
                                 TimelineGridItem(
-                                    startTime = indexToTimeString(index),
-                                    commitmentEntity = null,
+                                    title = indexToTimeString(index),
                                     cellWidth = cellWidth,
-                                    colspan = 1,
-                                    continuesInNextCell = false,
-                                    continuesFromPreviousCell = false,
-                                    onReminderAction = {},
-                                    onViewCommitment = {},
-                                    onNavigateToUpdateCommitment = {},
-                                    onDeleteCommitment = {},
-                                )
+                                ) {}
                             } else {
                                 // Start a new block if this is the first column in the row (index % 4 == 0)
                                 // or if the current commitment is different from the previous one.
@@ -121,18 +113,47 @@ fun LazyListScope.timelineGrid(
                                         } else {
                                             indexEndOfRow - index + 1
                                         }
+
+                                    val continuesInNextCell = index + colspan - 1 < commitmentEndIndex
+                                    val continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false
+                                    val commitmentEntity = commitments[indexCommitment]
+                                    var titleOfCell = ""
+                                    if (!continuesFromPreviousCell) titleOfCell += indexToTimeString(index)
+                                    if (!continuesInNextCell && (continuesFromPreviousCell || colspan > 1)) {
+                                        val commitmentEndDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
+                                        titleOfCell +=
+                                            String.format(
+                                                Locale.US,
+                                                " ~ ${LocalStrings.current.hourFormat}",
+                                                commitmentEndDateTime.hour,
+                                                commitmentEndDateTime.minute,
+                                            )
+                                    }
+
+                                    val statusColor =
+                                        when (commitmentEntity.priorityEnum) {
+                                            PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
+                                            PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
+                                            PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
+                                        }
+
                                     TimelineGridItem(
-                                        startTime = indexToTimeString(index),
-                                        commitmentEntity = commitments[indexCommitment],
+                                        title = titleOfCell,
                                         cellWidth = cellWidth,
                                         colspan = colspan,
-                                        continuesInNextCell = index + colspan - 1 < commitmentEndIndex,
-                                        continuesFromPreviousCell = if (index > 0) timelineItems[index - 1] == indexCommitment else false,
-                                        onReminderAction = onReminderAction,
-                                        onViewCommitment = onViewCommitment,
-                                        onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
-                                        onDeleteCommitment = onDeleteCommitment,
-                                    )
+                                        statusColor = statusColor,
+                                        continuesInNextCell = continuesInNextCell,
+                                        continuesFromPreviousCell = continuesFromPreviousCell,
+
+                                    ) {
+                                        GridItemMenu(
+                                            commitmentEntity = commitmentEntity,
+                                            onReminderAction = onReminderAction,
+                                            onViewCommitment = onViewCommitment,
+                                            onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                                            onDeleteCommitment = onDeleteCommitment,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -144,19 +165,15 @@ fun LazyListScope.timelineGrid(
 
 @Composable
 fun TimelineGridItem(
-    startTime: String,
-    commitmentEntity: CommitmentEntity?,
+    title: String,
     cellWidth: Dp,
-    colspan: Int,
-    continuesInNextCell: Boolean,
-    continuesFromPreviousCell: Boolean,
-    onReminderAction: (commitment: CommitmentEntity) -> Unit,
-    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
-    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
-    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
-) {
-    val strings: StringsRepository = LocalStrings.current
-    var menuExpanded by remember { mutableStateOf(false) }
+    statusColor: Color? = null,
+    colspan: Int = 1,
+    continuesInNextCell: Boolean = false,
+    continuesFromPreviousCell: Boolean = false,
+    content: @Composable () -> Unit,
+)  {
+
 
     val endBoxPadding = if (continuesInNextCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
     val startBoxPadding = if (continuesFromPreviousCell) PageDesignSettings.zeroPaddingValue else PageDesignSettings.largePaddingValue
@@ -221,34 +238,14 @@ fun TimelineGridItem(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                var titleOfCell = ""
-                if (!continuesFromPreviousCell) titleOfCell += startTime
-                if (commitmentEntity != null && !continuesInNextCell && (continuesFromPreviousCell || colspan > 1)) {
-                    val commitmentEndDateTime = commitmentEntity.endDateTime.toLocalDateTime(TimeZone.currentSystemDefault())
-                    titleOfCell +=
-                        String.format(
-                            Locale.US,
-                            " ~ ${strings.hourFormat}",
-                            commitmentEndDateTime.hour,
-                            commitmentEndDateTime.minute,
-                        )
-                }
-
                 Text(
-                    text = titleOfCell,
+                    text = title,
                     fontSize = PageDesignSettings.mediumText,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary,
                 )
 
-                if (commitmentEntity != null) {
-                    val statusColor =
-                        when (commitmentEntity.priorityEnum) {
-                            PriorityEnum.LOW -> Color.Green.copy(alpha = .6f)
-                            PriorityEnum.MEDIUM -> Color.Yellow.copy(alpha = .6f)
-                            PriorityEnum.HIGH -> Color.Red.copy(alpha = .6f)
-                        }
-
+                if (statusColor != null) {
                     Box(
                         modifier =
                             Modifier
@@ -259,106 +256,119 @@ fun TimelineGridItem(
                 }
             }
 
-            if (commitmentEntity != null) {
-                Box(
-                    modifier = Modifier.align(Alignment.TopEnd),
-                ) {
-                    Icon(
-                        painterResource(R.drawable.outline_more_horiz_24),
-                        contentDescription = null,
-                        modifier =
-                            Modifier
-                                .padding(end = PageDesignSettings.mediumPaddingValue)
-                                .clickable { menuExpanded = true },
-                        tint = MaterialTheme.colorScheme.secondary.copy(.6f),
-                    )
-
-                    DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.onBackground),
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    strings.viewButton,
-                                    color = MaterialTheme.colorScheme.onSecondary,
-                                )
-                            },
-                            onClick = {
-                                menuExpanded = false
-                                onViewCommitment(commitmentEntity)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.view),
-                                    contentDescription = strings.viewButton,
-                                    tint = MaterialTheme.colorScheme.onSecondary,
-                                )
-                            },
-                        )
-
-                        if (commitmentEntity.startDateTime > Clock.System.now()) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        strings.reminderButton,
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                    )
-                                },
-                                onClick = {
-                                    menuExpanded = false
-                                    onReminderAction(commitmentEntity)
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.outline_notifications_24),
-                                        contentDescription = strings.reminderButton,
-                                        tint = MaterialTheme.colorScheme.onSecondary,
-                                    )
-                                },
-                            )
-                        }
-
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    strings.updateButton,
-                                    color = MaterialTheme.colorScheme.onSecondary,
-                                )
-                            },
-                            onClick = {
-                                menuExpanded = false
-                                onNavigateToUpdateCommitment(commitmentEntity.id)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = strings.updateButton,
-                                    tint = MaterialTheme.colorScheme.onSecondary,
-                                )
-                            },
-                        )
-
-                        HorizontalDivider()
-
-                        DropdownMenuItem(
-                            text = { Text(strings.deleteButton, color = MaterialTheme.colorScheme.error) },
-                            onClick = {
-                                menuExpanded = false
-                                onDeleteCommitment(commitmentEntity)
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = strings.deleteButton,
-                                    tint = MaterialTheme.colorScheme.error,
-                                )
-                            },
-                        )
-                    }
-                }
+            Box(
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                content()
             }
         }
+    }
+}
+
+@Composable
+fun GridItemMenu(
+    commitmentEntity: CommitmentEntity,
+    onReminderAction: (commitment: CommitmentEntity) -> Unit,
+    onViewCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
+    onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+) {
+    val strings: StringsRepository = LocalStrings.current
+    var menuExpanded by remember { mutableStateOf(false) }
+
+
+    Icon(
+        painterResource(R.drawable.outline_more_horiz_24),
+        contentDescription = null,
+        modifier =
+            Modifier
+                .padding(end = PageDesignSettings.mediumPaddingValue)
+                .clickable { menuExpanded = true },
+        tint = MaterialTheme.colorScheme.secondary.copy(.6f),
+    )
+
+    DropdownMenu(
+        expanded = menuExpanded,
+        onDismissRequest = { menuExpanded = false },
+        modifier = Modifier.background(MaterialTheme.colorScheme.onBackground),
+    ) {
+        DropdownMenuItem(
+            text = {
+                Text(
+                    strings.viewButton,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+            },
+            onClick = {
+                menuExpanded = false
+                onViewCommitment(commitmentEntity)
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.view),
+                    contentDescription = strings.viewButton,
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                )
+            },
+        )
+
+        if (commitmentEntity.startDateTime > Clock.System.now()) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        strings.reminderButton,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                    )
+                },
+                onClick = {
+                    menuExpanded = false
+                    onReminderAction(commitmentEntity)
+                },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_notifications_24),
+                        contentDescription = strings.reminderButton,
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                    )
+                },
+            )
+        }
+
+        DropdownMenuItem(
+            text = {
+                Text(
+                    strings.updateButton,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+            },
+            onClick = {
+                menuExpanded = false
+                onNavigateToUpdateCommitment(commitmentEntity.id)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = strings.updateButton,
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                )
+            },
+        )
+
+        HorizontalDivider()
+
+        DropdownMenuItem(
+            text = { Text(strings.deleteButton, color = MaterialTheme.colorScheme.error) },
+            onClick = {
+                menuExpanded = false
+                onDeleteCommitment(commitmentEntity)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = strings.deleteButton,
+                    tint = MaterialTheme.colorScheme.error,
+                )
+            },
+        )
     }
 }
