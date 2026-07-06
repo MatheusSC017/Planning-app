@@ -55,7 +55,9 @@ import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +74,7 @@ fun ReminderViewDialog(
     if (commitmentEntity == null) return
 
     val strings: StringsRepository = LocalStrings.current
+    val dateFormatter = DateTimeFormatter.ofPattern(strings.dateFormat)
 
     var selectedReminder by remember { mutableStateOf<ReminderEntity?>(null) }
     var minutesBeforeCommitment by remember { mutableStateOf(1) }
@@ -118,14 +121,7 @@ fun ReminderViewDialog(
                         )
 
                         Text(
-                            text =
-                                String.format(
-                                    Locale.US,
-                                    strings.dateFormat,
-                                    commitmentStartDateTime.year,
-                                    commitmentStartDateTime.monthNumber,
-                                    commitmentStartDateTime.dayOfMonth,
-                                ),
+                            text = dateFormatter.format(commitmentStartDateTime.date.toJavaLocalDate()),
                             fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                         )

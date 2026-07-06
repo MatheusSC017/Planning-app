@@ -37,7 +37,9 @@ import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.util.enums.PriorityEnum
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,6 +52,7 @@ fun CommitmentViewDialog(
     if (commitmentEntity == null) return
 
     val strings: StringsRepository = LocalStrings.current
+    val dateFormatter = DateTimeFormatter.ofPattern(strings.dateFormat)
 
     val statusColor =
         when (commitmentEntity.priorityEnum) {
@@ -106,14 +109,7 @@ fun CommitmentViewDialog(
                         )
 
                         Text(
-                            text =
-                                String.format(
-                                    Locale.US,
-                                    strings.dateFormat,
-                                    commitmentStartDateTime.year,
-                                    commitmentStartDateTime.monthNumber,
-                                    commitmentStartDateTime.dayOfMonth,
-                                ),
+                            text = dateFormatter.format(commitmentStartDateTime.date.toJavaLocalDate()),
                             fontSize = PageDesignSettings.mediumText,
                             color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .6f),
                         )

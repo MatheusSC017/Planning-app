@@ -59,6 +59,7 @@ import org.koin.compose.koinInject
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeContent(
@@ -72,6 +73,7 @@ fun HomeContent(
     taskNotificationScheduler: TaskNotificationScheduler = koinInject(),
 ) {
     val strings: StringsRepository = LocalStrings.current
+    val dateFormatter = DateTimeFormatter.ofPattern(strings.dateFormat)
     val selectedDate = uiState.selectedDate
 
     val zone = remember { ZoneId.systemDefault() }
@@ -242,11 +244,7 @@ fun HomeContent(
                 } else {
                     Row() {
                         Text(
-                            text = strings.dateFormat.format(
-                                selectedDate.year,
-                                selectedDate.monthValue,
-                                selectedDate.dayOfMonth,
-                            ),
+                            text = dateFormatter.format(selectedDate),
                             style =
                                 TextStyle(
                                     fontSize = PageDesignSettings.largeTitle,

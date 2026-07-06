@@ -36,9 +36,11 @@ import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +49,7 @@ fun CommitmentScreen(
     commitmentFormMode: CommitmentFormMode,
 ) {
     val strings: StringsRepository = LocalStrings.current
+    val dateFormatter = DateTimeFormatter.ofPattern(strings.dateFormat)
 
     val commitmentFormViewModel: CommitmentFormViewModel =
         koinViewModel(
@@ -82,12 +85,7 @@ fun CommitmentScreen(
                 title = {
                     if (!commitmentUiState.isLoading) {
                         Text(
-                            text =
-                                strings.dateFormat.format(
-                                    localDate.year,
-                                    localDate.monthNumber,
-                                    localDate.dayOfMonth,
-                                ),
+                            text = dateFormatter.format(localDate.toJavaLocalDate()),
                             style =
                                 TextStyle(
                                     fontSize = PageDesignSettings.mediumTitle,

@@ -112,6 +112,6 @@ class StringsRepositoryPortuguese : StringsRepository {
             "Dezembro",
         )
     override val weekDaysAbbrev = listOf('D', 'S', 'T', 'Q', 'Q', 'S', 'S')
-    override val dateFormat = "%04d-%02d-%02d"
+    override val dateFormat = "dd/MM/yyyy"
     override val hourFormat = "%02d:%02d"
 }
