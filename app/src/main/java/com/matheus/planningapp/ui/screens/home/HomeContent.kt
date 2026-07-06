@@ -88,6 +88,7 @@ fun HomeContent(
         .getCommitmentsForDay(startOfDay, endOfDay, selectedCalendar?.id ?: 0)
         .collectAsState(initial = emptyList())
 
+    var showSelectDateForm by remember { mutableStateOf(false) }
     var isSearchFormActive by remember { mutableStateOf(false) }
     var commitmentSearchTerm by remember { mutableStateOf("") }
     val searchCommitments by homeViewModel
@@ -165,65 +166,107 @@ fun HomeContent(
     ) {
         item {
             Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue),
-                ) {
+
+                if (showSelectDateForm) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = PageDesignSettings.extraLargePaddingValue),
+                    ) {
+                        Text(
+                            text = selectedDate.year.toString(),
+                            style =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.largeTitle,
+                                    color = MaterialTheme.colorScheme.primary,
+                                ),
+                        )
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = strings.increaseButton,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier =
+                                    Modifier
+                                        .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
+                                        .size(PageDesignSettings.smallIconSize)
+                                        .clickable { homeViewModel.incrementYear() },
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = strings.decreaseButton,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier =
+                                    Modifier
+                                        .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
+                                        .size(PageDesignSettings.smallIconSize)
+                                        .clickable { homeViewModel.decrementYear() },
+                            )
+                        }
+
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = strings.increaseButton,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .size(PageDesignSettings.mediumIconSize)
+                                .clickable { showSelectDateForm = false },
+                        )
+                    }
+
+                    MonthGrid(
+                        selectedMonth = selectedDate.monthValue,
+                        onMonthSelected = { homeViewModel.onSelectedDate(month = it) },
+                    )
+
                     Text(
-                        text = selectedDate.year.toString(),
+                        text = strings.monthNames[selectedDate.monthValue - 1],
                         style =
                             TextStyle(
                                 fontSize = PageDesignSettings.largeTitle,
                                 color = MaterialTheme.colorScheme.primary,
                             ),
+                        modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue),
                     )
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                    ) {
+
+                    DaysOnlyCalendar(
+                        yearMonth = YearMonth.of(selectedDate.year, selectedDate.monthValue),
+                        selectedDay = selectedDate.dayOfMonth,
+                        onDateSelected = { homeViewModel.onSelectedDate(day = it) },
+                    )
+                } else {
+                    Row() {
+                        Text(
+                            text = strings.dateFormat.format(
+                                selectedDate.year,
+                                selectedDate.monthValue,
+                                selectedDate.dayOfMonth,
+                            ),
+                            style =
+                                TextStyle(
+                                    fontSize = PageDesignSettings.largeTitle,
+                                    color = MaterialTheme.colorScheme.primary,
+                                ),
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
                             contentDescription = strings.increaseButton,
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier =
-                                Modifier
-                                    .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
-                                    .size(PageDesignSettings.smallIconSize)
-                                    .clickable { homeViewModel.incrementYear() },
-                        )
-
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = strings.decreaseButton,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier =
-                                Modifier
-                                    .clip(RoundedCornerShape(PageDesignSettings.smallIconClip))
-                                    .size(PageDesignSettings.smallIconSize)
-                                    .clickable { homeViewModel.decrementYear() },
+                            modifier = Modifier
+                                .size(PageDesignSettings.mediumIconSize)
+                                .clickable { showSelectDateForm = true },
                         )
                     }
+
                 }
-
-                MonthGrid(
-                    selectedMonth = selectedDate.monthValue,
-                    onMonthSelected = { homeViewModel.onSelectedDate(month = it) },
-                )
-
-                Text(
-                    text = strings.monthNames[selectedDate.monthValue - 1],
-                    style =
-                        TextStyle(
-                            fontSize = PageDesignSettings.largeTitle,
-                            color = MaterialTheme.colorScheme.primary,
-                        ),
-                    modifier = Modifier.padding(vertical = PageDesignSettings.extraLargePaddingValue),
-                )
-
-                DaysOnlyCalendar(
-                    yearMonth = YearMonth.of(selectedDate.year, selectedDate.monthValue),
-                    selectedDay = selectedDate.dayOfMonth,
-                    onDateSelected = { homeViewModel.onSelectedDate(day = it) },
-                )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -271,112 +314,12 @@ fun HomeContent(
                 }
 
                 if (isSearchFormActive) {
-                    Column(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    horizontal = PageDesignSettings.mediumPaddingValue,
-                                    vertical = PageDesignSettings.extraLargePaddingValue,
-                                ).background(
-                                    color = MaterialTheme.colorScheme.surface,
-                                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
-                                ).border(
-                                    width = PageDesignSettings.borderWidth,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
-                                ).padding(PageDesignSettings.mediumPaddingValue),
-                    ) {
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = PageDesignSettings.mediumPaddingValue),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                text = strings.searchCommitmentField,
-                                style =
-                                    TextStyle(
-                                        fontSize = PageDesignSettings.smallTitle,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    ),
-                                modifier = Modifier.padding(start = PageDesignSettings.mediumPaddingValue),
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    isSearchFormActive = false
-                                    commitmentSearchTerm = ""
-                                },
-                                modifier = Modifier.size(PageDesignSettings.largeIconSize),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = strings.searchCommitmentField,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(PageDesignSettings.largeIconSize),
-                                )
-                            }
-                        }
-
-                        TextField(
-                            value = commitmentSearchTerm,
-                            onValueChange = { commitmentSearchTerm = it },
-                            placeholder = {
-                                Text(
-                                    text = strings.commitmentTitleField,
-                                    style =
-                                        TextStyle(
-                                            fontSize = PageDesignSettings.mediumText,
-                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                        ),
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                                    modifier = Modifier.size(PageDesignSettings.smallIconSize),
-                                )
-                            },
-                            trailingIcon = {
-                                if (commitmentSearchTerm.isNotEmpty()) {
-                                    IconButton(
-                                        onClick = { commitmentSearchTerm = "" },
-                                        modifier = Modifier.size(PageDesignSettings.mediumIconSize),
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Close,
-                                            contentDescription = "Clear search",
-                                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                                            modifier = Modifier.size(PageDesignSettings.mediumIconSize),
-                                        )
-                                    }
-                                }
-                            },
-                            textStyle =
-                                TextStyle(
-                                    fontSize = PageDesignSettings.mediumText,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Medium,
-                                ),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
-                            colors =
-                                TextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.background,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
-                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                    cursorColor = MaterialTheme.colorScheme.primary,
-                                ),
-                        )
-                    }
+                    SearchForm(
+                        strings = strings,
+                        commitmentSearchTerm = commitmentSearchTerm,
+                        setIsSearchFormActive = { isSearchFormActive = it },
+                        setCommitmentSearchTerm = { commitmentSearchTerm = it },
+                    )
                 }
             }
         }
@@ -561,5 +504,120 @@ fun DaysOnlyCalendar(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SearchForm(
+    strings: StringsRepository,
+    commitmentSearchTerm: String,
+    setIsSearchFormActive: (Boolean) -> Unit,
+    setCommitmentSearchTerm: (String) -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = PageDesignSettings.mediumPaddingValue,
+                    vertical = PageDesignSettings.extraLargePaddingValue,
+                ).background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                ).border(
+                    width = PageDesignSettings.borderWidth,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(PageDesignSettings.largeIconClip),
+                ).padding(PageDesignSettings.mediumPaddingValue),
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = PageDesignSettings.mediumPaddingValue),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = strings.searchCommitmentField,
+                style =
+                    TextStyle(
+                        fontSize = PageDesignSettings.smallTitle,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
+                modifier = Modifier.padding(start = PageDesignSettings.mediumPaddingValue),
+            )
+
+            IconButton(
+                onClick = {
+                    setIsSearchFormActive(false)
+                    setCommitmentSearchTerm("")
+                },
+                modifier = Modifier.size(PageDesignSettings.largeIconSize),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = strings.searchCommitmentField,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(PageDesignSettings.largeIconSize),
+                )
+            }
+        }
+
+        TextField(
+            value = commitmentSearchTerm,
+            onValueChange = { setCommitmentSearchTerm(it) },
+            placeholder = {
+                Text(
+                    text = strings.commitmentTitleField,
+                    style =
+                        TextStyle(
+                            fontSize = PageDesignSettings.mediumText,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        ),
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                    modifier = Modifier.size(PageDesignSettings.smallIconSize),
+                )
+            },
+            trailingIcon = {
+                if (commitmentSearchTerm.isNotEmpty()) {
+                    IconButton(
+                        onClick = { setCommitmentSearchTerm("") },
+                        modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear search",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                            modifier = Modifier.size(PageDesignSettings.mediumIconSize),
+                        )
+                    }
+                }
+            },
+            textStyle =
+                TextStyle(
+                    fontSize = PageDesignSettings.mediumText,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Medium,
+                ),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            shape = RoundedCornerShape(PageDesignSettings.mediumIconClip),
+            colors =
+                TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.background,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                ),
+        )
     }
 }

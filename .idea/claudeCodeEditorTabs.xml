@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="faa7de09-21fa-43ca-b909-16ff2f607be0" />
+    <option name="activeSessionId" value="12738a40-e574-48e0-9863-710a8985a758" />
     <option name="openSessionIds">
       <list>
         <option value="12738a40-e574-48e0-9863-710a8985a758" />
-        <option value="faa7de09-21fa-43ca-b909-16ff2f607be0" />
       </list>
+    </option>
+    <option name="sessionPaths">
+      <map>
+        <entry key="12738a40-e574-48e0-9863-710a8985a758" value="/switch-account" />
+      </map>
+    </option>
+    <option name="sessionTitles">
+      <map>
+        <entry key="12738a40-e574-48e0-9863-710a8985a758" value="localhost:41225/switch-account?workingDir=%2Fhome%2Fuser%2FAndroidStudioProjects%2FPlanningapp" />
+      </map>
     </option>
   </component>
 </project>
