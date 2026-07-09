@@ -28,6 +28,7 @@ class StringsRepositorySpanish : StringsRepository {
     override val recurrencesMenuButton = "Recurrencias"
     override val settingsMenuButton = "Configuración"
     override val backMenuButton = "Atrás"
+    override val focusModeMenuButton = "Modo Enfoque"
 
     // View Options
     override val columnView = "Columna"
@@ -64,7 +65,7 @@ class StringsRepositorySpanish : StringsRepository {
     override val pastReminderError = "Los compartimentos en el pasado no pueden tener recordatorios"
 
     // Recurrence information
-    override val recurrenceFrequencyField = "Frecuencia"
+    override val recurrenceFrequencyField = "Frequencia"
     override val recurrenceIntervalField = "Intervalo"
     override val recurrenceDayOfMonthField = "Día del mes"
     override val recurrenceWeekDaysField = "Días de la semana"
@@ -94,6 +95,11 @@ class StringsRepositorySpanish : StringsRepository {
     override val categoryDeletedMessage = "Categoría eliminada exitosamente"
     override val editButton = "Editar"
     override val searchError = "Error al buscar categorías"
+
+    // Focus mode information
+    override val stopFocusModeButton = "Detener Modo Enfoque"
+    override val dialogStopFocusTitle = "¿Detener modo enfoque?"
+    override val dialogStopFocusMessage = "¿Estás seguro de que deseas detener el modo enfoque?"
 
     // Datetime information
     override val monthNames =

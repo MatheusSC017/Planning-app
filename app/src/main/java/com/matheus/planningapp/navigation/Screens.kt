@@ -47,6 +47,12 @@ object CategoryScreen : NavigationRoute {
 }
 
 @Serializable
+object FocusModeScreen : NavigationRoute {
+    override val route = "focusMode"
+    override val deepLinkPattern = "planningapp://focus-mode"
+}
+
+@Serializable
 sealed class CommitmentFormMode {
     @Serializable
     data class Create(

@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.matheus.planningapp.ui.screens.CalendarScreen
+import com.matheus.planningapp.ui.screens.FocusModeScreen
 import com.matheus.planningapp.ui.screens.SettingScreen
 import com.matheus.planningapp.ui.screens.category.CategoryManagementScreen
 import com.matheus.planningapp.ui.screens.commitment.CommitmentScreen
@@ -73,6 +74,12 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                 onNavigateToCategoryScreen = {
                     scope.launch {
                         navHostController.navigate(CategoryScreen.route)
+                    }
+                    scope.launch { drawerState.close() }
+                },
+                onNavigateToFocusModeScreen = {
+                    scope.launch {
+                        navHostController.navigate(FocusModeScreen.route)
                     }
                     scope.launch { drawerState.close() }
                 },
@@ -220,6 +227,23 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                 CategoryManagementScreen(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
+                    },
+                )
+            }
+
+            composable(
+                route = FocusModeScreen.route,
+                deepLinks =
+                    listOf(
+                        navDeepLink { uriPattern = FocusModeScreen.deepLinkPattern },
+                    ),
+            ) {
+                FocusModeScreen(
+                    onExitFocus = {
+                        scope.launch {
+                            navEventManager?.navigateBack()
+                                ?: navHostController.popBackStack()
+                        }
                     },
                 )
             }

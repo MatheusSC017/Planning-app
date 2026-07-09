@@ -28,6 +28,7 @@ interface StringsRepository {
     val recurrencesMenuButton: String
     val settingsMenuButton: String
     val backMenuButton: String
+    val focusModeMenuButton: String
 
     // View Options
     val columnView: String
@@ -94,6 +95,11 @@ interface StringsRepository {
     val categoryDeletedMessage: String
     val editButton: String
     val searchError: String
+
+    // Focus mode information
+    val stopFocusModeButton: String
+    val dialogStopFocusTitle: String
+    val dialogStopFocusMessage: String
 
     // Datetime information
     val monthNames: List<String>

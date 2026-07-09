@@ -28,6 +28,7 @@ class StringsRepositoryEnglish : StringsRepository {
     override val recurrencesMenuButton = "Recurrences"
     override val settingsMenuButton = "Settings"
     override val backMenuButton = "Back"
+    override val focusModeMenuButton = "Focus Mode"
 
     // View Options
     override val columnView = "Column"
@@ -94,6 +95,11 @@ class StringsRepositoryEnglish : StringsRepository {
     override val categoryDeletedMessage = "Category deleted successfully"
     override val editButton = "Edit"
     override val searchError = "Error searching categories"
+
+    // Focus mode information
+    override val stopFocusModeButton = "Stop Focus Mode"
+    override val dialogStopFocusTitle = "Stop focus mode?"
+    override val dialogStopFocusMessage = "Are you sure you want to stop the focus mode?"
 
     // Datetime information
     override val monthNames =

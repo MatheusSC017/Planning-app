@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,6 +40,7 @@ fun NavigationDrawerSheet(
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToRecurrenceScreen: () -> Unit,
     onNavigateToCategoryScreen: () -> Unit,
+    onNavigateToFocusModeScreen: () -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
 
@@ -88,6 +90,12 @@ fun NavigationDrawerSheet(
                 title = strings.categoryManagementTitle,
                 icon = Icons.AutoMirrored.Filled.List,
                 onNavigate = onNavigateToCategoryScreen,
+            )
+
+            MenuNavigationDrawerItem(
+                title = strings.focusModeMenuButton,
+                icon = Icons.Default.Notifications,
+                onNavigate = onNavigateToFocusModeScreen,
             )
 
             MenuNavigationDrawerItem(
