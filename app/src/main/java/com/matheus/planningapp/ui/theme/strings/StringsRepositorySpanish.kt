@@ -97,9 +97,8 @@ class StringsRepositorySpanish : StringsRepository {
     override val searchError = "Error al buscar categorías"
 
     // Focus mode information
+    override val startFocusModeButton = "Iniciar Modo Enfoque"
     override val stopFocusModeButton = "Detener Modo Enfoque"
-    override val dialogStopFocusTitle = "¿Detener modo enfoque?"
-    override val dialogStopFocusMessage = "¿Estás seguro de que deseas detener el modo enfoque?"
 
     // Datetime information
     override val monthNames =

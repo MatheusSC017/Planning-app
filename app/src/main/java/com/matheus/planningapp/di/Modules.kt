@@ -23,6 +23,7 @@ import com.matheus.planningapp.viewmodel.calendar.CalendarViewModel
 import com.matheus.planningapp.viewmodel.category.CategoryViewModel
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormViewModel
+import com.matheus.planningapp.viewmodel.focus.FocusModeViewModel
 import com.matheus.planningapp.viewmodel.home.HomeViewModel
 import com.matheus.planningapp.viewmodel.recurrence.RecurrenceViewModel
 import com.matheus.planningapp.viewmodel.setting.SettingViewModel
@@ -82,4 +83,5 @@ val appModules =
         viewModel { SettingViewModel(get(), get(), get(), get()) }
         viewModel { RecurrenceViewModel(get(), get()) }
         viewModel { CategoryViewModel(get(), get()) }
+        viewModel { FocusModeViewModel() }
     }

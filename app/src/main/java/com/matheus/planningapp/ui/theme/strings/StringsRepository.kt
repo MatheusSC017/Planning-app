@@ -97,9 +97,8 @@ interface StringsRepository {
     val searchError: String
 
     // Focus mode information
+    val startFocusModeButton: String
     val stopFocusModeButton: String
-    val dialogStopFocusTitle: String
-    val dialogStopFocusMessage: String
 
     // Datetime information
     val monthNames: List<String>
