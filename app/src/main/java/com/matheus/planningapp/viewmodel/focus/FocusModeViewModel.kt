@@ -11,29 +11,52 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class FocusModeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(FocusModeUiState())
-    private var timerDuration = 30.minutes
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
 
-    fun setTimerDuration(duration: Duration) {
-        timerDuration = duration
+    fun onHoursChange(hours: Int) {
+        if (hours in 0 .. 12) {
+            _uiState.update { it.copy(hoursInput = hours) }
+        }
+    }
+
+    fun onMinutesChange(minutes: Int) {
+        if (minutes in 0..59) {
+            _uiState.update { it.copy(minutesInput = minutes) }
+        } else {
+            if (minutes >= 60) {
+                onHoursChange(_uiState.value.hoursInput + 1)
+                _uiState.update { it.copy(minutesInput = 0) }
+            } else {
+                if (_uiState.value.hoursInput > 0) {
+                    onHoursChange(_uiState.value.hoursInput - 1)
+                    _uiState.update { it.copy(minutesInput = 59) }
+                }
+            }
+        }
     }
 
     fun startTimer() {
+        val duration = _uiState.value.hoursInput.hours +
+            _uiState.value.minutesInput.minutes +
+            _uiState.value.secondsInput.seconds
+        if (duration.inWholeSeconds <= 0) return
+
         timerJob?.cancel()
         val startTime = Clock.System.now()
-        val endTime = startTime.plus(timerDuration)
+        val endTime = startTime.plus(duration)
         
         _uiState.update { 
             it.copy(
-                totalTimeSeconds = timerDuration.inWholeSeconds,
-                timeRemainingSeconds = timerDuration.inWholeSeconds,
+                totalTimeSeconds = duration.inWholeSeconds,
+                timeRemainingSeconds = duration.inWholeSeconds,
                 isRunning = true
             ) 
         }
@@ -62,15 +85,23 @@ class FocusModeViewModel : ViewModel() {
 data class FocusModeUiState(
     val timeRemainingSeconds: Long = 0,
     val totalTimeSeconds: Long = 0,
-    val isRunning: Boolean = false
+    val isRunning: Boolean = false,
+    val hoursInput: Int = 0,
+    val minutesInput: Int = 30,
+    val secondsInput: Int = 0
 ) {
     val progress: Float
         get() = if (totalTimeSeconds > 0L) timeRemainingSeconds.toFloat() / totalTimeSeconds.toFloat() else 0f
     
     val formattedTime: String
         get() {
-            val minutes = timeRemainingSeconds / 60
-            val seconds = timeRemainingSeconds % 60
-            return "%02d:%02d".format(minutes, seconds)
+            val h = timeRemainingSeconds / 3600
+            val m = (timeRemainingSeconds % 3600) / 60
+            val s = timeRemainingSeconds % 60
+            return if (h > 0) {
+                "%02d:%02d:%02d".format(h, m, s)
+            } else {
+                "%02d:%02d".format(m, s)
+            }
         }
 }
