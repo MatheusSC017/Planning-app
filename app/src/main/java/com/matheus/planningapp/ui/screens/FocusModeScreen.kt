@@ -147,6 +147,29 @@ fun FocusModeScreen(
                                     tint = MaterialTheme.colorScheme.onBackground
                                 )
                             }
+                            Text(
+                                text =  "${uiState.secondsInput} s",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Column {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.KeyboardArrowUp,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable { viewModel.onSecondsChange(uiState.secondsInput + 1) },
+                                    tint = MaterialTheme.colorScheme.onBackground
+                                )
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable { viewModel.onSecondsChange(uiState.secondsInput - 1) },
+                                    tint = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(32.dp))
                     }
@@ -166,7 +189,14 @@ fun FocusModeScreen(
                         )
                     }
 
-                    if (!uiState.isRunning) {
+                    if (uiState.isRunning) {
+                        Button(onClick = viewModel::pauseTimer) {
+                            Text(
+                                text = strings.pauseFocusModeButton,
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+                    } else {
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = {

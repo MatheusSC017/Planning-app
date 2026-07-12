@@ -43,6 +43,22 @@ class FocusModeViewModel : ViewModel() {
         }
     }
 
+    fun onSecondsChange(seconds: Int) {
+        if (seconds in 0..59) {
+            _uiState.update { it.copy(secondsInput = seconds) }
+        } else {
+            if (seconds >= 60) {
+                onMinutesChange(_uiState.value.minutesInput + 1)
+                _uiState.update { it.copy(secondsInput = 0) }
+            } else {
+                if (_uiState.value.minutesInput > 0 || _uiState.value.hoursInput > 0) {
+                    onMinutesChange(_uiState.value.minutesInput - 1)
+                    _uiState.update { it.copy(secondsInput = 59) }
+                }
+            }
+        }
+    }
+
     fun startTimer() {
         val duration = _uiState.value.hoursInput.hours +
             _uiState.value.minutesInput.minutes +
@@ -70,7 +86,17 @@ class FocusModeViewModel : ViewModel() {
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
         }
     }
-
+    
+    fun pauseTimer() {
+        timerJob?.cancel()
+        _uiState.update { it.copy(isRunning = false) }
+        val timeRemainingSeconds: Int = _uiState.value.timeRemainingSeconds.toInt()
+        onHoursChange(timeRemainingSeconds / 3600)
+        onMinutesChange((uiState.value.timeRemainingSeconds.toInt() % 3600) / 60)
+        onSecondsChange(uiState.value.timeRemainingSeconds.toInt() % 60)
+        
+    }
+    
     fun stopTimer() {
         timerJob?.cancel()
         _uiState.update { it.copy(isRunning = false) }
