@@ -8,6 +8,8 @@ import com.matheus.planningapp.data.category.CategoryRepository
 import com.matheus.planningapp.data.category.CategoryRepositoryImpl
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.commitment.CommitmentRepositoryImpl
+import com.matheus.planningapp.data.focus.FocusSessionRepository
+import com.matheus.planningapp.data.focus.FocusSessionRepositoryImpl
 import com.matheus.planningapp.data.recurrence.RecurrenceRepository
 import com.matheus.planningapp.data.recurrence.RecurrenceRepositoryImpl
 import com.matheus.planningapp.data.reminder.ReminderRepository
@@ -57,12 +59,14 @@ val appModules =
         single { get<CalendarDatabase>().recurrenceDao() }
         single { get<CalendarDatabase>().reminderDao() }
         single { get<CalendarDatabase>().categoryDao() }
+        single { get<CalendarDatabase>().focusSessionDao() }
 
         single<CalendarRepository> { CalendarRepositoryImpl(get()) }
         single<CommitmentRepository> { CommitmentRepositoryImpl(get()) }
         single<RecurrenceRepository> { RecurrenceRepositoryImpl(get()) }
         single<ReminderRepository> { ReminderRepositoryImpl(get()) }
         single<CategoryRepository> { CategoryRepositoryImpl(get()) }
+        single<FocusSessionRepository> { FocusSessionRepositoryImpl(get()) }
         single<SettingsRepository> { SettingsRepository(get()) }
         single<TaskNotificationScheduler> { TaskNotificationScheduler(get(), get()) }
         single<PermissionManager> { PermissionManager(get()) }
@@ -83,5 +87,5 @@ val appModules =
         viewModel { SettingViewModel(get(), get(), get(), get()) }
         viewModel { RecurrenceViewModel(get(), get()) }
         viewModel { CategoryViewModel(get(), get()) }
-        viewModel { FocusModeViewModel() }
+        viewModel { FocusModeViewModel(get()) }
     }

@@ -9,6 +9,8 @@ import com.matheus.planningapp.data.category.CategoryDao
 import com.matheus.planningapp.data.category.CategoryEntity
 import com.matheus.planningapp.data.commitment.CommitmentDao
 import com.matheus.planningapp.data.commitment.CommitmentEntity
+import com.matheus.planningapp.data.focus.FocusSessionDao
+import com.matheus.planningapp.data.focus.FocusSessionEntity
 import com.matheus.planningapp.data.local.converters.DateTimeConverters
 import com.matheus.planningapp.data.local.converters.DayOfWeekFrequency
 import com.matheus.planningapp.data.local.converters.FrequencyConverters
@@ -25,8 +27,9 @@ import com.matheus.planningapp.data.reminder.ReminderEntity
         RecurrenceEntity::class,
         ReminderEntity::class,
         CategoryEntity::class,
+        FocusSessionEntity::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = false,
 )
 @TypeConverters(
@@ -45,4 +48,6 @@ abstract class CalendarDatabase : RoomDatabase() {
     abstract fun reminderDao(): ReminderDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun focusSessionDao(): FocusSessionDao
 }

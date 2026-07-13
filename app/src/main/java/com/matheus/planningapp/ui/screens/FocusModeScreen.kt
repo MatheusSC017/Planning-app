@@ -51,7 +51,7 @@ fun FocusModeScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     BackHandler(enabled = true) {
-        onExitFocus()
+        viewModel.onExit(onExitFocus)
     }
 
     Scaffold(
@@ -64,7 +64,7 @@ fun FocusModeScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onExitFocus) {
+                    IconButton(onClick = { viewModel.onExit(onExitFocus) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = strings.backMenuButton
@@ -91,7 +91,7 @@ fun FocusModeScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
-                            progress = { if (uiState.isRunning) uiState.progress else 1f },
+                            progress = { if (uiState.isRunning || uiState.isPaused) uiState.progress else 1f },
                             modifier = Modifier.size(280.dp),
                             color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 8.dp,
@@ -138,18 +138,31 @@ fun FocusModeScreen(
                         horizontalArrangement = Arrangement.spacedBy(24.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (uiState.isRunning) {
-                            FilledTonalIconButton(
-                                onClick = viewModel::pauseTimer,
-                                modifier = Modifier.size(72.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_pause),
-                                    contentDescription = strings.pauseFocusModeButton,
-                                    modifier = Modifier.size(36.dp)
-                                )
+                        if (uiState.isRunning || uiState.isPaused) {
+                            if (uiState.isRunning) {
+                                FilledTonalIconButton(
+                                    onClick = viewModel::pauseTimer,
+                                    modifier = Modifier.size(72.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_pause),
+                                        contentDescription = strings.pauseFocusModeButton,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
+                            } else {
+                                FilledTonalIconButton(
+                                    onClick = viewModel::startTimer,
+                                    modifier = Modifier.size(72.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = strings.startFocusModeButton,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
                             }
-                            IconButton(
+                            FilledTonalIconButton(
                                 onClick = viewModel::stopTimer,
                                 modifier = Modifier.size(72.dp)
                             ) {

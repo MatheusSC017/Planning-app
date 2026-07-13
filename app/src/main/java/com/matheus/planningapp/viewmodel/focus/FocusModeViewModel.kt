@@ -2,6 +2,8 @@ package com.matheus.planningapp.viewmodel.focus
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.matheus.planningapp.data.focus.FocusSessionEntity
+import com.matheus.planningapp.data.focus.FocusSessionRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,19 +12,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class FocusModeViewModel : ViewModel() {
+class FocusModeViewModel(private val focusSessionRepository: FocusSessionRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(FocusModeUiState())
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
+    private var sessionStartTime: Long? = null
+    private var initialDurationSeconds: Long = 0
 
     fun onHoursChange(hours: Int) {
-        if (hours in 0 .. 12) {
+        if (hours in 0..12) {
             _uiState.update { it.copy(hoursInput = hours) }
         }
     }
@@ -63,9 +66,14 @@ class FocusModeViewModel : ViewModel() {
         val duration = if (_uiState.value.isPaused) {
             _uiState.value.timeRemainingSeconds.seconds
         } else {
-            _uiState.value.hoursInput.hours +
-                _uiState.value.minutesInput.minutes +
-                _uiState.value.secondsInput.seconds
+            val total = _uiState.value.hoursInput.hours +
+                    _uiState.value.minutesInput.minutes +
+                    _uiState.value.secondsInput.seconds
+            
+            initialDurationSeconds = total.inWholeSeconds
+            sessionStartTime = Clock.System.now().toEpochMilliseconds()
+            
+            total
         }
         if (duration.inWholeSeconds <= 0) return
 
@@ -79,7 +87,7 @@ class FocusModeViewModel : ViewModel() {
                 timeRemainingSeconds = duration.inWholeSeconds,
                 isRunning = true,
                 isPaused = false
-            ) 
+            )
         }
 
         timerJob = viewModelScope.launch {
@@ -89,6 +97,7 @@ class FocusModeViewModel : ViewModel() {
                 delay(1000)
             }
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
+            saveSession(completed = true)
         }
     }
 
@@ -100,16 +109,48 @@ class FocusModeViewModel : ViewModel() {
                 isPaused = true
             )
         }
-
     }
-    
+
     fun stopTimer() {
+        saveSession(completed = false)
         timerJob?.cancel()
-        _uiState.update { it.copy(isRunning = false) }
+        _uiState.update { it.copy(isRunning = false, isPaused = false, timeRemainingSeconds = 0) }
+    }
+
+    fun onExit(onExitConfirmed: () -> Unit) {
+        if (_uiState.value.isRunning || _uiState.value.isPaused) {
+            saveSession(completed = false)
+        }
+        timerJob?.cancel()
+        onExitConfirmed()
+    }
+
+    private fun saveSession(completed: Boolean) {
+        val startTime = sessionStartTime ?: return
+        val totalSeconds = initialDurationSeconds
+        val remainingSeconds = _uiState.value.timeRemainingSeconds
+        val elapsedSeconds = totalSeconds - remainingSeconds
+        val durationMinutes = (elapsedSeconds / 60).toInt()
+
+        viewModelScope.launch {
+            focusSessionRepository.insertSession(
+                FocusSessionEntity(
+                    startTime = startTime,
+                    durationMinutes = durationMinutes,
+                    completed = completed
+                )
+            )
+        }
+        
+        sessionStartTime = null
+        initialDurationSeconds = 0
     }
 
     override fun onCleared() {
         super.onCleared()
+        if (_uiState.value.isRunning || _uiState.value.isPaused) {
+            saveSession(completed = false)
+        }
         timerJob?.cancel()
     }
 }
