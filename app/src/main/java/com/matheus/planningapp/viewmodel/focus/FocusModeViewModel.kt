@@ -60,20 +60,25 @@ class FocusModeViewModel : ViewModel() {
     }
 
     fun startTimer() {
-        val duration = _uiState.value.hoursInput.hours +
-            _uiState.value.minutesInput.minutes +
-            _uiState.value.secondsInput.seconds
+        val duration = if (_uiState.value.isPaused) {
+            _uiState.value.timeRemainingSeconds.seconds
+        } else {
+            _uiState.value.hoursInput.hours +
+                _uiState.value.minutesInput.minutes +
+                _uiState.value.secondsInput.seconds
+        }
         if (duration.inWholeSeconds <= 0) return
 
         timerJob?.cancel()
         val startTime = Clock.System.now()
         val endTime = startTime.plus(duration)
-        
-        _uiState.update { 
+
+        _uiState.update {
             it.copy(
                 totalTimeSeconds = duration.inWholeSeconds,
                 timeRemainingSeconds = duration.inWholeSeconds,
-                isRunning = true
+                isRunning = true,
+                isPaused = false
             ) 
         }
 
@@ -86,15 +91,16 @@ class FocusModeViewModel : ViewModel() {
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
         }
     }
-    
+
     fun pauseTimer() {
         timerJob?.cancel()
-        _uiState.update { it.copy(isRunning = false) }
-        val timeRemainingSeconds: Int = _uiState.value.timeRemainingSeconds.toInt()
-        onHoursChange(timeRemainingSeconds / 3600)
-        onMinutesChange((uiState.value.timeRemainingSeconds.toInt() % 3600) / 60)
-        onSecondsChange(uiState.value.timeRemainingSeconds.toInt() % 60)
-        
+        _uiState.update {
+            it.copy(
+                isRunning = false,
+                isPaused = true
+            )
+        }
+
     }
     
     fun stopTimer() {
@@ -112,6 +118,7 @@ data class FocusModeUiState(
     val timeRemainingSeconds: Long = 0,
     val totalTimeSeconds: Long = 0,
     val isRunning: Boolean = false,
+    val isPaused: Boolean = false,
     val hoursInput: Int = 0,
     val minutesInput: Int = 30,
     val secondsInput: Int = 0
