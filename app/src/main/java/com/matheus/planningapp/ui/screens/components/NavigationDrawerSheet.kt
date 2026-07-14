@@ -1,6 +1,5 @@
 package com.matheus.planningapp.ui.screens.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +12,6 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
@@ -25,8 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.matheus.planningapp.BuildConfig
 import com.matheus.planningapp.ui.theme.PageDesignSettings
@@ -41,6 +37,7 @@ fun NavigationDrawerSheet(
     onNavigateToRecurrenceScreen: () -> Unit,
     onNavigateToCategoryScreen: () -> Unit,
     onNavigateToFocusModeScreen: () -> Unit,
+    onNavigateToFocusHistoryScreen: () -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
 

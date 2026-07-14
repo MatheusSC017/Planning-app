@@ -100,6 +100,10 @@ class StringsRepositoryEnglish : StringsRepository {
     override val startFocusModeButton = "Start Focus Mode"
     override val stopFocusModeButton = "Stop Focus Mode"
     override val pauseFocusModeButton = "Pause Focus Mode"
+    override val focusHistoryTitle = "Focus History"
+    override val focusHistoryDuration = "Duration: %d min"
+    override val focusHistoryCompleted = "Completed"
+    override val focusHistoryIncomplete = "Incomplete"
 
     // Datetime information
     override val monthNames =

@@ -30,6 +30,8 @@ sealed class NavigationEvent {
     data class NavigateToDeepLink(
         val deepLink: String,
     ) : NavigationEvent()
+
+    object NavigateToFocusHistory : NavigationEvent()
 }
 
 class NavEventManager {
@@ -75,6 +77,10 @@ class NavEventManager {
     suspend fun navigateToDeepLink(deepLink: String) {
         _navigationEvents.emit(NavigationEvent.NavigateToDeepLink(deepLink))
     }
+
+    suspend fun navigateToFocusHistory() {
+        _navigationEvents.emit(NavigationEvent.NavigateToFocusHistory)
+    }
 }
 
 fun NavHostController.handleNavigationEvent(event: NavigationEvent) {
@@ -111,6 +117,9 @@ fun NavHostController.handleNavigationEvent(event: NavigationEvent) {
         }
         is NavigationEvent.NavigateToDeepLink -> {
             navigate(event.deepLink)
+        }
+        NavigationEvent.NavigateToFocusHistory -> {
+            navigate(FocusHistoryScreenRoute.route)
         }
     }
 }

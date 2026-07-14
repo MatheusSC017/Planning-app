@@ -14,11 +14,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.matheus.planningapp.ui.screens.CalendarScreen
-import com.matheus.planningapp.ui.screens.FocusModeScreen
+import com.matheus.planningapp.ui.screens.focus.FocusModeScreen
 import com.matheus.planningapp.ui.screens.SettingScreen
 import com.matheus.planningapp.ui.screens.category.CategoryManagementScreen
 import com.matheus.planningapp.ui.screens.commitment.CommitmentScreen
 import com.matheus.planningapp.ui.screens.components.NavigationDrawerSheet
+import com.matheus.planningapp.ui.screens.focus.FocusHistoryScreen
 import com.matheus.planningapp.ui.screens.home.HomeScreen
 import com.matheus.planningapp.ui.screens.recurrence.RecurrenceScreen
 import com.matheus.planningapp.viewmodel.commitment.CommitmentFormMode
@@ -83,6 +84,13 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                     }
                     scope.launch { drawerState.close() }
                 },
+                onNavigateToFocusHistoryScreen = {
+                    scope.launch {
+                        navEventManager?.navigateToFocusHistory()
+                            ?: navHostController.navigate(FocusHistoryScreen.route)
+                    }
+                    scope.launch { drawerState.close() }
+                }
             )
         },
     ) {
@@ -245,6 +253,19 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                                 ?: navHostController.popBackStack()
                         }
                     },
+                    onNavigateToHistory = {
+                        navHostController.navigate(FocusHistoryScreen.route)
+                    }
+                )
+            }
+
+            composable(
+                route = FocusHistoryScreen.route
+            ) {
+                FocusHistoryScreen(
+                    onBackPressed = {
+                        navHostController.popBackStack()
+                    }
                 )
             }
         }

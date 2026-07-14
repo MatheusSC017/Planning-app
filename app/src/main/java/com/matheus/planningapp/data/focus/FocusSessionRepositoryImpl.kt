@@ -8,4 +8,11 @@ class FocusSessionRepositoryImpl(private val dao: FocusSessionDao) : FocusSessio
     }
 
     override fun getAllSessions(): Flow<List<FocusSessionEntity>> = dao.getAllSessions()
+
+    override suspend fun getSessionsPaged(page: Int, pageSize: Int): List<FocusSessionEntity> {
+        val offset = page * pageSize
+        return dao.getSessionsPaged(pageSize, offset)
+    }
+
+    override suspend fun getTotalSessionsCount(): Int = dao.getSessionCount()
 }

@@ -100,6 +100,10 @@ interface StringsRepository {
     val startFocusModeButton: String
     val stopFocusModeButton: String
     val pauseFocusModeButton: String
+    val focusHistoryTitle: String
+    val focusHistoryDuration: String
+    val focusHistoryCompleted: String
+    val focusHistoryIncomplete: String
 
     // Datetime information
     val monthNames: List<String>

@@ -13,4 +13,10 @@ interface FocusSessionDao {
 
     @Query("SELECT * FROM focus_sessions ORDER BY startTime DESC")
     fun getAllSessions(): Flow<List<FocusSessionEntity>>
+
+    @Query("SELECT * FROM focus_sessions ORDER BY startTime DESC LIMIT :limit OFFSET :offset")
+    suspend fun getSessionsPaged(limit: Int, offset: Int): List<FocusSessionEntity>
+
+    @Query("SELECT COUNT(*) FROM focus_sessions")
+    suspend fun getSessionCount(): Int
 }

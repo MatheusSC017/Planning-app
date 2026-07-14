@@ -1,4 +1,4 @@
-package com.matheus.planningapp.ui.screens
+package com.matheus.planningapp.ui.screens.focus
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +45,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FocusModeScreen(
     onExitFocus: () -> Unit,
+    onNavigateToHistory: () -> Unit,
     viewModel: FocusModeViewModel = koinViewModel()
 ) {
     val strings: StringsRepository = LocalStrings.current
@@ -68,6 +69,14 @@ fun FocusModeScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = strings.backMenuButton
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_history),
+                            contentDescription = strings.focusHistoryTitle
                         )
                     }
                 },
