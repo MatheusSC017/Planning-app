@@ -29,7 +29,7 @@ import com.matheus.planningapp.data.reminder.ReminderEntity
         CategoryEntity::class,
         FocusSessionEntity::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = false,
 )
 @TypeConverters(

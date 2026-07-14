@@ -129,14 +129,13 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
         val startTime = sessionStartTime ?: return
         val totalSeconds = initialDurationSeconds
         val remainingSeconds = _uiState.value.timeRemainingSeconds
-        val elapsedSeconds = totalSeconds - remainingSeconds
-        val durationMinutes = (elapsedSeconds / 60).toInt()
+        val durationSeconds = totalSeconds - remainingSeconds
 
         viewModelScope.launch {
             focusSessionRepository.insertSession(
                 FocusSessionEntity(
                     startTime = startTime,
-                    durationMinutes = durationMinutes,
+                    durationSeconds = durationSeconds.toInt(),
                     completed = completed
                 )
             )

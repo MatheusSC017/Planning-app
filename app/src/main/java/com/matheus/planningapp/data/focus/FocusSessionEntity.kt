@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 data class FocusSessionEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val startTime: Long,
-    val durationMinutes: Int,
+    val durationSeconds: Int,
     val completed: Boolean
 )
