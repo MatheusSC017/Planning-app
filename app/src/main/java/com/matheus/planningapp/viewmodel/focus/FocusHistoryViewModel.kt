@@ -17,31 +17,43 @@ class FocusHistoryViewModel(private val repository: FocusSessionRepository) : Vi
     private val pageSize = 20
 
     init {
-        loadNextPage()
+        loadPage(0)
     }
 
-    fun loadNextPage() {
-        if (_uiState.value.isLoading || _uiState.value.isLastPage) return
+    fun loadPage(page: Int) {
+        if (page < 0) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val currentPage = _uiState.value.currentPage
-                val newSessions = repository.getSessionsPaged(currentPage, pageSize)
+                val sessions = repository.getSessionsPaged(page, pageSize)
                 val totalCount = repository.getTotalSessionsCount()
-                
+                val totalPages = if (totalCount == 0) 1 else (totalCount + pageSize - 1) / pageSize
+
                 _uiState.update { state ->
-                    val updatedSessions = state.sessions + newSessions
                     state.copy(
-                        sessions = updatedSessions,
-                        currentPage = currentPage + 1,
+                        sessions = sessions,
+                        currentPage = page,
+                        totalPages = totalPages,
                         isLoading = false,
-                        isLastPage = updatedSessions.size >= totalCount || newSessions.isEmpty()
+                        isLastPage = (page + 1) >= totalPages
                     )
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false) }
             }
+        }
+    }
+
+    fun onNextPage() {
+        if (!_uiState.value.isLastPage) {
+            loadPage(_uiState.value.currentPage + 1)
+        }
+    }
+
+    fun onPreviousPage() {
+        if (_uiState.value.currentPage > 0) {
+            loadPage(_uiState.value.currentPage - 1)
         }
     }
 }
@@ -50,5 +62,6 @@ data class FocusHistoryUiState(
     val sessions: List<FocusSessionEntity> = emptyList(),
     val isLoading: Boolean = false,
     val currentPage: Int = 0,
+    val totalPages: Int = 1,
     val isLastPage: Boolean = false
 )

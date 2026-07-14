@@ -16,6 +16,8 @@ class StringsRepositorySpanish : StringsRepository {
     override val updateButton = "Actualizar"
     override val increaseButton = "Incrementar"
     override val decreaseButton = "Disminuir"
+    override val nextButton = "Siguiente"
+    override val previousButton = "Anterior"
 
     // Text for messages in general
     override val savedMessage = "Guardado"

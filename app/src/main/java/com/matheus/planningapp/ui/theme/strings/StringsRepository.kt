@@ -16,6 +16,8 @@ interface StringsRepository {
     val updateButton: String
     val increaseButton: String
     val decreaseButton: String
+    val nextButton: String
+    val previousButton: String
 
     // Text for messages in general
     val savedMessage: String

@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,11 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -61,20 +60,6 @@ fun FocusHistoryScreen(
 ) {
     val strings = LocalStrings.current
     val uiState by viewModel.uiState.collectAsState()
-    val listState = rememberLazyListState()
-
-    val shouldLoadMore = remember {
-        derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 5
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore.value) {
-        if (shouldLoadMore.value && !uiState.isLoading && !uiState.isLastPage) {
-            viewModel.loadNextPage()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -93,6 +78,17 @@ fun FocusHistoryScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 )
             )
+        },
+        bottomBar = {
+            PaginationControls(
+                currentPage = uiState.currentPage,
+                totalPages = uiState.totalPages,
+                onPrevious = viewModel::onPreviousPage,
+                onNext = viewModel::onNextPage,
+                isNextEnabled = !uiState.isLastPage,
+                isPreviousEnabled = uiState.currentPage > 0,
+                strings = strings
+            )
         }
     ) { paddingValues ->
         Box(
@@ -105,9 +101,12 @@ fun FocusHistoryScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = strings.noValuesFound, style = MaterialTheme.typography.bodyLarge)
                 }
+            } else if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             } else {
                 LazyColumn(
-                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -115,21 +114,48 @@ fun FocusHistoryScreen(
                     items(uiState.sessions) { session ->
                         FocusSessionItem(session = session, strings = strings)
                     }
-
-                    if (uiState.isLoading) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun PaginationControls(
+    currentPage: Int,
+    totalPages: Int,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    isNextEnabled: Boolean,
+    isPreviousEnabled: Boolean,
+    strings: StringsRepository
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = onPrevious,
+            enabled = isPreviousEnabled
+        ) {
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null)
+        }
+
+        Text(
+            text = "${currentPage + 1} / $totalPages",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Button(
+            onClick = onNext,
+            enabled = isNextEnabled
+        ) {
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
         }
     }
 }
