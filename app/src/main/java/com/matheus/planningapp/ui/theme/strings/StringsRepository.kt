@@ -106,6 +106,7 @@ interface StringsRepository {
     val focusHistoryDuration: String
     val focusHistoryCompleted: String
     val focusHistoryIncomplete: String
+    val motivationalQuotes: List<String>
 
     // Datetime information
     val monthNames: List<String>

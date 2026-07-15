@@ -11,8 +11,12 @@ object PageDesignSettings {
     val largePaddingValue = 12.dp
     val extraLargePaddingValue = 16.dp
 
+    val mediumSpacer = 24.dp
+    val largeSpacer = 48.dp
+
     val borderWidth = 1.dp
 
+    val extraLargeIconSize = 72.dp
     val largeIconSize = 48.dp
     val largeIconClip = 16.dp
     val mediumIconSize = 36.dp

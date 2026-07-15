@@ -106,6 +106,16 @@ class StringsRepositoryEnglish : StringsRepository {
     override val focusHistoryDuration = "Duration: %d min"
     override val focusHistoryCompleted = "Completed"
     override val focusHistoryIncomplete = "Incomplete"
+    override val motivationalQuotes = listOf(
+        "Focus on being productive instead of busy.",
+        "Your life is the result of your choices.",
+        "Energy flows where attention goes.",
+        "The secret of getting ahead is getting started.",
+        "Don't stop until you're proud.",
+        "Simplicity is the ultimate sophistication.",
+        "Do what you can, with what you have, where you are.",
+        "Success is the sum of small efforts repeated day in and day out."
+    )
 
     // Datetime information
     override val monthNames =

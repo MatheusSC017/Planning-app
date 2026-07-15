@@ -21,6 +21,7 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
+    private var quoteJob: Job? = null
     private var sessionStartTime: Long? = null
     private var initialDurationSeconds: Long = 0
 
@@ -98,11 +99,15 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
             }
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
             saveSession(completed = true)
+            stopQuoteJob()
         }
+        
+        startQuoteJob()
     }
 
     fun pauseTimer() {
         timerJob?.cancel()
+        stopQuoteJob()
         _uiState.update {
             it.copy(
                 isRunning = false,
@@ -114,6 +119,7 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
     fun stopTimer() {
         saveSession(completed = false)
         timerJob?.cancel()
+        stopQuoteJob()
         _uiState.update { it.copy(isRunning = false, isPaused = false, timeRemainingSeconds = 0) }
     }
 
@@ -122,7 +128,23 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
             saveSession(completed = false)
         }
         timerJob?.cancel()
+        stopQuoteJob()
         onExitConfirmed()
+    }
+
+    private fun startQuoteJob() {
+        if (quoteJob != null) return
+        quoteJob = viewModelScope.launch {
+            while (true) {
+                _uiState.update { it.copy(quoteIndex = (it.quoteIndex + 1)) }
+                delay(5.minutes)
+            }
+        }
+    }
+
+    private fun stopQuoteJob() {
+        quoteJob?.cancel()
+        quoteJob = null
     }
 
     private fun saveSession(completed: Boolean) {
@@ -151,6 +173,7 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
             saveSession(completed = false)
         }
         timerJob?.cancel()
+        stopQuoteJob()
     }
 }
 
@@ -161,7 +184,8 @@ data class FocusModeUiState(
     val isPaused: Boolean = false,
     val hoursInput: Int = 0,
     val minutesInput: Int = 30,
-    val secondsInput: Int = 0
+    val secondsInput: Int = 0,
+    val quoteIndex: Int = 0
 ) {
     val progress: Float
         get() = if (totalTimeSeconds > 0L) timeRemainingSeconds.toFloat() / totalTimeSeconds.toFloat() else 0f
