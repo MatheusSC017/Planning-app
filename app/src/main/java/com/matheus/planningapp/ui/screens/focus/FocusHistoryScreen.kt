@@ -173,6 +173,10 @@ fun FocusSessionItem(session: FocusSessionEntity, strings: StringsRepository) {
         dateTime.minute
     )
 
+    val hours = session.durationSeconds / 3600
+    val minutes = (session.durationSeconds % 3600) / 60
+    val seconds = session.durationSeconds % 60
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -207,7 +211,7 @@ fun FocusSessionItem(session: FocusSessionEntity, strings: StringsRepository) {
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
             Text(
-                text = strings.focusHistoryDuration.format(session.durationSeconds / 60),
+                text = if (hours > 0) "%02d:%02d:%02d".format(hours, minutes, seconds) else "%02d:%02d".format(minutes, seconds),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

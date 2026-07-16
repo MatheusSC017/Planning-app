@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -95,7 +96,7 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
             while (Clock.System.now() < endTime) {
                 val remaining = (endTime - Clock.System.now()).inWholeSeconds
                 _uiState.update { it.copy(timeRemainingSeconds = remaining) }
-                delay(1000)
+                delay(1.seconds)
             }
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
             saveSession(completed = true)
