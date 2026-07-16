@@ -132,6 +132,9 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     },
+                    onNavigateToFocusMode = { commitmentId ->
+                        navHostController.navigate(FocusModeScreen.route + "?commitmentId=$commitmentId")
+                    }
                 )
             }
             composable(
@@ -240,13 +243,22 @@ fun AppNavigation(navEventManager: NavEventManager? = null) {
             }
 
             composable(
-                route = FocusModeScreen.route,
+                route = FocusModeScreen.route + "?commitmentId={commitmentId}",
+                arguments = listOf(
+                    navArgument("commitmentId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                ),
                 deepLinks =
                     listOf(
-                        navDeepLink { uriPattern = FocusModeScreen.deepLinkPattern },
+                        navDeepLink { uriPattern = FocusModeScreen.deepLinkPattern + "?commitmentId={commitmentId}" },
                     ),
-            ) {
+            ) { backStackEntry ->
+                val commitmentId = backStackEntry.arguments?.getString("commitmentId")?.toLongOrNull()
                 FocusModeScreen(
+                    commitmentId = commitmentId,
                     onExitFocus = {
                         scope.launch {
                             navEventManager?.navigateBack()

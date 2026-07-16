@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -37,6 +38,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -60,12 +62,17 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusModeScreen(
+    commitmentId: Long? = null,
     onExitFocus: () -> Unit,
     onNavigateToHistory: () -> Unit,
     viewModel: FocusModeViewModel = koinViewModel()
 ) {
     val strings: StringsRepository = LocalStrings.current
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(commitmentId) {
+        viewModel.setCommitmentId(commitmentId)
+    }
 
     val view = LocalView.current
     val window = (view.context as? Activity)?.window

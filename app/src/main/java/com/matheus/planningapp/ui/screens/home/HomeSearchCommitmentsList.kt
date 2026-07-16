@@ -17,6 +17,7 @@ fun LazyListScope.searchCommitmentsList(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
 ) {
     items(commitments) { commitment ->
 
@@ -36,6 +37,7 @@ fun LazyListScope.searchCommitmentsList(
                 onViewCommitment = onViewCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                 onDeleteCommitment = onDeleteCommitment,
+                onNavigateToFocusMode = onNavigateToFocusMode,
             )
         }
     }

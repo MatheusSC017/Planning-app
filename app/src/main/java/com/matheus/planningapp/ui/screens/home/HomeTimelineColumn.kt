@@ -73,6 +73,7 @@ fun LazyListScope.timelineColumn(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
 ) {
     var commitmentsLastIndex = 0
     val timeLineItems = 48
@@ -118,6 +119,7 @@ fun LazyListScope.timelineColumn(
                         onViewCommitment = onViewCommitment,
                         onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                         onDeleteCommitment = onDeleteCommitment,
+                        onNavigateToFocusMode = onNavigateToFocusMode,
                     )
                 }
             }
@@ -179,6 +181,7 @@ fun DraggableCommitmentCard(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
 ) {
     var offsetY by remember { mutableStateOf(0f)}
 
@@ -208,6 +211,7 @@ fun DraggableCommitmentCard(
             onViewCommitment = onViewCommitment,
             onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
             onDeleteCommitment = onDeleteCommitment,
+            onNavigateToFocusMode = onNavigateToFocusMode,
         )
     }
 }
@@ -219,6 +223,7 @@ fun CommitmentCard(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -322,6 +327,21 @@ fun CommitmentCard(
                             Icon(
                                 painter = painterResource(R.drawable.view),
                                 contentDescription = strings.viewButton,
+                                tint = MaterialTheme.colorScheme.onSecondary,
+                            )
+                        },
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text(strings.focusModeMenuButton, color = MaterialTheme.colorScheme.onSecondary) },
+                        onClick = {
+                            menuExpanded = false
+                            onNavigateToFocusMode(commitmentEntity.id)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_nest_clock_farsight_analog_24),
+                                contentDescription = strings.focusModeMenuButton,
                                 tint = MaterialTheme.colorScheme.onSecondary,
                             )
                         },

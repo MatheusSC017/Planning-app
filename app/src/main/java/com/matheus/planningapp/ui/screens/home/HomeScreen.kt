@@ -30,6 +30,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Long) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel = koinViewModel(),
     onMenuClick: () -> Unit,
 ) {
@@ -86,6 +87,7 @@ fun HomeScreen(
                 columnViewSelected = columnViewSelected,
                 onNavigateToAddCommitment = onNavigateToAddCommitment,
                 onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
+                onNavigateToFocusMode = onNavigateToFocusMode,
                 homeViewModel = homeViewModel,
                 uiState = uiState,
             )

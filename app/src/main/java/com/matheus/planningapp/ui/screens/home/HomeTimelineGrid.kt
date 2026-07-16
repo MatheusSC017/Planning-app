@@ -60,6 +60,7 @@ fun LazyListScope.timelineGrid(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
 ) {
     val numberOfColumns = 4
     val timelineItems = List(48) { -1 }.toMutableList()
@@ -152,6 +153,7 @@ fun LazyListScope.timelineGrid(
                                             onViewCommitment = onViewCommitment,
                                             onNavigateToUpdateCommitment = onNavigateToUpdateCommitment,
                                             onDeleteCommitment = onDeleteCommitment,
+                                            onNavigateToFocusMode = onNavigateToFocusMode,
                                         )
                                     }
                                 }
@@ -272,6 +274,7 @@ fun GridItemMenu(
     onViewCommitment: (commitment: CommitmentEntity) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
     onDeleteCommitment: (commitment: CommitmentEntity) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
 ) {
     val strings: StringsRepository = LocalStrings.current
     var menuExpanded by remember { mutableStateOf(false) }
@@ -307,6 +310,26 @@ fun GridItemMenu(
                 Icon(
                     painter = painterResource(R.drawable.view),
                     contentDescription = strings.viewButton,
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                )
+            },
+        )
+
+        DropdownMenuItem(
+            text = {
+                Text(
+                    strings.focusModeMenuButton,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+            },
+            onClick = {
+                menuExpanded = false
+                onNavigateToFocusMode(commitmentEntity.id)
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_nest_clock_farsight_analog_24),
+                    contentDescription = strings.focusModeMenuButton,
                     tint = MaterialTheme.colorScheme.onSecondary,
                 )
             },

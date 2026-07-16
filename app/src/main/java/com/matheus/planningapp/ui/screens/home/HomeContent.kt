@@ -68,6 +68,7 @@ fun HomeContent(
     columnViewSelected: Boolean,
     onNavigateToAddCommitment: (date: Instant, selectedCalendar: Long) -> Unit,
     onNavigateToUpdateCommitment: (commitmentId: Long) -> Unit,
+    onNavigateToFocusMode: (commitmentId: Long) -> Unit,
     homeViewModel: HomeViewModel,
     uiState: HomeUiState,
     taskNotificationScheduler: TaskNotificationScheduler = koinInject(),
@@ -338,6 +339,7 @@ fun HomeContent(
                     selectedCommitment = commitment
                     showDeleteDialog = true
                 },
+                onNavigateToFocusMode = onNavigateToFocusMode,
             )
         } else {
             if (columnViewSelected) {
@@ -360,6 +362,7 @@ fun HomeContent(
                         selectedCommitment = commitment
                         showDeleteDialog = true
                     },
+                    onNavigateToFocusMode = onNavigateToFocusMode,
                 )
             } else {
                 timelineGrid(
@@ -377,6 +380,7 @@ fun HomeContent(
                         selectedCommitment = commitment
                         showDeleteDialog = true
                     },
+                    onNavigateToFocusMode = onNavigateToFocusMode,
                 )
             }
         }

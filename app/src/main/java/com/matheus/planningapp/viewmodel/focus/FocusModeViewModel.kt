@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -25,6 +24,10 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
     private var quoteJob: Job? = null
     private var sessionStartTime: Long? = null
     private var initialDurationSeconds: Long = 0
+
+    fun setCommitmentId(id: Long?) {
+        _uiState.update { it.copy(commitmentId = id) }
+    }
 
     fun onHoursChange(hours: Int) {
         if (hours in 0..12) {
@@ -159,7 +162,8 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
                 FocusSessionEntity(
                     startTime = startTime,
                     durationSeconds = durationSeconds.toInt(),
-                    completed = completed
+                    completed = completed,
+                    commitmentId = _uiState.value.commitmentId
                 )
             )
         }
@@ -186,7 +190,8 @@ data class FocusModeUiState(
     val hoursInput: Int = 0,
     val minutesInput: Int = 30,
     val secondsInput: Int = 0,
-    val quoteIndex: Int = 0
+    val quoteIndex: Int = 0,
+    val commitmentId: Long? = null
 ) {
     val progress: Float
         get() = if (totalTimeSeconds > 0L) timeRemainingSeconds.toFloat() / totalTimeSeconds.toFloat() else 0f
