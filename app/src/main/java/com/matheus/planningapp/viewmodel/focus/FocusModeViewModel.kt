@@ -2,6 +2,7 @@ package com.matheus.planningapp.viewmodel.focus
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.focus.FocusSessionEntity
 import com.matheus.planningapp.data.focus.FocusSessionRepository
 import kotlinx.coroutines.Job
@@ -16,7 +17,10 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class FocusModeViewModel(private val focusSessionRepository: FocusSessionRepository) : ViewModel() {
+class FocusModeViewModel(
+    private val focusSessionRepository: FocusSessionRepository,
+    private val commitmentRepository: CommitmentRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(FocusModeUiState())
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
 
@@ -27,6 +31,27 @@ class FocusModeViewModel(private val focusSessionRepository: FocusSessionReposit
 
     fun setCommitmentId(id: Long?) {
         _uiState.update { it.copy(commitmentId = id) }
+        if (id != null) {
+            viewModelScope.launch {
+                val commitment = commitmentRepository.getCommitment(id)
+                commitment?.let {
+                    val duration = it.endDateTime - it.startDateTime
+                    val totalSeconds = duration.inWholeSeconds
+                    
+                    val hours = (totalSeconds / 3600).toInt()
+                    val minutes = ((totalSeconds % 3600) / 60).toInt()
+                    val seconds = (totalSeconds % 60).toInt()
+
+                    _uiState.update { state ->
+                        state.copy(
+                            hoursInput = hours.coerceIn(0, 12),
+                            minutesInput = minutes.coerceIn(0, 59),
+                            secondsInput = seconds.coerceIn(0, 59)
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun onHoursChange(hours: Int) {
