@@ -9,6 +9,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +43,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -57,6 +61,7 @@ import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
 import com.matheus.planningapp.viewmodel.focus.FocusModeViewModel
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -300,7 +305,7 @@ fun TimeAdjustmentColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(PageDesignSettings.smallPaddingValue)
     ) {
-        IconButton(onClick = onIncrease) {
+        RepeatingIconButton(onClick = onIncrease) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
@@ -319,12 +324,44 @@ fun TimeAdjustmentColumn(
                 color = MaterialTheme.colorScheme.secondary
             )
         }
-        IconButton(onClick = onDecrease) {
+        RepeatingIconButton(onClick = onDecrease) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
         }
+    }
+}
+
+@Composable
+private fun RepeatingIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val currentOnClick by rememberUpdatedState(onClick)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            currentOnClick()
+            delay(500)
+            while (true) {
+                currentOnClick()
+                delay(100)
+            }
+        }
+    }
+
+    IconButton(
+        onClick = { },
+        enabled = enabled,
+        interactionSource = interactionSource,
+        modifier = modifier
+    ) {
+        content()
     }
 }
