@@ -119,6 +119,11 @@ class StringsRepositoryEnglish : StringsRepository {
     override val deepFocusLabel = "Deep Focus"
     override val deepFocusDescription = "Enable Do Not Disturb automatically"
     override val dndPermissionRequired = "Do Not Disturb permission is required for Deep Focus mode."
+    override val appTrackingLabel = "App Tracking"
+    override val appTrackingDescription = "Nudge you if you open distracting apps"
+    override val usageStatsPermissionRequired = "Usage Stats permission is required to track distracting apps."
+    override val distractingAppNudgeTitle = "Stay Focused!"
+    override val distractingAppNudgeMessage = "You opened a distracting app. Get back to work!"
 
     // Datetime information
     override val monthNames =

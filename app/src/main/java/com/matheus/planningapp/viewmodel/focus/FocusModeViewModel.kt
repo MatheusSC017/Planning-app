@@ -1,12 +1,17 @@
 package com.matheus.planningapp.viewmodel.focus
 
 import android.app.NotificationManager
+import android.app.usage.UsageStatsManager
 import android.content.Context
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.matheus.planningapp.R
 import com.matheus.planningapp.data.commitment.CommitmentRepository
 import com.matheus.planningapp.data.focus.FocusSessionEntity
 import com.matheus.planningapp.data.focus.FocusSessionRepository
+import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.util.notification.NotificationConfig
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,17 +27,34 @@ import kotlin.time.Duration.Companion.seconds
 class FocusModeViewModel(
     private val focusSessionRepository: FocusSessionRepository,
     private val commitmentRepository: CommitmentRepository,
-    private val context: Context
+    private val context: Context,
+    private val strings: StringsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(FocusModeUiState())
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
     private var quoteJob: Job? = null
+    private var trackingJob: Job? = null
     private var sessionStartTime: Long? = null
     private var initialDurationSeconds: Long = 0
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
+    private val distractingApps = listOf(
+        "com.facebook.katana",
+        "com.instagram.android",
+        "com.twitter.android",
+        "com.tiktok.android.mobile.ticker",
+        "com.zhiliaoapp.musically",
+        "com.whatsapp",
+        "com.google.android.youtube",
+        "com.netflix.mediaclient",
+        "com.disney.disneyplus",
+        "com.amazon.avod.thirdpartyclient",
+        "com.snapchat.android"
+    )
 
     fun setCommitmentId(id: Long?) {
         _uiState.update { it.copy(commitmentId = id) }
@@ -101,6 +123,10 @@ class FocusModeViewModel(
         _uiState.update { it.copy(deepFocusEnabled = enabled) }
     }
 
+    fun toggleAppTracking(enabled: Boolean) {
+        _uiState.update { it.copy(appTrackingEnabled = enabled) }
+    }
+
     fun startTimer() {
         val duration = if (_uiState.value.isPaused) {
             _uiState.value.timeRemainingSeconds.seconds
@@ -144,17 +170,57 @@ class FocusModeViewModel(
         }
         
         startQuoteJob()
+        if (_uiState.value.appTrackingEnabled) {
+            startTrackingJob()
+        }
+    }
+
+    private fun startTrackingJob() {
+        trackingJob?.cancel()
+        trackingJob = viewModelScope.launch {
+            while (true) {
+                delay(5.seconds)
+                val foregroundApp = getForegroundApp()
+                if (foregroundApp != null && foregroundApp != context.packageName && distractingApps.contains(foregroundApp)) {
+                    sendNudgeNotification()
+                }
+            }
+        }
+    }
+
+    private fun getForegroundApp(): String? {
+        val time = System.currentTimeMillis()
+        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 60, time)
+        if (stats.isNullOrEmpty()) return null
+
+        return stats.maxByOrNull { it.lastTimeUsed }?.packageName
+    }
+
+    private fun sendNudgeNotification() {
+        val builder = NotificationCompat.Builder(context, NotificationConfig.NUDGE_CHANNEL_ID)
+            .setSmallIcon(R.drawable.outline_notifications_24)
+            .setContentTitle(strings.distractingAppNudgeTitle)
+            .setContentText(strings.distractingAppNudgeMessage)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+        
+        notificationManager.notify(999, builder.build())
     }
 
     private fun onTimerFinished() {
         saveSession(completed = true)
         stopQuoteJob()
+        stopTrackingJob()
         disableDndIfEnabled()
     }
 
     fun pauseTimer() {
         timerJob?.cancel()
         stopQuoteJob()
+        stopTrackingJob()
         _uiState.update {
             it.copy(
                 isRunning = false,
@@ -168,6 +234,7 @@ class FocusModeViewModel(
         saveSession(completed = false)
         timerJob?.cancel()
         stopQuoteJob()
+        stopTrackingJob()
         _uiState.update { it.copy(isRunning = false, isPaused = false, timeRemainingSeconds = 0) }
         disableDndIfEnabled()
     }
@@ -178,6 +245,7 @@ class FocusModeViewModel(
         }
         timerJob?.cancel()
         stopQuoteJob()
+        stopTrackingJob()
         disableDndIfEnabled()
         onExitConfirmed()
     }
@@ -201,6 +269,11 @@ class FocusModeViewModel(
     private fun stopQuoteJob() {
         quoteJob?.cancel()
         quoteJob = null
+    }
+
+    private fun stopTrackingJob() {
+        trackingJob?.cancel()
+        trackingJob = null
     }
 
     private fun saveSession(completed: Boolean) {
@@ -231,6 +304,7 @@ class FocusModeViewModel(
         }
         timerJob?.cancel()
         stopQuoteJob()
+        stopTrackingJob()
         disableDndIfEnabled()
     }
 }
@@ -245,7 +319,8 @@ data class FocusModeUiState(
     val secondsInput: Int = 0,
     val quoteIndex: Int = 0,
     val commitmentId: Long? = null,
-    val deepFocusEnabled: Boolean = false
+    val deepFocusEnabled: Boolean = false,
+    val appTrackingEnabled: Boolean = false
 ) {
     val progress: Float
         get() = if (totalTimeSeconds > 0L) timeRemainingSeconds.toFloat() / totalTimeSeconds.toFloat() else 0f

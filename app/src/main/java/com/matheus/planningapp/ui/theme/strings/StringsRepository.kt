@@ -110,6 +110,11 @@ interface StringsRepository {
     val deepFocusLabel: String
     val deepFocusDescription: String
     val dndPermissionRequired: String
+    val appTrackingLabel: String
+    val appTrackingDescription: String
+    val usageStatsPermissionRequired: String
+    val distractingAppNudgeTitle: String
+    val distractingAppNudgeMessage: String
 
     // Datetime information
     val monthNames: List<String>

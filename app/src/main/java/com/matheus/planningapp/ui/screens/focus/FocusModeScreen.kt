@@ -1,7 +1,9 @@
 package com.matheus.planningapp.ui.screens.focus
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -87,6 +89,10 @@ fun FocusModeScreen(
     val context = LocalContext.current
     val permissionManager: PermissionManager = koinInject()
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { _ -> }
+
     val dndPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
@@ -94,6 +100,24 @@ fun FocusModeScreen(
             viewModel.toggleDeepFocus(true)
         } else {
             viewModel.toggleDeepFocus(false)
+        }
+    }
+
+    val usageStatsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (permissionManager.hasUsageStatsPermission()) {
+            viewModel.toggleAppTracking(true)
+        } else {
+            viewModel.toggleAppTracking(false)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!permissionManager.hasNotificationPermission()) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -225,22 +249,43 @@ fun FocusModeScreen(
                         
                         Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
 
-                        DeepFocusToggle(
-                            enabled = uiState.deepFocusEnabled,
-                            onToggle = { enabled ->
-                                if (enabled) {
-                                    if (permissionManager.isNotificationPolicyAccessGranted()) {
-                                        viewModel.toggleDeepFocus(true)
+                        Column(verticalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumSpacer)) {
+                            FocusOptionToggle(
+                                label = strings.deepFocusLabel,
+                                description = strings.deepFocusDescription,
+                                enabled = uiState.deepFocusEnabled,
+                                onToggle = { enabled ->
+                                    if (enabled) {
+                                        if (permissionManager.isNotificationPolicyAccessGranted()) {
+                                            viewModel.toggleDeepFocus(true)
+                                        } else {
+                                            Toast.makeText(context, strings.dndPermissionRequired, Toast.LENGTH_LONG).show()
+                                            permissionManager.requestNotificationPolicyAccess(dndPermissionLauncher)
+                                        }
                                     } else {
-                                        Toast.makeText(context, strings.dndPermissionRequired, Toast.LENGTH_LONG).show()
-                                        permissionManager.requestNotificationPolicyAccess(dndPermissionLauncher)
+                                        viewModel.toggleDeepFocus(false)
                                     }
-                                } else {
-                                    viewModel.toggleDeepFocus(false)
                                 }
-                            },
-                            strings = strings
-                        )
+                            )
+
+                            FocusOptionToggle(
+                                label = strings.appTrackingLabel,
+                                description = strings.appTrackingDescription,
+                                enabled = uiState.appTrackingEnabled,
+                                onToggle = { enabled ->
+                                    if (enabled) {
+                                        if (permissionManager.hasUsageStatsPermission()) {
+                                            viewModel.toggleAppTracking(true)
+                                        } else {
+                                            Toast.makeText(context, strings.usageStatsPermissionRequired, Toast.LENGTH_LONG).show()
+                                            permissionManager.requestUsageStatsPermission(usageStatsPermissionLauncher)
+                                        }
+                                    } else {
+                                        viewModel.toggleAppTracking(false)
+                                    }
+                                }
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
                     }
@@ -285,7 +330,13 @@ fun FocusModeScreen(
                             }
                         } else {
                             FilledTonalIconButton(
-                                onClick = viewModel::startTimer,
+                                onClick = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionManager.hasNotificationPermission()) {
+                                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    } else {
+                                        viewModel.startTimer()
+                                    }
+                                },
                                 modifier = Modifier.size(PageDesignSettings.extraLargeIconSize)
                             ) {
                                 Icon(
@@ -303,10 +354,11 @@ fun FocusModeScreen(
 }
 
 @Composable
-fun DeepFocusToggle(
+fun FocusOptionToggle(
+    label: String,
+    description: String,
     enabled: Boolean,
-    onToggle: (Boolean) -> Unit,
-    strings: StringsRepository
+    onToggle: (Boolean) -> Unit
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -322,12 +374,12 @@ fun DeepFocusToggle(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = strings.deepFocusLabel,
+                    text = label,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = strings.deepFocusDescription,
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )

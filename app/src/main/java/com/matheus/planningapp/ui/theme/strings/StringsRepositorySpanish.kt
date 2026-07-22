@@ -119,6 +119,11 @@ class StringsRepositorySpanish : StringsRepository {
     override val deepFocusLabel = "Enfoque Profundo"
     override val deepFocusDescription = "Activar No Molestar automáticamente"
     override val dndPermissionRequired = "Se requiere el permiso de No Molestar para el modo Enfoque Profundo."
+    override val appTrackingLabel = "Seguimiento de Apps"
+    override val appTrackingDescription = "Avisar si abres aplicaciones distractoras"
+    override val usageStatsPermissionRequired = "Se requiere el permiso de Estadísticas de Uso para rastrear aplicaciones."
+    override val distractingAppNudgeTitle = "¡Mantente enfocado!"
+    override val distractingAppNudgeMessage = "Abriste una aplicación distractora. ¡Vuelve al trabajo!"
 
     // Datetime information
     override val monthNames =
