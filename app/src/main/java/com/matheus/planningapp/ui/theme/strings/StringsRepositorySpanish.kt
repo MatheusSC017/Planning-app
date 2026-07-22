@@ -116,6 +116,9 @@ class StringsRepositorySpanish : StringsRepository {
         "Haz lo que puedas, con lo que tengas, donde estés.",
         "El éxito es la suma de pequeños esfuerzos repetidos día tras día."
     )
+    override val deepFocusLabel = "Enfoque Profundo"
+    override val deepFocusDescription = "Activar No Molestar automáticamente"
+    override val dndPermissionRequired = "Se requiere el permiso de No Molestar para el modo Enfoque Profundo."
 
     // Datetime information
     override val monthNames =

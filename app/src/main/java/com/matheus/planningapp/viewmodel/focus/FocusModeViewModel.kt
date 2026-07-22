@@ -1,5 +1,7 @@
 package com.matheus.planningapp.viewmodel.focus
 
+import android.app.NotificationManager
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.planningapp.data.commitment.CommitmentRepository
@@ -19,7 +21,8 @@ import kotlin.time.Duration.Companion.seconds
 
 class FocusModeViewModel(
     private val focusSessionRepository: FocusSessionRepository,
-    private val commitmentRepository: CommitmentRepository
+    private val commitmentRepository: CommitmentRepository,
+    private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(FocusModeUiState())
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
@@ -28,6 +31,8 @@ class FocusModeViewModel(
     private var quoteJob: Job? = null
     private var sessionStartTime: Long? = null
     private var initialDurationSeconds: Long = 0
+
+    private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     fun setCommitmentId(id: Long?) {
         _uiState.update { it.copy(commitmentId = id) }
@@ -92,6 +97,10 @@ class FocusModeViewModel(
         }
     }
 
+    fun toggleDeepFocus(enabled: Boolean) {
+        _uiState.update { it.copy(deepFocusEnabled = enabled) }
+    }
+
     fun startTimer() {
         val duration = if (_uiState.value.isPaused) {
             _uiState.value.timeRemainingSeconds.seconds
@@ -120,6 +129,10 @@ class FocusModeViewModel(
             )
         }
 
+        if (_uiState.value.deepFocusEnabled && notificationManager.isNotificationPolicyAccessGranted) {
+            notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        }
+
         timerJob = viewModelScope.launch {
             while (Clock.System.now() < endTime) {
                 val remaining = (endTime - Clock.System.now()).inWholeSeconds
@@ -127,11 +140,16 @@ class FocusModeViewModel(
                 delay(1.seconds)
             }
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
-            saveSession(completed = true)
-            stopQuoteJob()
+            onTimerFinished()
         }
         
         startQuoteJob()
+    }
+
+    private fun onTimerFinished() {
+        saveSession(completed = true)
+        stopQuoteJob()
+        disableDndIfEnabled()
     }
 
     fun pauseTimer() {
@@ -143,6 +161,7 @@ class FocusModeViewModel(
                 isPaused = true
             )
         }
+        disableDndIfEnabled()
     }
 
     fun stopTimer() {
@@ -150,6 +169,7 @@ class FocusModeViewModel(
         timerJob?.cancel()
         stopQuoteJob()
         _uiState.update { it.copy(isRunning = false, isPaused = false, timeRemainingSeconds = 0) }
+        disableDndIfEnabled()
     }
 
     fun onExit(onExitConfirmed: () -> Unit) {
@@ -158,7 +178,14 @@ class FocusModeViewModel(
         }
         timerJob?.cancel()
         stopQuoteJob()
+        disableDndIfEnabled()
         onExitConfirmed()
+    }
+
+    private fun disableDndIfEnabled() {
+        if (_uiState.value.deepFocusEnabled && notificationManager.isNotificationPolicyAccessGranted) {
+            notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+        }
     }
 
     private fun startQuoteJob() {
@@ -204,6 +231,7 @@ class FocusModeViewModel(
         }
         timerJob?.cancel()
         stopQuoteJob()
+        disableDndIfEnabled()
     }
 }
 
@@ -216,7 +244,8 @@ data class FocusModeUiState(
     val minutesInput: Int = 30,
     val secondsInput: Int = 0,
     val quoteIndex: Int = 0,
-    val commitmentId: Long? = null
+    val commitmentId: Long? = null,
+    val deepFocusEnabled: Boolean = false
 ) {
     val progress: Float
         get() = if (totalTimeSeconds > 0L) timeRemainingSeconds.toFloat() / totalTimeSeconds.toFloat() else 0f

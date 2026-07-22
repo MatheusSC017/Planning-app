@@ -107,6 +107,9 @@ interface StringsRepository {
     val focusHistoryCompleted: String
     val focusHistoryIncomplete: String
     val motivationalQuotes: List<String>
+    val deepFocusLabel: String
+    val deepFocusDescription: String
+    val dndPermissionRequired: String
 
     // Datetime information
     val monthNames: List<String>

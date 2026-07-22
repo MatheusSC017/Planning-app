@@ -2,6 +2,7 @@ package com.matheus.planningapp.util
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
@@ -35,5 +36,15 @@ class PermissionManager(
     fun canScheduleExactAlarm(): Boolean {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         return alarmManager.canScheduleExact()
+    }
+
+    fun isNotificationPolicyAccessGranted(): Boolean {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        return notificationManager.isNotificationPolicyAccessGranted
+    }
+
+    fun requestNotificationPolicyAccess(launcher: ActivityResultLauncher<Intent>) {
+        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        launcher.launch(intent)
     }
 }

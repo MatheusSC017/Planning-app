@@ -116,6 +116,9 @@ class StringsRepositoryEnglish : StringsRepository {
         "Do what you can, with what you have, where you are.",
         "Success is the sum of small efforts repeated day in and day out."
     )
+    override val deepFocusLabel = "Deep Focus"
+    override val deepFocusDescription = "Enable Do Not Disturb automatically"
+    override val dndPermissionRequired = "Do Not Disturb permission is required for Deep Focus mode."
 
     // Datetime information
     override val monthNames =

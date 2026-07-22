@@ -1,7 +1,12 @@
 package com.matheus.planningapp.ui.screens.focus
 
 import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -35,6 +40,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,8 +55,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -60,9 +68,11 @@ import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
 import com.matheus.planningapp.ui.theme.strings.LocalStrings
 import com.matheus.planningapp.ui.theme.strings.StringsRepository
+import com.matheus.planningapp.util.PermissionManager
 import com.matheus.planningapp.viewmodel.focus.FocusModeViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +84,18 @@ fun FocusModeScreen(
 ) {
     val strings: StringsRepository = LocalStrings.current
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val permissionManager: PermissionManager = koinInject()
+
+    val dndPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (permissionManager.isNotificationPolicyAccessGranted()) {
+            viewModel.toggleDeepFocus(true)
+        } else {
+            viewModel.toggleDeepFocus(false)
+        }
+    }
 
     LaunchedEffect(commitmentId) {
         viewModel.setCommitmentId(commitmentId)
@@ -200,6 +222,26 @@ fun FocusModeScreen(
                                 onDecrease = { viewModel.onSecondsChange(uiState.secondsInput - 1) }
                             )
                         }
+                        
+                        Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
+
+                        DeepFocusToggle(
+                            enabled = uiState.deepFocusEnabled,
+                            onToggle = { enabled ->
+                                if (enabled) {
+                                    if (permissionManager.isNotificationPolicyAccessGranted()) {
+                                        viewModel.toggleDeepFocus(true)
+                                    } else {
+                                        Toast.makeText(context, strings.dndPermissionRequired, Toast.LENGTH_LONG).show()
+                                        permissionManager.requestNotificationPolicyAccess(dndPermissionLauncher)
+                                    }
+                                } else {
+                                    viewModel.toggleDeepFocus(false)
+                                }
+                            },
+                            strings = strings
+                        )
+
                         Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
                     }
 
@@ -258,6 +300,44 @@ fun FocusModeScreen(
             }
         },
     )
+}
+
+@Composable
+fun DeepFocusToggle(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+    strings: StringsRepository
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(PageDesignSettings.mediumPaddingValue)
+                .width(PageDesignSettings.largeComponentSize),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = strings.deepFocusLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = strings.deepFocusDescription,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle
+            )
+        }
+    }
 }
 
 @Composable
