@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -30,92 +31,75 @@ class FocusModeViewModel(
     private val context: Context,
     private val strings: StringsRepository
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(FocusModeUiState())
     val uiState: StateFlow<FocusModeUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
     private var quoteJob: Job? = null
     private var trackingJob: Job? = null
+    
     private var sessionStartTime: Long? = null
     private var initialDurationSeconds: Long = 0
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
-    private val distractingApps = listOf(
-        "com.facebook.katana",
-        "com.instagram.android",
-        "com.twitter.android",
-        "com.tiktok.android.mobile.ticker",
-        "com.zhiliaoapp.musically",
-        "com.whatsapp",
-        "com.google.android.youtube",
-        "com.netflix.mediaclient",
-        "com.disney.disneyplus",
-        "com.amazon.avod.thirdpartyclient",
-        "com.snapchat.android"
-    )
-
     fun setCommitmentId(id: Long?) {
         _uiState.update { it.copy(commitmentId = id) }
-        if (id != null) {
-            viewModelScope.launch {
-                val commitment = commitmentRepository.getCommitment(id)
-                commitment?.let {
-                    val duration = it.endDateTime - it.startDateTime
-                    val totalSeconds = duration.inWholeSeconds
-                    
-                    val hours = (totalSeconds / 3600).toInt()
-                    val minutes = ((totalSeconds % 3600) / 60).toInt()
-                    val seconds = (totalSeconds % 60).toInt()
+        id?.let { loadCommitmentDuration(it) }
+    }
 
-                    _uiState.update { state ->
-                        state.copy(
-                            hoursInput = hours.coerceIn(0, 12),
-                            minutesInput = minutes.coerceIn(0, 59),
-                            secondsInput = seconds.coerceIn(0, 59)
-                        )
-                    }
+    private fun loadCommitmentDuration(id: Long) {
+        viewModelScope.launch {
+            commitmentRepository.getCommitment(id)?.let { commitment ->
+                val duration = commitment.endDateTime - commitment.startDateTime
+                val totalSeconds = duration.inWholeSeconds
+                
+                _uiState.update { state ->
+                    state.copy(
+                        hoursInput = (totalSeconds / 3600).toInt().coerceIn(0, 12),
+                        minutesInput = ((totalSeconds % 3600) / 60).toInt().coerceIn(0, 59),
+                        secondsInput = (totalSeconds % 60).toInt().coerceIn(0, 59)
+                    )
                 }
             }
         }
     }
 
     fun onHoursChange(hours: Int) {
-        if (hours in 0..12) {
-            _uiState.update { it.copy(hoursInput = hours) }
-        }
+        if (hours in 0..12) _uiState.update { it.copy(hoursInput = hours) }
     }
 
     fun onMinutesChange(minutes: Int) {
-        if (minutes in 0..59) {
-            _uiState.update { it.copy(minutesInput = minutes) }
-        } else {
-            if (minutes >= 60) {
+        when {
+            minutes >= 60 -> {
                 onHoursChange(_uiState.value.hoursInput + 1)
                 _uiState.update { it.copy(minutesInput = 0) }
-            } else {
+            }
+            minutes < 0 -> {
                 if (_uiState.value.hoursInput > 0) {
                     onHoursChange(_uiState.value.hoursInput - 1)
                     _uiState.update { it.copy(minutesInput = 59) }
                 }
             }
+            else -> _uiState.update { it.copy(minutesInput = minutes) }
         }
     }
 
     fun onSecondsChange(seconds: Int) {
-        if (seconds in 0..59) {
-            _uiState.update { it.copy(secondsInput = seconds) }
-        } else {
-            if (seconds >= 60) {
+        when {
+            seconds >= 60 -> {
                 onMinutesChange(_uiState.value.minutesInput + 1)
                 _uiState.update { it.copy(secondsInput = 0) }
-            } else {
+            }
+            seconds < 0 -> {
                 if (_uiState.value.minutesInput > 0 || _uiState.value.hoursInput > 0) {
                     onMinutesChange(_uiState.value.minutesInput - 1)
                     _uiState.update { it.copy(secondsInput = 59) }
                 }
             }
+            else -> _uiState.update { it.copy(secondsInput = seconds) }
         }
     }
 
@@ -137,14 +121,14 @@ class FocusModeViewModel(
             
             initialDurationSeconds = total.inWholeSeconds
             sessionStartTime = Clock.System.now().toEpochMilliseconds()
-            
             total
         }
+        
         if (duration.inWholeSeconds <= 0) return
 
-        timerJob?.cancel()
-        val startTime = Clock.System.now()
-        val endTime = startTime.plus(duration)
+        stopActiveJobs()
+        
+        val endTime = Clock.System.now().plus(duration)
 
         _uiState.update {
             it.copy(
@@ -155,9 +139,7 @@ class FocusModeViewModel(
             )
         }
 
-        if (_uiState.value.deepFocusEnabled && notificationManager.isNotificationPolicyAccessGranted) {
-            notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
-        }
+        enableDndIfRequested()
 
         timerJob = viewModelScope.launch {
             while (Clock.System.now() < endTime) {
@@ -166,88 +148,50 @@ class FocusModeViewModel(
                 delay(1.seconds)
             }
             _uiState.update { it.copy(timeRemainingSeconds = 0, isRunning = false) }
-            onTimerFinished()
+            completeSession(completed = true)
         }
         
         startQuoteJob()
-        if (_uiState.value.appTrackingEnabled) {
-            startTrackingJob()
-        }
-    }
-
-    private fun startTrackingJob() {
-        trackingJob?.cancel()
-        trackingJob = viewModelScope.launch {
-            while (true) {
-                delay(5.seconds)
-                val foregroundApp = getForegroundApp()
-                if (foregroundApp != null && foregroundApp != context.packageName && distractingApps.contains(foregroundApp)) {
-                    sendNudgeNotification()
-                }
-            }
-        }
-    }
-
-    private fun getForegroundApp(): String? {
-        val time = System.currentTimeMillis()
-        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 60, time)
-        if (stats.isNullOrEmpty()) return null
-
-        return stats.maxByOrNull { it.lastTimeUsed }?.packageName
-    }
-
-    private fun sendNudgeNotification() {
-        val builder = NotificationCompat.Builder(context, NotificationConfig.NUDGE_CHANNEL_ID)
-            .setSmallIcon(R.drawable.outline_notifications_24)
-            .setContentTitle(strings.distractingAppNudgeTitle)
-            .setContentText(strings.distractingAppNudgeMessage)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setAutoCancel(true)
-        
-        notificationManager.notify(999, builder.build())
-    }
-
-    private fun onTimerFinished() {
-        saveSession(completed = true)
-        stopQuoteJob()
-        stopTrackingJob()
-        disableDndIfEnabled()
+        if (_uiState.value.appTrackingEnabled) startTrackingJob()
     }
 
     fun pauseTimer() {
-        timerJob?.cancel()
-        stopQuoteJob()
-        stopTrackingJob()
-        _uiState.update {
-            it.copy(
-                isRunning = false,
-                isPaused = true
-            )
-        }
+        _uiState.update { it.copy(isRunning = false, isPaused = true) }
+        stopActiveJobs()
         disableDndIfEnabled()
     }
 
     fun stopTimer() {
-        saveSession(completed = false)
-        timerJob?.cancel()
-        stopQuoteJob()
-        stopTrackingJob()
+        completeSession(completed = false)
         _uiState.update { it.copy(isRunning = false, isPaused = false, timeRemainingSeconds = 0) }
-        disableDndIfEnabled()
     }
 
     fun onExit(onExitConfirmed: () -> Unit) {
         if (_uiState.value.isRunning || _uiState.value.isPaused) {
-            saveSession(completed = false)
+            completeSession(completed = false)
         }
-        timerJob?.cancel()
-        stopQuoteJob()
-        stopTrackingJob()
-        disableDndIfEnabled()
         onExitConfirmed()
+    }
+
+    private fun completeSession(completed: Boolean) {
+        saveSession(completed)
+        stopActiveJobs()
+        disableDndIfEnabled()
+    }
+
+    private fun stopActiveJobs() {
+        timerJob?.cancel()
+        quoteJob?.cancel()
+        trackingJob?.cancel()
+        timerJob = null
+        quoteJob = null
+        trackingJob = null
+    }
+
+    private fun enableDndIfRequested() {
+        if (_uiState.value.deepFocusEnabled && notificationManager.isNotificationPolicyAccessGranted) {
+            notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        }
     }
 
     private fun disableDndIfEnabled() {
@@ -257,30 +201,47 @@ class FocusModeViewModel(
     }
 
     private fun startQuoteJob() {
-        if (quoteJob != null) return
         quoteJob = viewModelScope.launch {
             while (true) {
-                _uiState.update { it.copy(quoteIndex = (it.quoteIndex + 1)) }
                 delay(5.minutes)
+                _uiState.update { it.copy(quoteIndex = it.quoteIndex + 1) }
             }
         }
     }
 
-    private fun stopQuoteJob() {
-        quoteJob?.cancel()
-        quoteJob = null
+    private fun startTrackingJob() {
+        trackingJob = viewModelScope.launch {
+            while (true) {
+                delay(TRACKING_INTERVAL_MS.seconds)
+                if (isDistractingAppInForeground()) {
+                    sendNudgeNotification()
+                }
+            }
+        }
     }
 
-    private fun stopTrackingJob() {
-        trackingJob?.cancel()
-        trackingJob = null
+    private fun isDistractingAppInForeground(): Boolean {
+        val time = System.currentTimeMillis()
+        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 60_000, time)
+        val foregroundApp = stats?.maxByOrNull { it.lastTimeUsed }?.packageName
+        return foregroundApp != null && foregroundApp != context.packageName && DISTRACTING_APPS.contains(foregroundApp)
+    }
+
+    private fun sendNudgeNotification() {
+        val builder = NotificationCompat.Builder(context, NotificationConfig.NUDGE_CHANNEL_ID)
+            .setSmallIcon(R.drawable.outline_notifications_24)
+            .setContentTitle(strings.distractingAppNudgeTitle)
+            .setContentText(strings.distractingAppNudgeMessage)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setAutoCancel(true)
+        
+        notificationManager.notify(NUDGE_NOTIFICATION_ID, builder.build())
     }
 
     private fun saveSession(completed: Boolean) {
         val startTime = sessionStartTime ?: return
-        val totalSeconds = initialDurationSeconds
-        val remainingSeconds = _uiState.value.timeRemainingSeconds
-        val durationSeconds = totalSeconds - remainingSeconds
+        val durationSeconds = initialDurationSeconds - _uiState.value.timeRemainingSeconds
 
         viewModelScope.launch {
             focusSessionRepository.insertSession(
@@ -300,12 +261,26 @@ class FocusModeViewModel(
     override fun onCleared() {
         super.onCleared()
         if (_uiState.value.isRunning || _uiState.value.isPaused) {
-            saveSession(completed = false)
+            completeSession(completed = false)
         }
-        timerJob?.cancel()
-        stopQuoteJob()
-        stopTrackingJob()
-        disableDndIfEnabled()
+    }
+
+    companion object {
+        private const val NUDGE_NOTIFICATION_ID = 999
+        private const val TRACKING_INTERVAL_MS = 5L
+        private val DISTRACTING_APPS = setOf(
+            "com.facebook.katana",
+            "com.instagram.android",
+            "com.twitter.android",
+            "com.tiktok.android.mobile.ticker",
+            "com.zhiliaoapp.musically",
+            "com.whatsapp",
+            "com.google.android.youtube",
+            "com.netflix.mediaclient",
+            "com.disney.disneyplus",
+            "com.amazon.avod.thirdpartyclient",
+            "com.snapchat.android"
+        )
     }
 }
 
@@ -330,10 +305,6 @@ data class FocusModeUiState(
             val h = timeRemainingSeconds / 3600
             val m = (timeRemainingSeconds % 3600) / 60
             val s = timeRemainingSeconds % 60
-            return if (h > 0) {
-                "%02d:%02d:%02d".format(h, m, s)
-            } else {
-                "%02d:%02d".format(m, s)
-            }
+            return if (h > 0) "%02d:%02d:%02d".format(h, m, s) else "%02d:%02d".format(m, s)
         }
 }
