@@ -23,5 +23,6 @@ data class FocusSessionEntity(
     val startTime: Long,
     val durationSeconds: Int,
     val completed: Boolean,
-    val commitmentId: Long? = null
+    val commitmentId: Long? = null,
+    val tag: String? = null
 )

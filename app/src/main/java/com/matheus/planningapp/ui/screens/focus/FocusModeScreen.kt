@@ -2,9 +2,7 @@ package com.matheus.planningapp.ui.screens.focus
 
 import android.Manifest
 import android.app.Activity
-import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -40,6 +38,8 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -49,7 +49,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -65,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.planningapp.R
 import com.matheus.planningapp.ui.screens.components.stardardBackground
 import com.matheus.planningapp.ui.theme.PageDesignSettings
@@ -85,7 +85,7 @@ fun FocusModeScreen(
     viewModel: FocusModeViewModel = koinViewModel()
 ) {
     val strings: StringsRepository = LocalStrings.current
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val permissionManager: PermissionManager = koinInject()
 
@@ -247,12 +247,30 @@ fun FocusModeScreen(
                             )
                         }
                         
-                        Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
+                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumSpacer))
 
-                        Column(verticalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumSpacer)) {
+                        OutlinedTextField(
+                            value = uiState.tag,
+                            onValueChange = viewModel::onTagChange,
+                            placeholder = { Text(strings.focusTagField, style = MaterialTheme.typography.bodySmall) },
+                            modifier = Modifier
+                                .width(PageDesignSettings.largeComponentSize)
+                                .height(48.dp)
+                                .padding(horizontal = PageDesignSettings.extraLargePaddingValue),
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium,
+                            textStyle = MaterialTheme.typography.bodySmall,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(PageDesignSettings.extraSmallPaddingValue))
+
+                        Column(verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraSmallPaddingValue)) {
                             FocusOptionToggle(
                                 label = strings.deepFocusLabel,
-                                description = strings.deepFocusDescription,
                                 enabled = uiState.deepFocusEnabled,
                                 onToggle = { enabled ->
                                     if (enabled) {
@@ -270,7 +288,6 @@ fun FocusModeScreen(
 
                             FocusOptionToggle(
                                 label = strings.appTrackingLabel,
-                                description = strings.appTrackingDescription,
                                 enabled = uiState.appTrackingEnabled,
                                 onToggle = { enabled ->
                                     if (enabled) {
@@ -287,7 +304,7 @@ fun FocusModeScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
+                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumSpacer))
                     }
 
                     Row(
@@ -356,39 +373,28 @@ fun FocusModeScreen(
 @Composable
 fun FocusOptionToggle(
     label: String,
-    description: String,
     enabled: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.padding(horizontal = 16.dp)
+    Row(
+        modifier = Modifier
+            .width(PageDesignSettings.largeComponentSize)
+            .height(28.dp)
+            .padding(horizontal = PageDesignSettings.extraLargePaddingValue + PageDesignSettings.mediumPaddingValue),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .padding(PageDesignSettings.mediumPaddingValue)
-                .width(PageDesignSettings.largeComponentSize),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-            }
-            Switch(
-                checked = enabled,
-                onCheckedChange = onToggle
-            )
-        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        Switch(
+            checked = enabled,
+            onCheckedChange = onToggle,
+            modifier = Modifier.scale(0.55f)
+        )
     }
 }
 

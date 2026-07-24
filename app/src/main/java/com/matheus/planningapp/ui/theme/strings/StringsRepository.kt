@@ -106,7 +106,6 @@ interface StringsRepository {
     val focusHistoryDuration: String
     val focusHistoryCompleted: String
     val focusHistoryIncomplete: String
-    val motivationalQuotes: List<String>
     val deepFocusLabel: String
     val deepFocusDescription: String
     val dndPermissionRequired: String
@@ -115,6 +114,7 @@ interface StringsRepository {
     val usageStatsPermissionRequired: String
     val distractingAppNudgeTitle: String
     val distractingAppNudgeMessage: String
+    val focusTagField: String
 
     // Datetime information
     val monthNames: List<String>

@@ -60,7 +60,8 @@ class FocusModeViewModel(
                     state.copy(
                         hoursInput = (totalSeconds / 3600).toInt().coerceIn(0, 12),
                         minutesInput = ((totalSeconds % 3600) / 60).toInt().coerceIn(0, 59),
-                        secondsInput = (totalSeconds % 60).toInt().coerceIn(0, 59)
+                        secondsInput = (totalSeconds % 60).toInt().coerceIn(0, 59),
+                        tag = commitment.title
                     )
                 }
             }
@@ -101,6 +102,10 @@ class FocusModeViewModel(
             }
             else -> _uiState.update { it.copy(secondsInput = seconds) }
         }
+    }
+
+    fun onTagChange(tag: String) {
+        _uiState.update { it.copy(tag = tag) }
     }
 
     fun toggleDeepFocus(enabled: Boolean) {
@@ -249,7 +254,8 @@ class FocusModeViewModel(
                     startTime = startTime,
                     durationSeconds = durationSeconds.toInt(),
                     completed = completed,
-                    commitmentId = _uiState.value.commitmentId
+                    commitmentId = _uiState.value.commitmentId,
+                    tag = _uiState.value.tag.takeIf { it.isNotBlank() }
                 )
             )
         }
@@ -292,6 +298,7 @@ data class FocusModeUiState(
     val hoursInput: Int = 0,
     val minutesInput: Int = 30,
     val secondsInput: Int = 0,
+    val tag: String = "",
     val quoteIndex: Int = 0,
     val commitmentId: Long? = null,
     val deepFocusEnabled: Boolean = false,

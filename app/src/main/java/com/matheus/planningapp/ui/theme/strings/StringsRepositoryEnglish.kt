@@ -106,16 +106,6 @@ class StringsRepositoryEnglish : StringsRepository {
     override val focusHistoryDuration = "Duration: %d min"
     override val focusHistoryCompleted = "Completed"
     override val focusHistoryIncomplete = "Incomplete"
-    override val motivationalQuotes = listOf(
-        "Focus on being productive instead of busy.",
-        "Your life is the result of your choices.",
-        "Energy flows where attention goes.",
-        "The secret of getting ahead is getting started.",
-        "Don't stop until you're proud.",
-        "Simplicity is the ultimate sophistication.",
-        "Do what you can, with what you have, where you are.",
-        "Success is the sum of small efforts repeated day in and day out."
-    )
     override val deepFocusLabel = "Deep Focus"
     override val deepFocusDescription = "Enable Do Not Disturb automatically"
     override val dndPermissionRequired = "Do Not Disturb permission is required for Deep Focus mode."
@@ -124,6 +114,7 @@ class StringsRepositoryEnglish : StringsRepository {
     override val usageStatsPermissionRequired = "Usage Stats permission is required to track distracting apps."
     override val distractingAppNudgeTitle = "Stay Focused!"
     override val distractingAppNudgeMessage = "You opened a distracting app. Get back to work!"
+    override val focusTagField = "Tag"
 
     // Datetime information
     override val monthNames =
