@@ -7,13 +7,18 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateColor
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -22,27 +27,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -55,10 +68,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -88,6 +104,7 @@ fun FocusModeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val permissionManager: PermissionManager = koinInject()
+    val scrollState = rememberScrollState()
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -149,12 +166,17 @@ fun FocusModeScreen(
 
     Scaffold(
         topBar = {
-            if (!uiState.isRunning) {
+            AnimatedVisibility(
+                visible = !uiState.isRunning,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 TopAppBar(
                     title = {
                         Text(
                             text = strings.focusModeMenuButton,
                             style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
                     },
                     navigationIcon = {
@@ -174,7 +196,7 @@ fun FocusModeScreen(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        containerColor = Color.Transparent,
                         titleContentColor = MaterialTheme.colorScheme.primary,
                     )
                 )
@@ -184,47 +206,81 @@ fun FocusModeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .stardardBackground()
                     .padding(
                         top = if (uiState.isRunning) PageDesignSettings.zeroPaddingValue else paddingValues.calculateTopPadding(),
                         bottom = paddingValues.calculateBottomPadding(),
-                    )
-                    .stardardBackground(),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
 
                 if (uiState.isRunning) {
                     Column {
                         BreathingAnimation()
-                        Spacer(modifier = Modifier.height(PageDesignSettings.extraLargeIconSize + PageDesignSettings.largeSpacer))
+                        Spacer(modifier = Modifier.height(PageDesignSettings.extraLargeIconSize + PageDesignSettings.mediumPaddingValue))
                     }
                 }
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = if (uiState.isRunning) Arrangement.Center else Arrangement.Top,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .animateContentSize()
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = PageDesignSettings.mediumPaddingValue, vertical = PageDesignSettings.largePaddingValue)
                 ) {
-
-                    Box(contentAlignment = Alignment.Center) {
+                    val indicatorSize = if (uiState.isRunning) PageDesignSettings.largeComponentSize + 24.dp else 200.dp
+                    
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(vertical = PageDesignSettings.mediumPaddingValue)) {
                         CircularProgressIndicator(
-                            progress = { if (uiState.isRunning || uiState.isPaused) uiState.progress else 1f },
-                            modifier = Modifier.size(PageDesignSettings.largeComponentSize),
-                            color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = PageDesignSettings.smallIconClip,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            progress = { 1f },
+                            modifier = Modifier.size(indicatorSize),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            strokeWidth = 10.dp,
                             strokeCap = StrokeCap.Round,
                         )
-                        Text(
-                            text = uiState.formattedTime,
-                            style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
-                            color = MaterialTheme.colorScheme.onSurface
+                        CircularProgressIndicator(
+                            progress = { if (uiState.isRunning || uiState.isPaused) uiState.progress else 1f },
+                            modifier = Modifier.size(indicatorSize),
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 10.dp,
+                            trackColor = Color.Transparent,
+                            strokeCap = StrokeCap.Round,
                         )
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = uiState.formattedTime,
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    fontSize = if (uiState.isRunning) 64.sp else 48.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = (-2).sp
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            if (uiState.tag.isNotEmpty()) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(top = 4.dp)
+                                ) {
+                                    Text(
+                                        text = uiState.tag,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(PageDesignSettings.largeSpacer))
+                    Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
 
                     if (!uiState.isRunning && !uiState.isPaused) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.extraLargePaddingValue),
+                            horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.largePaddingValue),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             TimeAdjustmentColumn(
@@ -247,28 +303,32 @@ fun FocusModeScreen(
                             )
                         }
                         
-                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumSpacer))
+                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
 
                         OutlinedTextField(
                             value = uiState.tag,
                             onValueChange = viewModel::onTagChange,
-                            placeholder = { Text(strings.focusTagField, style = MaterialTheme.typography.bodySmall) },
+                            placeholder = { Text(strings.focusTagField, style = MaterialTheme.typography.bodyMedium) },
                             modifier = Modifier
                                 .width(PageDesignSettings.largeComponentSize)
-                                .height(48.dp)
                                 .padding(horizontal = PageDesignSettings.extraLargePaddingValue),
                             singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
-                            textStyle = MaterialTheme.typography.bodySmall,
+                            shape = RoundedCornerShape(16.dp),
+                            textStyle = MaterialTheme.typography.bodyMedium,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(PageDesignSettings.extraSmallPaddingValue))
+                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
 
-                        Column(verticalArrangement = Arrangement.spacedBy(PageDesignSettings.extraSmallPaddingValue)) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             FocusOptionToggle(
                                 label = strings.deepFocusLabel,
                                 enabled = uiState.deepFocusEnabled,
@@ -304,49 +364,38 @@ fun FocusModeScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumSpacer))
+                        Spacer(modifier = Modifier.height(PageDesignSettings.mediumPaddingValue))
                     }
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.mediumSpacer),
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(PageDesignSettings.largePaddingValue),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = PageDesignSettings.mediumPaddingValue)
                     ) {
                         if (uiState.isRunning || uiState.isPaused) {
                             if (uiState.isRunning) {
-                                FilledTonalIconButton(
+                                ActionButton(
                                     onClick = viewModel::pauseTimer,
-                                    modifier = Modifier.size(PageDesignSettings.extraLargeIconSize)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_pause),
-                                        contentDescription = strings.pauseFocusModeButton,
-                                        modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                                    )
-                                }
+                                    icon = R.drawable.ic_pause,
+                                    contentDescription = strings.pauseFocusModeButton,
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
                             } else {
-                                FilledTonalIconButton(
+                                ActionButton(
                                     onClick = viewModel::startTimer,
-                                    modifier = Modifier.size(PageDesignSettings.extraLargeIconSize)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = strings.startFocusModeButton,
-                                        modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                                    )
-                                }
-                            }
-                            FilledTonalIconButton(
-                                onClick = viewModel::stopTimer,
-                                modifier = Modifier.size(PageDesignSettings.extraLargeIconSize)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_stop),
-                                    contentDescription = strings.stopFocusModeButton,
-                                    modifier = Modifier.size(PageDesignSettings.mediumIconSize)
+                                    icon = Icons.Default.PlayArrow,
+                                    contentDescription = strings.startFocusModeButton,
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
                                 )
                             }
+                            ActionButton(
+                                onClick = viewModel::stopTimer,
+                                icon = R.drawable.ic_stop,
+                                contentDescription = strings.stopFocusModeButton,
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
                         } else {
-                            FilledTonalIconButton(
+                            FilledTonalButton(
                                 onClick = {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionManager.hasNotificationPermission()) {
                                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -354,13 +403,14 @@ fun FocusModeScreen(
                                         viewModel.startTimer()
                                     }
                                 },
-                                modifier = Modifier.size(PageDesignSettings.extraLargeIconSize)
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(16.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = strings.startFocusModeButton,
-                                    modifier = Modifier.size(PageDesignSettings.mediumIconSize)
-                                )
+                                Icon(Icons.Default.PlayArrow, null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(strings.startFocusModeButton, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -371,30 +421,71 @@ fun FocusModeScreen(
 }
 
 @Composable
+fun ActionButton(
+    onClick: () -> Unit,
+    icon: Any,
+    contentDescription: String,
+    containerColor: Color
+) {
+    FilledTonalIconButton(
+        onClick = onClick,
+        modifier = Modifier.size(64.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = containerColor)
+    ) {
+        if (icon is Int) {
+            Icon(painterResource(id = icon), contentDescription = contentDescription, modifier = Modifier.size(28.dp))
+        } else if (icon is ImageVector) {
+            Icon(imageVector = icon, contentDescription = contentDescription, modifier = Modifier.size(28.dp))
+        }
+    }
+}
+
+@Composable
 fun FocusOptionToggle(
     label: String,
     enabled: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .width(PageDesignSettings.largeComponentSize)
-            .height(28.dp)
-            .padding(horizontal = PageDesignSettings.extraLargePaddingValue + PageDesignSettings.mediumPaddingValue),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    Surface(
+        onClick = { onToggle(!enabled) },
+        shape = RoundedCornerShape(16.dp),
+        color = if (enabled) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) 
+                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+        border = if (enabled) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.width(PageDesignSettings.largeComponentSize)
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        Switch(
-            checked = enabled,
-            onCheckedChange = onToggle,
-            modifier = Modifier.scale(0.55f)
-        )
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle,
+                modifier = Modifier.scale(0.8f),
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
+                thumbContent = if (enabled) {
+                    {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                        )
+                    }
+                } else null
+            )
+        }
     }
 }
 
@@ -403,33 +494,32 @@ fun BreathingAnimation() {
     val infiniteTransition = rememberInfiniteTransition(label = "breathing")
     
     val scale by infiniteTransition.animateFloat(
-        initialValue = 1.1f,
-        targetValue = 1.8f,
+        initialValue = 1f,
+        targetValue = 1.4f,
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearOutSlowInEasing),
+            animation = tween(3000, easing = LinearOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "scale"
     )
 
-    val color by infiniteTransition.animateColor(
-        initialValue = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-        targetValue = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f,
+        targetValue = 0.05f,
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearOutSlowInEasing),
+            animation = tween(3000, easing = LinearOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "color"
+        label = "alpha"
     )
 
-    Surface(
+    Box(
         modifier = Modifier
-            .size(PageDesignSettings.largeComponentSize)
-            .scale(scale),
-        shape = CircleShape,
-        color = color,
-        content = {}
-    )
+            .size(PageDesignSettings.largeComponentSize + 80.dp)
+            .scale(scale)
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = alpha), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {}
 }
 
 @Composable
@@ -441,32 +531,47 @@ fun TimeAdjustmentColumn(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(PageDesignSettings.smallPaddingValue)
+        verticalArrangement = Arrangement.Center
     ) {
         RepeatingIconButton(onClick = onIncrease) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
             )
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "%02d".format(value),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            modifier = Modifier.size(width = 64.dp, height = 72.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "%02d".format(value),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
+
         RepeatingIconButton(onClick = onDecrease) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
             )
         }
     }
