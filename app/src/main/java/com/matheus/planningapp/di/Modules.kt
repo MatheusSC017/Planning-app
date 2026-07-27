@@ -89,5 +89,5 @@ val appModules =
         viewModel { RecurrenceViewModel(get(), get()) }
         viewModel { CategoryViewModel(get(), get()) }
         viewModel { FocusModeViewModel(get(), get(), androidContext(), get()) }
-        viewModel { FocusHistoryViewModel(get()) }
+        viewModel { FocusHistoryViewModel(get(), get()) }
     }
