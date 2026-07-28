@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -287,19 +286,25 @@ fun FocusModeScreen(
                                 value = uiState.hoursInput,
                                 label = "H",
                                 onIncrease = { viewModel.onHoursChange(uiState.hoursInput + 1) },
-                                onDecrease = { viewModel.onHoursChange(uiState.hoursInput - 1) }
+                                onDecrease = { viewModel.onHoursChange(uiState.hoursInput - 1) },
+                                enabledIncrease = uiState.hoursInput < 11,
+                                enabledDecrease = uiState.hoursInput > 0
                             )
                             TimeAdjustmentColumn(
                                 value = uiState.minutesInput,
                                 label = "M",
                                 onIncrease = { viewModel.onMinutesChange(uiState.minutesInput + 1) },
-                                onDecrease = { viewModel.onMinutesChange(uiState.minutesInput - 1) }
+                                onDecrease = { viewModel.onMinutesChange(uiState.minutesInput - 1) },
+                                enabledIncrease = !(uiState.hoursInput == 11 && uiState.minutesInput == 59),
+                                enabledDecrease = !(uiState.hoursInput == 0 && uiState.minutesInput == 0)
                             )
                             TimeAdjustmentColumn(
                                 value = uiState.secondsInput,
                                 label = "S",
                                 onIncrease = { viewModel.onSecondsChange(uiState.secondsInput + 1) },
-                                onDecrease = { viewModel.onSecondsChange(uiState.secondsInput - 1) }
+                                onDecrease = { viewModel.onSecondsChange(uiState.secondsInput - 1) },
+                                enabledIncrease = !(uiState.hoursInput == 11 && uiState.minutesInput == 59 && uiState.secondsInput == 59),
+                                enabledDecrease = !(uiState.hoursInput == 0 && uiState.minutesInput == 0 && uiState.secondsInput == 0)
                             )
                         }
                         
@@ -527,17 +532,19 @@ fun TimeAdjustmentColumn(
     value: Int,
     label: String,
     onIncrease: () -> Unit,
-    onDecrease: () -> Unit
+    onDecrease: () -> Unit,
+    enabledIncrease: Boolean = true,
+    enabledDecrease: Boolean = true
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        RepeatingIconButton(onClick = onIncrease) {
+        RepeatingIconButton(onClick = onIncrease, enabled = enabledIncrease) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = if (enabledIncrease) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -566,11 +573,11 @@ fun TimeAdjustmentColumn(
             }
         }
 
-        RepeatingIconButton(onClick = onDecrease) {
+        RepeatingIconButton(onClick = onDecrease, enabled = enabledDecrease) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = if (enabledDecrease) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -588,11 +595,11 @@ private fun RepeatingIconButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    LaunchedEffect(isPressed) {
-        if (isPressed) {
+    LaunchedEffect(isPressed, enabled) {
+        if (isPressed && enabled) {
             currentOnClick()
             delay(500)
-            while (true) {
+            while (enabled) {
                 currentOnClick()
                 delay(100)
             }

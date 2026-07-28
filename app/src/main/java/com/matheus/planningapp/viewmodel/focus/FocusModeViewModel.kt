@@ -58,7 +58,7 @@ class FocusModeViewModel(
                 
                 _uiState.update { state ->
                     state.copy(
-                        hoursInput = (totalSeconds / 3600).toInt().coerceIn(0, 12),
+                        hoursInput = (totalSeconds / 3600).toInt().coerceIn(0, 11),
                         minutesInput = ((totalSeconds % 3600) / 60).toInt().coerceIn(0, 59),
                         secondsInput = (totalSeconds % 60).toInt().coerceIn(0, 59),
                         tag = commitment.title
@@ -69,7 +69,7 @@ class FocusModeViewModel(
     }
 
     fun onHoursChange(hours: Int) {
-        if (hours in 0..12) _uiState.update { it.copy(hoursInput = hours) }
+        if (hours in 0..11) _uiState.update { it.copy(hoursInput = hours) }
     }
 
     fun onMinutesChange(minutes: Int) {
