@@ -98,14 +98,33 @@ class HomeViewModel(
         onSelectedDate(year = selectedDate.value.year - 1)
     }
 
-    fun moveCommitment(commitment: CommitmentEntity, newStartTime: Instant) {
+    fun moveCommitment(
+        commitment: CommitmentEntity,
+        newStartTime: Instant,
+    ) {
         val duration = commitment.endDateTime - commitment.startDateTime
-        val updatedCommitment = commitment.copy(
-            startDateTime = newStartTime,
-            endDateTime = newStartTime + duration,
-            updatedAt = Clock.System.now()
-        )
+        val newEndTime = newStartTime + duration
+
         viewModelScope.launch {
+            val conflicts =
+                commitmentRepository.checkSchedulingConflictsBetweenCommitments(
+                    startDateTime = newStartTime,
+                    endDateTime = newEndTime,
+                    calendarId = commitment.calendar,
+                    commitmentId = commitment.id,
+                )
+
+            if (conflicts > 0) {
+                _events.emit(DatabaseUiEvent.ShowError(strings.commitmentConflictError))
+                return@launch
+            }
+
+            val updatedCommitment =
+                commitment.copy(
+                    startDateTime = newStartTime,
+                    endDateTime = newEndTime,
+                    updatedAt = Clock.System.now(),
+                )
             commitmentRepository.updateCommitment(updatedCommitment)
         }
     }
