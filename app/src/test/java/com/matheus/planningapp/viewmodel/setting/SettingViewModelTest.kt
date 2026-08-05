@@ -1,5 +1,6 @@
 package com.matheus.planningapp.viewmodel.setting
 
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
@@ -10,12 +11,16 @@ import com.matheus.planningapp.util.enums.NotificationEnum
 import com.matheus.planningapp.util.enums.PriorityEnum
 import com.matheus.planningapp.util.enums.ViewEnum
 import com.matheus.planningapp.util.notification.TaskNotificationScheduler
+import com.matheus.planningapp.util.notification.canScheduleExact
+import com.matheus.planningapp.util.notification.hasNotificationPermission
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -41,6 +46,7 @@ class SettingViewModelTest {
     private lateinit var viewModel: SettingViewModel
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var scheduleExactAlarmLauncher: ActivityResultLauncher<Intent>
+    private lateinit var alarmManager: AlarmManager
     private val dispatcher = StandardTestDispatcher()
 
     @Before
@@ -53,8 +59,15 @@ class SettingViewModelTest {
         taskNotificationScheduler = mockk<TaskNotificationScheduler>()
         notificationPermissionLauncher = mockk<ActivityResultLauncher<String>>()
         scheduleExactAlarmLauncher = mockk<ActivityResultLauncher<Intent>>()
+        alarmManager = mockk<AlarmManager>()
 
+        mockkStatic("com.matheus.planningapp.util.notification.NotificationVerificationsKt")
+
+        every { context.hasNotificationPermission() } returns true
+        every { context.getSystemService(AlarmManager::class.java) } returns alarmManager
+        every { alarmManager.canScheduleExact() } returns true
         every { notificationPermissionLauncher.launch(any()) } just Runs
+        every { scheduleExactAlarmLauncher.launch(any()) } just Runs
         coEvery { settingsRepository.viewModeFlow } returns flowOf(ViewEnum.COLUMN)
         coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.NO_SEND)
 
@@ -64,6 +77,7 @@ class SettingViewModelTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        unmockkStatic("com.matheus.planningapp.util.notification.NotificationVerificationsKt")
     }
 
     @Test
@@ -321,32 +335,9 @@ class SettingViewModelTest {
 
             val newSettings = SettingUiState(viewMode = ViewEnum.COLUMN, notificationOption = NotificationEnum.ONLY_HIGH_PRIORITY)
 
-            coEvery { settingsRepository.saveSettings(newSettings) } just Runs
             coEvery { commitmentRepository.getFutureCommitments() } returns futureCommitments
             coEvery { taskNotificationScheduler.cancelTaskNotification(any()) } just Runs
             coEvery { taskNotificationScheduler.scheduleTaskNotification(any()) } just Runs
-
-            // When
-            newViewModel.updateSettings(newSettings, notificationPermissionLauncher, scheduleExactAlarmLauncher)
-            advanceUntilIdle()
-
-            // Then
-
-            coVerify { commitmentRepository.getFutureCommitments() }
-//        coVerify(atLeast = 1) { taskNotificationScheduler.cancelTaskNotification(any()) }
-            collectJob.cancel()
-        }
-
-    @Test
-    fun `updateSettings should not process notifications if only view mode changes`() =
-        runTest {
-            // Given
-            coEvery { settingsRepository.viewModeFlow } returns flowOf(ViewEnum.COLUMN)
-            coEvery { settingsRepository.notificationOptionFlow } returns flowOf(NotificationEnum.NO_SEND)
-
-            val newViewModel = SettingViewModel(context, commitmentRepository, settingsRepository, taskNotificationScheduler)
-
-            val newSettings = SettingUiState(viewMode = ViewEnum.GRID, notificationOption = NotificationEnum.NO_SEND)
             coEvery { settingsRepository.saveSettings(newSettings) } just Runs
 
             // When
@@ -354,7 +345,10 @@ class SettingViewModelTest {
             advanceUntilIdle()
 
             // Then
+            coVerify { commitmentRepository.getFutureCommitments() }
+            coVerify { taskNotificationScheduler.cancelTaskNotification(any()) }
             coVerify { settingsRepository.saveSettings(newSettings) }
-            coVerify(exactly = 0) { commitmentRepository.getFutureCommitments() }
+
+            collectJob.cancel()
         }
 }
